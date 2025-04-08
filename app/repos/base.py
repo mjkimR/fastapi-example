@@ -1,9 +1,9 @@
-import inspect
+import uuid
 from datetime import datetime, timezone
 from typing import Optional, Union, Generic, Sequence, TypeVar, Any
 
 from sqlalchemy import (
-    select, update, delete, inspect, literal, func,
+    select, update, delete, literal, func,
 )
 from sqlalchemy import Column, inspect as sa_inspect
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,11 +12,11 @@ from sqlalchemy.sql.selectable import Select
 from pydantic import BaseModel
 
 ModelType = TypeVar("ModelType", bound=Any)
-
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 GetMultiResponseModel = dict[str, Union[list[ModelType], int]]
+PrimaryKeyType = Union[Sequence[Union[str, int, uuid.UUID]], Union[str, int, uuid.UUID]]
 
 
 class BaseRepository(
@@ -26,18 +26,21 @@ class BaseRepository(
         UpdateSchemaType,
     ]
 ):
+    @staticmethod
+    def get_repo() -> "BaseRepository":
+        """Get an instance of BaseRepository."""
+        raise NotImplementedError("This method should be implemented in the subclass.")
+
     def __init__(
             self,
             model: type[ModelType],
-            is_deleted_column: str = "is_deleted",
-            deleted_at_column: str = "deleted_at",
-            updated_at_column: str = "updated_at",
             default_order_by_col: Optional[str] = "updated_at",
+            is_deleted_column: Optional[str] = "is_deleted",
+            deleted_at_column: Optional[str] = "deleted_at",
     ) -> None:
         self.model = model
         self.is_deleted_column = is_deleted_column
         self.deleted_at_column = deleted_at_column
-        self.updated_at_column = updated_at_column
         self.default_order_by_col = default_order_by_col
 
         self._primary_keys = self._get_primary_keys(self.model)
@@ -50,10 +53,33 @@ class BaseRepository(
         primary_key_columns: Sequence[Column] = inspector_result.mapper.primary_key
         return primary_key_columns
 
+    def _get_primary_key_filters(self, pk: PrimaryKeyType):
+        if not self._primary_keys:
+            raise ValueError("No primary key defined for this model.")
+
+        if not isinstance(pk, Sequence) or isinstance(pk, str):
+            pk_values = [pk]
+        else:
+            pk_values = pk
+
+        if len(self._primary_keys) != len(pk_values):
+            raise ValueError(
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+
+        return [
+            pk_col == value
+            for pk_col, value in zip(self._primary_keys, pk_values)
+        ]
+
     def _select(self, where=None, order_by=None) -> Select:
         stmt = select(self.model)
         if where is not None:
-            stmt = stmt.where(where)
+            if isinstance(where, Sequence):
+                if where:
+                    stmt = stmt.where(*where)
+            else:
+                stmt = stmt.where(where)
+
         if order_by is not None:
             stmt = stmt.order_by(order_by)
         else:
@@ -72,8 +98,17 @@ class BaseRepository(
         stmt = stmt.limit(1)
 
         db_row = await db.execute(stmt)
-        result = db_row.mappings().first()
-        return self.model(**result) if result else None
+        return db_row.scalar_one_or_none()
+
+    async def get_by_pk(
+            self,
+            db: AsyncSession,
+            pk: PrimaryKeyType,
+            where=None,
+            order_by=None,
+    ) -> Optional[ModelType]:
+        filters = self._get_primary_key_filters(pk)
+        return await self.get(db, where=filters or where, order_by=order_by)
 
     async def exists(
             self,
@@ -133,109 +168,77 @@ class BaseRepository(
             stmt = stmt.limit(limit)
 
         result = await db.execute(stmt)
-        data = [self.model(**row) for row in result.mappings()]
+        data = result.scalars().all()
 
         return {"data": data, "total_count": total_count}
 
     async def update_by_pk(
             self,
             db: AsyncSession,
-            pk: Union[Sequence[Union[str, int]], Union[str, int]],
+            pk: PrimaryKeyType,
             obj_in: Union[UpdateSchemaType, dict[str, Any]],
             commit: bool = True,
+            return_updated_obj: bool = True,
     ) -> Optional[ModelType]:
-        if not self._primary_keys:
-            raise ValueError("No primary key defined for this model.")
-
-        if not isinstance(pk, Sequence) or isinstance(pk, str):
-            pk_values = [pk]
-        else:
-            pk_values = pk
-
-        if len(self._primary_keys) != len(pk_values):
-            raise ValueError(
-                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
-
-        filters = [
-            pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)
-        ]
-
+        filters = self._get_primary_key_filters(pk)
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
+            # exclude_unset=True
             update_data = obj_in.model_dump(exclude_unset=True)
 
         if not update_data:
-            get_filters = [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)]
-            existing_obj = await self.get(db, where=get_filters)
-            return existing_obj
+            raise ValueError("Update data cannot be empty.")
 
         model_columns = {col.key for col in sa_inspect(self.model).mapper.columns}
         extra_fields = set(update_data.keys()) - model_columns
         if extra_fields:
             raise ValueError(f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}")
 
-        updated_at_col_name = self.updated_at_column
-        if updated_at_col_name in model_columns and updated_at_col_name not in update_data:
-            update_data[updated_at_col_name] = datetime.now(timezone.utc)
-
         stmt = update(self.model).filter(*filters).values(**update_data)
         result = await db.execute(stmt)
 
+        if result.rowcount == 0:
+            raise ValueError(f"Object with primary key {pk} not found for update.")
+
         if commit:
             await db.commit()
-            get_filters = [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)]
-            updated_obj = await self.get(db, where=get_filters)
-
         else:
             await db.flush()
-            get_filters = [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)]
-            updated_obj = await self.get(db, where=get_filters)
 
-        return updated_obj
+        return await self.get(db, where=filters) if return_updated_obj else None
 
     async def delete_by_pk(
             self,
             db: AsyncSession,
-            pk: Union[Sequence[Union[str, int]], Union[str, int]],
+            pk: PrimaryKeyType,
             soft_delete: bool = False,
             commit: bool = True,
     ) -> bool:
-        if not self._primary_keys:
-            raise ValueError("No primary key defined for this model.")
-
-        if not isinstance(pk, Sequence) or isinstance(pk, str):
-            pk_values = [pk]
-        else:
-            pk_values = pk
-
-        if len(self._primary_keys) != len(pk_values):
-            raise ValueError(
-                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
-
-        filters = [
-            pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)
-        ]
-
+        filters = self._get_primary_key_filters(pk)
         if soft_delete:
-            # Soft delete 컬럼 존재 여부 확인
             has_is_deleted = hasattr(self.model, self.is_deleted_column)
-            has_deleted_at = hasattr(self.model, self.deleted_at_column)
 
             if not has_is_deleted:
                 raise ValueError(
                     f"Soft delete requires the column '{self.is_deleted_column}' in model {self.model.__name__}.")
 
+            if self.deleted_at_column and not hasattr(self.model, self.deleted_at_column):
+                raise ValueError(
+                    f"Soft delete is configured to use '{self.deleted_at_column}', but it's missing in model {self.model.__name__}."
+                )
+
             update_values = {self.is_deleted_column: True}
-            if has_deleted_at:
+            if self.deleted_at_column and hasattr(self.model, self.deleted_at_column):
                 update_values[self.deleted_at_column] = datetime.now(timezone.utc)
+
             stmt = update(self.model).filter(*filters).values(**update_values)
         else:
             stmt = delete(self.model).filter(*filters)
 
         result = await db.execute(stmt)
 
-        deleted_or_updated = result.rowcount() > 0
+        deleted_or_updated = result.rowcount > 0
 
         if commit and deleted_or_updated:
             await db.commit()

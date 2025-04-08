@@ -4,9 +4,16 @@ from pydantic_settings import BaseSettings
 import pathlib
 
 
+def get_repo_path():
+    """Get the path to the repository."""
+    path = str(pathlib.Path(__file__).parent.parent.parent.resolve())
+    print(path)
+    return path
+
+
 def get_env_filename():
     runtime_env = os.getenv("ENV")
-    home = pathlib.Path(__file__).parent.parent.parent.resolve()
+    home = get_repo_path()
 
     return f"{home}/.env.{runtime_env}" if runtime_env else f"{home}/.env"
 
@@ -18,7 +25,7 @@ if os.path.exists(get_env_filename()):
 
 
 class AppSettings(BaseSettings):
-    pass
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{get_repo_path()}/.test.db")
 
 
 @functools.lru_cache
