@@ -3,23 +3,53 @@ from enum import Enum
 
 import orjson
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
-from sqlmodel.pool import StaticPool
 from httpx import AsyncClient, ASGITransport
 import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.pool import StaticPool
 
-from core.database import get_session
-from main import create_app
+from app.core.deps.session import get_session
+from app.main import create_app
+from app.models.base import Base
+
+import logging
+from enum import Enum
+
+import orjson
+import pytest
+from httpx import AsyncClient, ASGITransport
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.core.deps.session import get_session
+from app.main import create_app
+from app.models.base import Base
 
 
 @pytest.fixture(name="session")
-def session_fixture():
+async def session_fixture():
     """Create a new database session for testing with SQLite."""
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    async_engine = create_async_engine(
+        "sqlite+aiosqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
     )
-    SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
+
+    # Use async method to create tables
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    session_maker = async_sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+    async with session_maker() as session:
         yield session
 
 
@@ -48,7 +78,7 @@ class AsyncClientWithJson(AsyncClient):
 
 
 @pytest_asyncio.fixture(name="client")
-async def client_fixture(session: Session, set_httpx_logger):
+async def client_fixture(session: AsyncSession, set_httpx_logger):
     """FastAPI test client (without LifespanManager).
 
     - LifespanManager is not used: lifespan events are not triggered.

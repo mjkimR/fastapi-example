@@ -199,7 +199,7 @@ class BaseRepository(
         result = await db.execute(stmt)
 
         if result.rowcount == 0:
-            raise ValueError(f"Object with primary key {pk} not found for update.")
+            return None
 
         if commit:
             await db.commit()
