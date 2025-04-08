@@ -1,21 +1,13 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+
+from app.models.memo import Memo
+from app.repos.memo import MemoRepository
+from app.schemas.memo import MemoCreate, MemoUpdate
+from app.services.base import BaseService
 
 
-class MemoService:
-    def __init__(self, repo):
-        self.repo = repo
+class MemoService(BaseService[MemoRepository, Memo, MemoCreate, MemoUpdate]):
+    """Service class for handling memo-related operations."""
 
-    def get(self, session: AsyncSession):
-        raise NotImplementedError
-
-    def get_multi(self, session: AsyncSession):
-        raise NotImplementedError
-
-    def create(self, session: AsyncSession):
-        raise NotImplementedError
-
-    def update(self, session: AsyncSession):
-        raise NotImplementedError
-
-    def delete(self, session: AsyncSession):
-        raise NotImplementedError
+    def __init__(self, repo: MemoRepository = Depends(MemoRepository.get_repo)):
+        super().__init__(repo)

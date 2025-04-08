@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String
 
-from models.base import (Base, UUIDMixin, TimestampMixin)
+from app.models.base import (Base, UUIDMixin, TimestampMixin)
 
 
 class Memo(Base, UUIDMixin, TimestampMixin):

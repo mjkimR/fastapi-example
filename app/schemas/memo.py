@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from schemas.base import UUIDSchemaMixin, TimestampSchemaMixin
+from app.schemas.base import UUIDSchemaMixin, TimestampSchemaMixin
 
 
 class MemoCreate(BaseModel):
@@ -15,5 +15,11 @@ class MemoUpdate(BaseModel):
 
 
 class MemoRead(MemoCreate, UUIDSchemaMixin, TimestampSchemaMixin):
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MemosRead(BaseModel):
+    data: list[MemoRead] = Field(..., description="List of memos.")
+    total_count: int = Field(..., description="Total count of memos.")
+
+    model_config = ConfigDict(from_attributes=True)
