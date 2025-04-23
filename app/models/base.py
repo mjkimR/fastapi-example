@@ -1,28 +1,36 @@
+import datetime
 import uuid
+from typing import Optional
 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, func, UUID, Boolean, JSON
+from sqlalchemy import DateTime, func, JSON, UUID
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class UUIDMixin:
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
 
 class TimestampMixin:
-    created_at = Column(DateTime, default=func.now(), nullable=False)
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now(), nullable=False
+    )
 
 
 class AuditMixin:
-    created_by = Column(UUID(as_uuid=True), nullable=False)
-    updated_by = Column(UUID(as_uuid=True), nullable=True)
+    created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    updated_by: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
 
 
 class SoftDeleteMixin:
-    is_deleted = Column(Boolean, default=False, nullable=False)
-    deleted_at = Column(DateTime, nullable=True)
+    is_deleted: Mapped[bool] = mapped_column(default=False, nullable=False)
+    deleted_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     def mark_deleted(self):
         self.is_deleted = True
@@ -30,7 +38,7 @@ class SoftDeleteMixin:
 
 
 class TaggableMixin:
-    tags = Column(JSON, nullable=True)
+    tags: Mapped[Optional[list[str]]] = mapped_column(JSON, nullable=True)
 
     def add_tag(self, tag: str):
         if not self.tags:
