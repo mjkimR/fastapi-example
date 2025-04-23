@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 from app.api import router
+from app.core.middlewares import static_middleware, cors_middleware
 
 
 def get_lifespan():
@@ -27,15 +28,8 @@ def create_app():
     async def root():
         return RedirectResponse(url="/docs")
 
-    origins = ["*"]
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    cors_middleware.add_middleware(app)
+    static_middleware.add_middleware(app)
 
     app.include_router(router)
 
