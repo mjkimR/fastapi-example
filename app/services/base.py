@@ -1,7 +1,8 @@
 from typing import Generic, TypeVar
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repos.base import BaseRepository, ModelType, CreateSchemaType, UpdateSchemaType, GetMultiResponseModel
+from app.repos.base import BaseRepository, ModelType, CreateSchemaType, UpdateSchemaType
+from app.schemas.base import PaginatedList
 
 TRepo = TypeVar("TRepo", bound=BaseRepository)
 
@@ -16,9 +17,13 @@ class BaseService(Generic[TRepo, ModelType, CreateSchemaType, UpdateSchemaType])
         """Retrieve a single object by its primary key and return as ModelType."""
         return await self.repo.get_by_pk(session, pk=obj_id)
 
-    async def get_multi(self, session: AsyncSession, offset: int = 0, limit: int = 100) -> GetMultiResponseModel:
-        """Retrieve multiple objects with pagination and return as GetMultiResponseModel."""
-        return await self.repo.get_multi(session, offset=offset, limit=limit)
+    async def get_multi(
+            self, session: AsyncSession,
+            offset: int = 0, limit: int = 100,
+            order_by=None, filters=None
+    ) -> PaginatedList[ModelType]:
+        """Retrieve multiple objects with pagination and return as PaginatedList."""
+        return await self.repo.get_multi(session, offset=offset, limit=limit, where=filters, order_by=order_by)
 
     async def create(self, session: AsyncSession, obj_data: CreateSchemaType) -> ModelType:
         """Create a new object and return as ModelType."""

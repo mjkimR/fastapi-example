@@ -1,10 +1,16 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Body, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps.auth import get_current_user
-from app.schemas.memo import MemoRead, MemoUpdate, MemoCreate, MemosRead
+from app.core.deps.filters.base import create_combined_filter_dependency
+from app.core.deps.filters.generic.criteria_ilike import GenericILikeCriteria
+from app.core.deps.params.order_by import order_by_params
+from app.core.deps.params.page import PaginationParam
+from app.models.memo import Memo
+from app.schemas.base import PaginatedList
+from app.schemas.memo import MemoRead, MemoUpdate, MemoCreate
 from app.core.deps.session import get_session
 from app.services.memo import MemoService
 
@@ -21,14 +27,21 @@ async def create_memo(
     return memo
 
 
-@router.get("/", response_model=MemosRead)
+@router.get("/", response_model=PaginatedList[MemoRead])
 async def get_memos(
-        offset: int = Query(0, ge=0),
-        limit: int = Query(100, gt=0, le=1000),
+        pagination: PaginationParam,
         session: AsyncSession = Depends(get_session),
         service: MemoService = Depends(),
+        order_by=Depends(order_by_params(Memo)),
+        filters=Depends(create_combined_filter_dependency(
+            GenericILikeCriteria("title", "title"),
+            GenericILikeCriteria("category", "category"),
+            orm_model=Memo,
+        ))
 ):
-    memos = await service.get_multi(session, offset=offset, limit=limit)
+    memos = await service.get_multi(
+        session, order_by=order_by, filters=filters, **pagination
+    )
     return memos
 
 
