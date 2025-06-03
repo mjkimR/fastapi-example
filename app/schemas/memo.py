@@ -16,10 +16,3 @@ class MemoUpdate(BaseModel):
 
 class MemoRead(MemoCreate, UUIDSchemaMixin, TimestampSchemaMixin):
     model_config = ConfigDict(from_attributes=True)
-
-
-class MemosRead(BaseModel):
-    data: list[MemoRead] = Field(..., description="List of memos.")
-    total_count: int = Field(..., description="Total count of memos.")
-
-    model_config = ConfigDict(from_attributes=True)

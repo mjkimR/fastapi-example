@@ -11,11 +11,12 @@ from sqlalchemy.sql.selectable import Select
 
 from pydantic import BaseModel
 
+from app.schemas.base import PaginatedList
+
 ModelType = TypeVar("ModelType", bound=Any)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
-GetMultiResponseModel = dict[str, Union[list[ModelType], int]]
 PrimaryKeyType = Union[Sequence[Union[str, int, uuid.UUID]], Union[str, int, uuid.UUID]]
 
 
@@ -71,7 +72,7 @@ class BaseRepository(
             for pk_col, value in zip(self._primary_keys, pk_values)
         ]
 
-    def _select(self, where=None, order_by=None) -> Select:
+    def _select(self, where=(), order_by=()) -> Select:
         stmt = select(self.model)
         if where is not None:
             if isinstance(where, Sequence):
@@ -80,8 +81,8 @@ class BaseRepository(
             else:
                 stmt = stmt.where(where)
 
-        if order_by is not None:
-            stmt = stmt.order_by(order_by)
+        if order_by is not None and order_by != ():
+            stmt = stmt.order_by(*order_by)
         else:
             default_order_by = getattr(self.model, self.default_order_by_col, None)
             if default_order_by is not None:
@@ -146,9 +147,9 @@ class BaseRepository(
             db: AsyncSession,
             offset: int = 0,
             limit: Optional[int] = 100,
-            where=None,
-            order_by=None,
-    ) -> GetMultiResponseModel[ModelType]:
+            where=(),
+            order_by=(),
+    ) -> PaginatedList[ModelType]:
         if limit is not None and limit < 0:
             raise ValueError("Limit must be non-negative.")
         if offset < 0:
@@ -157,7 +158,7 @@ class BaseRepository(
         # Total count
         count_stmt = select(func.count()).select_from(self.model)
         if where is not None:
-            count_stmt = count_stmt.where(where)
+            count_stmt = count_stmt.where(*where)
         total_count_result = await db.execute(count_stmt)
         total_count = total_count_result.scalar_one()
 
@@ -170,7 +171,12 @@ class BaseRepository(
         result = await db.execute(stmt)
         data = result.scalars().all()
 
-        return {"data": data, "total_count": total_count}
+        return PaginatedList(
+            items=data,
+            total_count=total_count,
+            offset=offset,
+            limit=limit,
+        )
 
     async def update_by_pk(
             self,
