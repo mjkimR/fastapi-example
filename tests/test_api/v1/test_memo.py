@@ -9,7 +9,7 @@ import pytest
 async def memo(client: AsyncClient):
     memo_data = {"category": "General", "title": "Test Memo", "contents": "This is a test memo."}
     response = await client.post("/api/v1/memos/", json=memo_data)
-    assert response.status_code == 200
+    assert response.status_code == 201
     return response.json()
 
 
@@ -23,9 +23,9 @@ async def test_create_memo(memo):
 async def test_get_memos(client: AsyncClient, memo):
     response = await client.get("/api/v1/memos/")
     assert response.status_code == 200
-    assert isinstance(response.json()["data"], list)
+    assert isinstance(response.json()["items"], list)
     assert "total_count" in response.json()
-    assert len(response.json()["data"]) > 0
+    assert len(response.json()["items"]) > 0
 
 
 async def test_get_memo(client: AsyncClient, memo):

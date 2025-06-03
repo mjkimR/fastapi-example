@@ -3,8 +3,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.schemas.base import PaginatedList
 from app.services.base import BaseService
-from app.repos.base import BaseRepository, GetMultiResponseModel
+from app.repos.base import BaseRepository
 
 
 class TestBaseService:
@@ -35,7 +36,7 @@ class TestBaseService:
     @pytest.mark.asyncio
     async def test_get_multi(self, service, mock_repo, session: AsyncSession):
         # Arrange
-        expected_result = MagicMock(spec=GetMultiResponseModel)
+        expected_result = MagicMock(spec=PaginatedList)
         mock_repo.get_multi.return_value = expected_result
         offset, limit = 10, 20
 
