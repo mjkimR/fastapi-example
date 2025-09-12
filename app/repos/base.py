@@ -27,23 +27,12 @@ class BaseRepository(
         UpdateSchemaType,
     ]
 ):
-    @staticmethod
-    def get_repo() -> "BaseRepository":
-        """Get an instance of BaseRepository."""
-        raise NotImplementedError("This method should be implemented in the subclass.")
+    model: type[ModelType]
+    default_order_by_col: Optional[str] = "updated_at"
+    is_deleted_column: Optional[str] = "is_deleted"
+    deleted_at_column: Optional[str] = "deleted_at"
 
-    def __init__(
-            self,
-            model: type[ModelType],
-            default_order_by_col: Optional[str] = "updated_at",
-            is_deleted_column: Optional[str] = "is_deleted",
-            deleted_at_column: Optional[str] = "deleted_at",
-    ) -> None:
-        self.model = model
-        self.is_deleted_column = is_deleted_column
-        self.deleted_at_column = deleted_at_column
-        self.default_order_by_col = default_order_by_col
-
+    def __init__(self):
         self._primary_keys = self._get_primary_keys(self.model)
 
     def _get_primary_keys(self, model: type[ModelType]) -> Sequence[Column]:
@@ -129,17 +118,11 @@ class BaseRepository(
             self,
             db: AsyncSession,
             obj_in: CreateSchemaType,
-            commit: bool = True
     ) -> ModelType:
         obj_dict = obj_in.model_dump()
         db_obj: ModelType = self.model(**obj_dict)
         db.add(db_obj)
-        if commit:
-            await db.commit()
-            await db.refresh(db_obj)
-        else:
-            await db.flush()
-            await db.refresh(db_obj)
+        await db.refresh(db_obj)
         return db_obj
 
     async def get_multi(
@@ -183,7 +166,6 @@ class BaseRepository(
             db: AsyncSession,
             pk: PrimaryKeyType,
             obj_in: Union[UpdateSchemaType, dict[str, Any]],
-            commit: bool = True,
             return_updated_obj: bool = True,
     ) -> Optional[ModelType]:
         filters = self._get_primary_key_filters(pk)
@@ -206,12 +188,7 @@ class BaseRepository(
 
         if result.rowcount == 0:
             return None
-
-        if commit:
-            await db.commit()
-        else:
-            await db.flush()
-
+        await db.flush()
         return await self.get(db, where=filters) if return_updated_obj else None
 
     async def delete_by_pk(
@@ -219,7 +196,6 @@ class BaseRepository(
             db: AsyncSession,
             pk: PrimaryKeyType,
             soft_delete: bool = False,
-            commit: bool = True,
     ) -> bool:
         filters = self._get_primary_key_filters(pk)
         if soft_delete:
@@ -245,10 +221,6 @@ class BaseRepository(
         result = await db.execute(stmt)
 
         deleted_or_updated = result.rowcount > 0
-
-        if commit and deleted_or_updated:
-            await db.commit()
-        elif not commit and deleted_or_updated:
+        if deleted_or_updated:
             await db.flush()
-
         return deleted_or_updated

@@ -1,15 +1,8 @@
 from app.models.memos import Memo
 from app.repos.base import BaseRepository
-from app.schemas.memo import MemoCreate, MemoUpdate
+from app.schemas.memos import MemoCreate, MemoUpdate
 
 
 class MemoRepository(BaseRepository[Memo, MemoCreate, MemoUpdate]):
     """Repository for Memo model."""
-
-    @staticmethod
-    def get_repo() -> "MemoRepository":
-        """Get an instance of MemoRepository."""
-        return MemoRepository(
-            model=Memo,
-            default_order_by_col="updated_at",
-        )
+    model = Memo
