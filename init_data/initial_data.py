@@ -10,7 +10,7 @@ from app.core.database import async_session
 
 from app.models.users import User
 from app.repos.users import UserRepository
-from app.schemas.user import UserCreate
+from app.schemas.users import UserCreate
 from app.services.users import UserService
 
 logging.basicConfig(level=logging.INFO)

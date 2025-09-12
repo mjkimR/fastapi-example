@@ -1,13 +1,24 @@
+from typing import Annotated
+
 from fastapi import Depends
 
 from app.models.memos import Memo
 from app.repos.memos import MemoRepository
-from app.schemas.memo import MemoCreate, MemoUpdate
-from app.services.base import BaseService
+from app.schemas.memos import MemoCreate, MemoUpdate
+from base.basic import (
+    BasicGetMultiServiceMixin, BasicGetServiceMixin, BasicDeleteServiceMixin, BasicUpdateServiceMixin,
+    BasicCreateServiceMixin
+)
 
 
-class MemoService(BaseService[MemoRepository, Memo, MemoCreate, MemoUpdate]):
+class MemoService(
+    BasicGetServiceMixin[MemoRepository, Memo],
+    BasicGetMultiServiceMixin[MemoRepository, Memo],
+    BasicCreateServiceMixin[MemoRepository, Memo, MemoCreate],
+    BasicUpdateServiceMixin[MemoRepository, Memo, MemoUpdate],
+    BasicDeleteServiceMixin[MemoRepository, Memo]
+):
     """Service class for handling memo-related operations."""
 
-    def __init__(self, repo: MemoRepository = Depends(MemoRepository.get_repo)):
-        super().__init__(repo)
+    def __init__(self, repo: Annotated[MemoRepository, Depends()]):
+        self.repo = repo

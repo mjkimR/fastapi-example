@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.memos import Memo
 from app.repos.memos import MemoRepository
-from app.schemas.memo import MemoCreate, MemoUpdate
+from app.schemas.memos import MemoCreate, MemoUpdate
 from app.services.memos import MemoService
 
 
