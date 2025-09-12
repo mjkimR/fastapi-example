@@ -80,29 +80,29 @@ class BaseRepository(
 
     async def get(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             where=None,
             order_by=None,
     ) -> Optional[ModelType]:
         stmt = self._select(where, order_by)
         stmt = stmt.limit(1)
 
-        db_row = await db.execute(stmt)
+        db_row = await session.execute(stmt)
         return db_row.scalar_one_or_none()
 
     async def get_by_pk(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             pk: PrimaryKeyType,
             where=None,
             order_by=None,
     ) -> Optional[ModelType]:
         filters = self._get_primary_key_filters(pk)
-        return await self.get(db, where=filters or where, order_by=order_by)
+        return await self.get(session, where=filters or where, order_by=order_by)
 
     async def exists(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             where=None,
     ) -> bool:
         stmt = select(literal(1))  # select 1
@@ -111,23 +111,23 @@ class BaseRepository(
             stmt = stmt.where(where)
         stmt = stmt.limit(1)
 
-        result = await db.execute(stmt)
+        result = await session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
     async def create(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             obj_in: CreateSchemaType,
     ) -> ModelType:
         obj_dict = obj_in.model_dump()
         db_obj: ModelType = self.model(**obj_dict)
-        db.add(db_obj)
-        await db.refresh(db_obj)
+        session.add(db_obj)
+        await session.refresh(db_obj)
         return db_obj
 
     async def get_multi(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             offset: int = 0,
             limit: Optional[int] = 100,
             where=(),
@@ -142,7 +142,7 @@ class BaseRepository(
         count_stmt = select(func.count()).select_from(self.model)
         if where is not None:
             count_stmt = count_stmt.where(*where)
-        total_count_result = await db.execute(count_stmt)
+        total_count_result = await session.execute(count_stmt)
         total_count = total_count_result.scalar_one()
 
         # Query
@@ -151,7 +151,7 @@ class BaseRepository(
         if limit is not None:
             stmt = stmt.limit(limit)
 
-        result = await db.execute(stmt)
+        result = await session.execute(stmt)
         data = result.scalars().all()
 
         return PaginatedList(
@@ -163,7 +163,7 @@ class BaseRepository(
 
     async def update_by_pk(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             pk: PrimaryKeyType,
             obj_in: Union[UpdateSchemaType, dict[str, Any]],
             return_updated_obj: bool = True,
@@ -184,16 +184,16 @@ class BaseRepository(
             raise ValueError(f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}")
 
         stmt = update(self.model).filter(*filters).values(**update_data)
-        result = await db.execute(stmt)
+        result = await session.execute(stmt)
 
         if result.rowcount == 0:
             return None
-        await db.flush()
-        return await self.get(db, where=filters) if return_updated_obj else None
+        await session.flush()
+        return await self.get(session, where=filters) if return_updated_obj else None
 
     async def delete_by_pk(
             self,
-            db: AsyncSession,
+            session: AsyncSession,
             pk: PrimaryKeyType,
             soft_delete: bool = False,
     ) -> bool:
@@ -218,9 +218,9 @@ class BaseRepository(
         else:
             stmt = delete(self.model).filter(*filters)
 
-        result = await db.execute(stmt)
+        result = await session.execute(stmt)
 
         deleted_or_updated = result.rowcount > 0
         if deleted_or_updated:
-            await db.flush()
+            await session.flush()
         return deleted_or_updated

@@ -17,4 +17,3 @@ class User(Base, UUIDMixin, TimestampMixin):
     class Role(StrEnum):
         ADMIN = "admin"
         USER = "user"
-        GUEST = "guest"

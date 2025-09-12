@@ -1,6 +1,8 @@
-from typing import Annotated
+from typing import Annotated, Union
+from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
@@ -11,8 +13,9 @@ from app.models.users import User
 from app.repos.users import UserRepository
 from app.schemas.users import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate
 from base.basic import (
-    BasicGetServiceMixin, BasicGetMultiServiceMixin, BasicCreateServiceMixin, BasicUpdateServiceMixin,
-    BasicDeleteServiceMixin
+    BasicGetServiceMixin,
+    BasicGetMultiServiceMixin,
+    BasicDeleteServiceMixin,
 )
 
 """
@@ -26,11 +29,10 @@ from base.basic import (
 class UserService(
     BasicGetServiceMixin[UserRepository, User],
     BasicGetMultiServiceMixin[UserRepository, User],
-    BasicCreateServiceMixin[UserRepository, User, UserCreate],
-    BasicUpdateServiceMixin[UserRepository, User, UserUpdate],
-    BasicDeleteServiceMixin[UserRepository, User]
+    BasicDeleteServiceMixin[UserRepository, User],
 ):
     """Service class for handling user-related operations."""
+
     ALGORITHM = "HS256"
 
     def __init__(
@@ -42,31 +44,41 @@ class UserService(
         self.repo = repo
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+    async def validate_email_exists(self, session: AsyncSession, email: Union[str, EmailStr]) -> None:
+        """Validate if an email exists."""
+        if await self.repo.exists(session, where=User.email == str(email)):
+            raise HTTPException(
+                status_code=409,
+                detail="The user with this username already exists in the system",
+            )
+
     async def create_user(self, session: AsyncSession, obj_data: UserCreate) -> User:
         """Create a new user."""
+        await self.validate_email_exists(session, obj_data.email)
         user_data = UserDbCreate(
-            **obj_data.model_dump(), role=User.Role.USER,
-            hashed_password=self.get_password_hash(obj_data.password.get_secret_value())
+            **obj_data.model_dump(),
+            role=User.Role.USER,
+            hashed_password=self.get_password_hash(
+                obj_data.password.get_secret_value()
+            ),
         )
         return await self.repo.create(session, user_data)
 
     async def create_admin(self, session: AsyncSession, obj_data: UserCreate) -> User:
         """Create a new admin user."""
+        await self.validate_email_exists(session, obj_data.email)
         user_data = UserDbCreate(
-            **obj_data.model_dump(), role=User.Role.ADMIN,
-            hashed_password=self.get_password_hash(obj_data.password.get_secret_value())
+            **obj_data.model_dump(),
+            role=User.Role.ADMIN,
+            hashed_password=self.get_password_hash(
+                obj_data.password.get_secret_value()
+            ),
         )
         return await self.repo.create(session, user_data)
 
-    async def create_guest(self, session: AsyncSession, obj_data: UserCreate) -> User:
-        """Create a new guest user."""
-        user_data = UserDbCreate(
-            **obj_data.model_dump(), role=User.Role.GUEST,
-            hashed_password=self.get_password_hash(obj_data.password.get_secret_value())
-        )
-        return await self.repo.create(session, user_data)
-
-    async def update_user(self, session: AsyncSession, obj_data: UserUpdate, user_id: str) -> User:
+    async def update_user(
+            self, session: AsyncSession, obj_data: UserUpdate, user_id: UUID
+    ) -> User:
         """Update an existing user."""
         user_data = UserDbUpdate(**obj_data.model_dump())
         if obj_data.password:
@@ -86,7 +98,9 @@ class UserService(
         return None
 
     def create_access_token(self, user: User) -> str:
-        expire = datetime.now(tz=timezone.utc) + timedelta(minutes=self.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(tz=timezone.utc) + timedelta(
+            minutes=self.settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         return jwt.encode(
             {"exp": expire, "user_id": str(user.id)},
             key=self.settings.SECRET_KEY.get_secret_value(),
