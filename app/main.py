@@ -1,11 +1,9 @@
 from contextlib import asynccontextmanager
-from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 from app.api import router
+from app.core.exceptions.handler import set_exception_handler
 from app.core.middlewares import static_middleware, cors_middleware
 
 
@@ -33,18 +31,7 @@ def create_app():
 
     app.include_router(router)
 
-    @app.exception_handler(Exception)
-    async def exception_handler(_request: Request, exc: Exception):
-        if isinstance(exc, HTTPException):
-            return JSONResponse(
-                status_code=exc.status_code,
-                content={"message": str(exc.detail)},
-            )
-        return JSONResponse(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            content={"message": str(exc)},
-        )
-
+    set_exception_handler(app)
     return app
 
 
