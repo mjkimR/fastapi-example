@@ -1,4 +1,4 @@
-from app.models.user import User
+from app.models.users import User
 from app.repos.base import BaseRepository
 from app.schemas.user import UserDbCreate, UserDbUpdate
 

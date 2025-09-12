@@ -13,9 +13,9 @@ from sqlalchemy.pool import StaticPool
 from app.core.deps.session import get_session
 from app.main import create_app
 from app.models.base import Base
-from app.repos.user import UserRepository
+from app.repos.users import UserRepository
 from app.schemas.token import Token
-from app.services.user import UserService
+from app.services.users import UserService
 from init_data.initial_data import create_first_user
 
 

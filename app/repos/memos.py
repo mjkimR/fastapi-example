@@ -1,4 +1,4 @@
-from app.models.memo import Memo
+from app.models.memos import Memo
 from app.repos.base import BaseRepository
 from app.schemas.memo import MemoCreate, MemoUpdate
 

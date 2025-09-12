@@ -3,10 +3,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.memo import Memo
-from app.repos.memo import MemoRepository
+from app.models.memos import Memo
+from app.repos.memos import MemoRepository
 from app.schemas.memo import MemoCreate, MemoUpdate
-from app.services.memo import MemoService
+from app.services.memos import MemoService
 
 
 class TestMemoService:

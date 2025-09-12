@@ -5,8 +5,8 @@ from passlib.context import CryptContext
 import jwt
 
 from app.core.config import get_app_settings
-from app.models.user import User
-from app.repos.user import UserRepository
+from app.models.users import User
+from app.repos.users import UserRepository
 from app.schemas.user import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate
 from app.services.base import BaseService
 

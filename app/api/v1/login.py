@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps.session import get_session
 
 from app.schemas.token import Token
-from app.services.user import UserService
+from app.services.users import UserService
 
 router = APIRouter(tags=["Login"])
 

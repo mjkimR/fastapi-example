@@ -1,7 +1,7 @@
 from fastapi import Depends
 
-from app.models.memo import Memo
-from app.repos.memo import MemoRepository
+from app.models.memos import Memo
+from app.repos.memos import MemoRepository
 from app.schemas.memo import MemoCreate, MemoUpdate
 from app.services.base import BaseService
 

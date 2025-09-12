@@ -8,11 +8,11 @@ from app.core.deps.filters.base import create_combined_filter_dependency
 from app.core.deps.filters.generic.criteria_ilike import GenericILikeCriteria
 from app.core.deps.params.order_by import order_by_params
 from app.core.deps.params.page import PaginationParam
-from app.models.memo import Memo
+from app.models.memos import Memo
 from app.schemas.base import PaginatedList
 from app.schemas.memo import MemoRead, MemoUpdate, MemoCreate
 from app.core.deps.session import get_session
-from app.services.memo import MemoService
+from app.services.memos import MemoService
 
 router = APIRouter(prefix="/memos", tags=["Memos"], dependencies=[Depends(get_current_user)])
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr
 
-from app.models.user import User
+from app.models.users import User
 from app.schemas.base import UUIDSchemaMixin, TimestampSchemaMixin
 
 

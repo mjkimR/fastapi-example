@@ -6,8 +6,8 @@ import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps.session import get_session
-from app.models.user import User
-from app.services.user import UserService
+from app.models.users import User
+from app.services.users import UserService
 from app.schemas.token import TokenPayload
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
