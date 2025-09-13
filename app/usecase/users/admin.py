@@ -1,9 +1,10 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from app.core.transaction import AsyncTransaction
 
+from app.core.exceptions.exceptions import UserCantDeleteItselfException
 from app.models.users import User
 from app.schemas.users import UserCreate
 from app.services.users import UserService
@@ -22,7 +23,7 @@ class DeleteUserUseCase(BaseUseCase):
 
     async def execute(self, user_id: UUID, current_user: User) -> bool:
         if current_user.id == user_id:
-            raise HTTPException(status_code=403, detail="User can't delete itself")
+            raise UserCantDeleteItselfException()
         async with AsyncTransaction() as session:
             return await self.service.delete(session, user_id)
 

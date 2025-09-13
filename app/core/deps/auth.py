@@ -1,11 +1,16 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps.session import get_session
+from app.core.exceptions.exceptions import (
+    InvalidCredentialsException,
+    UserNotFoundException,
+    PermissionDeniedException,
+)
 from app.models.users import User
 from app.services.users import UserService
 from app.schemas.token import TokenPayload
@@ -22,7 +27,7 @@ def get_token_data(
         payload = jwt.decode(token, secret_key, algorithms=[user_service.ALGORITHM])
         token_data = TokenPayload(**payload)
     except Exception:
-        raise HTTPException(status_code=403, detail="Could not validate credentials")
+        raise InvalidCredentialsException()
     return token_data
 
 
@@ -33,15 +38,13 @@ async def get_current_user(
 ):
     user = await user_service.get_by_id(session, obj_id=token.user_id)
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFoundException()
     return user
 
 
 def get_current_superuser(user: User = Depends(get_current_user)) -> User:
     if user.role != User.Role.ADMIN:
-        raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
-        )
+        raise PermissionDeniedException()
     return user
 
 

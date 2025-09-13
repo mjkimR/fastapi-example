@@ -1,10 +1,11 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.core.deps.auth import get_current_user, on_superuser
 from app.core.deps.params.page import PaginationParam
+from app.core.exceptions.exceptions import NotFoundException
 from app.models.users import User
 from app.schemas.users import UserRead, UsersRead, UserCreate
 from app.usecase.users.admin import (
@@ -58,4 +59,4 @@ async def delete_user(
     if await use_case.execute(user_id, current_user):
         return {"detail": f"User with id {user_id} has been deleted"}
     else:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundException()

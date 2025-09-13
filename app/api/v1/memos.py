@@ -1,13 +1,14 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Body, status
+from fastapi import APIRouter, Depends, Body, status
 
 from app.core.deps.auth import get_current_user
 from app.core.deps.filters.base import create_combined_filter_dependency
 from app.core.deps.filters.generic.criteria_ilike import GenericILikeCriteria
 from app.core.deps.params.order_by import order_by_params
 from app.core.deps.params.page import PaginationParam
+from app.core.exceptions.exceptions import NotFoundException
 from app.models.memos import Memo
 from app.schemas.base import PaginatedList
 from app.schemas.memos import MemoRead, MemoUpdate, MemoCreate
@@ -57,7 +58,7 @@ async def get_memo(
 ):
     memo = await use_case.execute(memo_id)
     if not memo:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundException()
     return memo
 
 
@@ -69,7 +70,7 @@ async def update_memo(
 ):
     memo = await use_case.execute(memo_id, memo_in)
     if not memo:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundException()
     return memo
 
 
@@ -81,4 +82,4 @@ async def delete_memo(
     if await use_case.execute(memo_id):
         return {"detail": f"Memo with id {memo_id} has been deleted"}
     else:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundException()

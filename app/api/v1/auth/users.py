@@ -1,9 +1,10 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from app.core.deps.auth import get_current_user, on_superuser
+from app.core.exceptions.exceptions import UserNotFoundException, NotFoundException
 from app.models.users import User
 from app.schemas.users import UserRead, UsersRead, UserUpdate
 from app.usecase.users.crud import GetUserUseCase, UpdateUserUseCase
@@ -20,7 +21,7 @@ async def read_user(
     """Get a specific user by id."""
     user = await use_case.execute(user_id=user_id, current_user=current_user)
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFoundException()
     return user
 
 
@@ -33,5 +34,5 @@ async def update_user(
 ):
     user = await use_case.execute(obj_data=user_in, user_id=user_id, current_user=current_user)
     if user is None:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise NotFoundException()
     return user

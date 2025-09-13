@@ -1,7 +1,7 @@
 from typing import Annotated, Union
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta, timezone
@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 import jwt
 
 from app.core.config import get_app_settings, AppSettings
+from app.core.exceptions.exceptions import UserAlreadyExistsException
 from app.models.users import User
 from app.repos.users import UserRepository
 from app.schemas.users import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate
@@ -47,10 +48,7 @@ class UserService(
     async def validate_email_exists(self, session: AsyncSession, email: Union[str, EmailStr]) -> None:
         """Validate if an email exists."""
         if await self.repo.exists(session, where=User.email == str(email)):
-            raise HTTPException(
-                status_code=409,
-                detail="The user with this username already exists in the system",
-            )
+            raise UserAlreadyExistsException()
 
     async def create_user(self, session: AsyncSession, obj_data: UserCreate) -> User:
         """Create a new user."""

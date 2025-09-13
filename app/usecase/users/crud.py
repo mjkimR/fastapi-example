@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException
 
+from app.core.exceptions.exceptions import PermissionDeniedException
 from app.models.users import User
 from app.schemas.users import UserUpdate
 from app.services.users import UserService
@@ -35,8 +36,6 @@ class UpdateUserUseCase(BaseUseCase):
         if current_user.id == user_id:
             return current_user
         if current_user.role != User.Role.ADMIN:
-            raise HTTPException(
-                status_code=403, detail="The user doesn't have enough privileges"
-            )
+            raise PermissionDeniedException()
         async with AsyncTransaction() as session:
             return await self.service.update_user(session, obj_data, user_id)
