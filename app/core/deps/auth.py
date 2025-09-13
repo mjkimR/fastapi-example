@@ -36,7 +36,7 @@ async def get_current_user(
         session: AsyncSession = Depends(get_session),
         user_service: UserService = Depends(),
 ):
-    user = await user_service.get_by_id(session, obj_id=token.user_id)
+    user = await user_service.get(session, obj_id=token.user_id)
     if user is None:
         raise UserNotFoundException()
     return user

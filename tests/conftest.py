@@ -73,7 +73,7 @@ async def admin_token(session: AsyncSession) -> Token:
     """Create an admin token for the first user."""
     service = UserService(
         settings=get_app_settings(),
-        repo=UserRepository.get_repo(),
+        repo=UserRepository(),
     )
     user = await create_first_user(session, service)
     if user is None:

@@ -5,7 +5,7 @@ from fastapi import Depends
 from app.models.memos import Memo
 from app.repos.memos import MemoRepository
 from app.schemas.memos import MemoCreate, MemoUpdate
-from base.basic import (
+from app.services.base.basic import (
     BasicGetMultiServiceMixin, BasicGetServiceMixin, BasicDeleteServiceMixin, BasicUpdateServiceMixin,
     BasicCreateServiceMixin
 )

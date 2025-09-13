@@ -29,7 +29,7 @@ class BaseGetUseCase(BaseUseCase, Generic[TService, ModelType]):
             return await self.service.get(session, obj_id)
 
 
-class BaseGetMultiUseCase(BaseUseCase, Generic[TService, ModelType, UpdateSchemaType]):
+class BaseGetMultiUseCase(BaseUseCase, Generic[TService, ModelType]):
     def __init__(self, service: TService):
         self.service = service
 

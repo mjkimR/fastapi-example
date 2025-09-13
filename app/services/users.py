@@ -13,7 +13,7 @@ from app.core.exceptions.exceptions import UserAlreadyExistsException
 from app.models.users import User
 from app.repos.users import UserRepository
 from app.schemas.users import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate
-from base.basic import (
+from app.services.base.basic import (
     BasicGetServiceMixin,
     BasicGetMultiServiceMixin,
     BasicDeleteServiceMixin,

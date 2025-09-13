@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.core.exceptions.base import CustomException
-from app.core.logger import logger, get_request_id
+from app.core.logger import logger
 
 
 def set_exception_handler(app: FastAPI):
@@ -15,7 +15,6 @@ def set_exception_handler(app: FastAPI):
             status_code=exc.status_code,
             content={
                 "message": exc.message,
-                "request_id": get_request_id(),
             }
         )
 
@@ -26,7 +25,6 @@ def set_exception_handler(app: FastAPI):
             status_code=exc.status_code,
             content={
                 "message": exc.detail,
-                "request_id": get_request_id(),
             }
         )
 
@@ -36,7 +34,6 @@ def set_exception_handler(app: FastAPI):
             status_code=HTTPStatus.NOT_IMPLEMENTED,
             content={
                 "message": "The requested functionality is not implemented.",
-                "request_id": get_request_id()
             },
         )
 
@@ -47,7 +44,6 @@ def set_exception_handler(app: FastAPI):
             status_code=HTTPStatus.BAD_REQUEST,
             content={
                 "message": "Invalid input provided.",
-                "request_id": get_request_id()
             }
         )
 
@@ -58,7 +54,6 @@ def set_exception_handler(app: FastAPI):
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
             content={
                 "message": "Internal Server Error",
-                "request_id": get_request_id()
             },
         )
 

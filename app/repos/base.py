@@ -122,6 +122,7 @@ class BaseRepository(
         obj_dict = obj_in.model_dump()
         db_obj: ModelType = self.model(**obj_dict)
         session.add(db_obj)
+        await session.flush()
         await session.refresh(db_obj)
         return db_obj
 
