@@ -10,8 +10,8 @@ class MemoCreate(BaseModel):
 
 
 class MemoUpdate(BaseModel):
-    title: str | None = Field(None, description="The title of the memo.")
-    contents: str | None = Field(None, description="The contents of the memo.")
+    title: str | None = Field(default=None, description="The title of the memo.")
+    contents: str | None = Field(default=None, description="The contents of the memo.")
 
 
 class MemoRead(MemoCreate, UUIDSchemaMixin, TimestampSchemaMixin):

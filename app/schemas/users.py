@@ -20,16 +20,16 @@ class UserDbCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    name: str | None = Field(None, description="The user's first name.")
-    surname: str | None = Field(None, description="The user's last name.")
-    password: SecretStr | None = Field(None, description="The user's password.")
+    name: str | None = Field(default=None, description="The user's first name.")
+    surname: str | None = Field(default=None, description="The user's last name.")
+    password: SecretStr | None = Field(default=None, description="The user's password.")
 
 
 class UserDbUpdate(BaseModel):
-    name: str | None = Field(None, description="The user's first name.")
-    surname: str | None = Field(None, description="The user's last name.")
-    password: SecretStr | None = Field(None, description="The user's password.")
-    hashed_password: str | None = Field(None, description="The user's hashed password.")
+    name: str | None = Field(default=None, description="The user's first name.")
+    surname: str | None = Field(default=None, description="The user's last name.")
+    password: SecretStr | None = Field(default=None, description="The user's password.")
+    hashed_password: str | None = Field(default=None, description="The user's hashed password.")
 
 
 class UserRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
