@@ -10,7 +10,10 @@ from app.core.logger import logger
 def set_exception_handler(app: FastAPI):
     @app.exception_handler(CustomException)
     async def exception_handler(_request: Request, exc: CustomException):
-        logger.error(f"Error: {exc.log_message}", exc_info=exc.trace)
+        if exc.trace:
+            logger.exception(f"Error: {exc.log_message}")
+        else:
+            logger.error(f"Error: {exc.log_message}")
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -20,7 +23,7 @@ def set_exception_handler(app: FastAPI):
 
     @app.exception_handler(HTTPException)
     async def exception_handler(_request: Request, exc: HTTPException):
-        logger.error(f"Error: {exc.detail}", exc_info=True)
+        logger.exception(f"Error: {exc.detail}")
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -39,7 +42,7 @@ def set_exception_handler(app: FastAPI):
 
     @app.exception_handler(ValueError)
     async def exception_handler(_request: Request, exc: ValueError):
-        logger.error(f"ValueError: {exc}", exc_info=exc)
+        logger.exception(f"ValueError: {exc}")
         return JSONResponse(
             status_code=HTTPStatus.BAD_REQUEST,
             content={
@@ -49,7 +52,7 @@ def set_exception_handler(app: FastAPI):
 
     @app.exception_handler(Exception)
     async def exception_handler(_request: Request, exc: Exception):
-        logger.error(f"Unknown Error: {exc}", exc_info=exc)
+        logger.exception(f"Unknown Error: {exc}")
         return JSONResponse(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
             content={

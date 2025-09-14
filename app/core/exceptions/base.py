@@ -6,6 +6,7 @@ from fastapi import status
 class CustomException(Exception):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     message = "Internal Server Error"
+    log_message = None
     trace = True
 
     def __init__(
@@ -23,6 +24,9 @@ class CustomException(Exception):
             self.status_code = status_code
         if trace is not None:
             self.trace = trace
+
+        if log_message is None:
+            self.log_message = self.message
 
     def __str__(self):
         return self.message

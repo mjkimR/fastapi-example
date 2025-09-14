@@ -4,7 +4,11 @@ from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 from app.api import router
 from app.core.exceptions.handler import set_exception_handler
-from app.core.middlewares import static_middleware, cors_middleware
+from app.core.middlewares import (
+    static_middleware,
+    cors_middleware,
+    request_id_middleware,
+)
 
 
 def get_lifespan():
@@ -26,6 +30,8 @@ def create_app():
     async def root():
         return RedirectResponse(url="/docs")
 
+    # Add middlewares in order (request ID should be first)
+    request_id_middleware.add_middleware(app)
     cors_middleware.add_middleware(app)
     static_middleware.add_middleware(app)
 
