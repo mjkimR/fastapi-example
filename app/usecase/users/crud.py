@@ -19,9 +19,7 @@ class GetUserUseCase(BaseUseCase):
         if current_user.id == user_id:
             return current_user
         if current_user.role != User.Role.ADMIN:
-            raise HTTPException(
-                status_code=403, detail="The user doesn't have enough privileges"
-            )
+            raise PermissionDeniedException()
         async with AsyncTransaction() as session:
             return await self.service.get(session, user_id)
 

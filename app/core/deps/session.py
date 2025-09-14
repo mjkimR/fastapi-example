@@ -2,9 +2,9 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import async_session
+from app.core.database import default_async_session_maker
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session() as session:
+    async with default_async_session_maker() as session:
         yield session

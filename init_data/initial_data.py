@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_app_settings
-from app.core.database import async_session
+from app.core.database import default_async_session_maker
 
 from app.models.users import User
 from app.repos.users import UserRepository
@@ -40,7 +40,7 @@ async def main():
         get_app_settings(),
         repo=UserRepository.get_repo(),
     )
-    async with async_session() as session:
+    async with default_async_session_maker() as session:
         await create_first_user(
             session=session,
             service=service

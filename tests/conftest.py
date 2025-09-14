@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.pool import StaticPool
 
 from app.core.deps.session import get_session
+from app.core.transaction import AsyncTransaction
 from app.main import create_app
 from app.models.base import Base
 from app.repos.users import UserRepository
@@ -19,9 +20,9 @@ from app.services.users import UserService
 from init_data.initial_data import create_first_user
 
 
-@pytest.fixture(name="session")
-async def session_fixture():
-    """Create a new database session for testing with SQLite."""
+@pytest.fixture(name="session_maker")
+async def session_maker_fixture(monkeypatch: pytest.MonkeyPatch):
+    """Create a new database session_maker for testing with SQLite."""
     async_engine = create_async_engine(
         "sqlite+aiosqlite://",
         connect_args={"check_same_thread": False},
@@ -39,7 +40,15 @@ async def session_fixture():
         autocommit=False,
         autoflush=False,
     )
+    monkeypatch.setattr(AsyncTransaction, "DEFAULT_SESSION_MAKER", session_maker)
 
+    yield session_maker
+    await async_engine.dispose()
+
+
+@pytest.fixture(name="session")
+async def session_fixture(session_maker):
+    """Create a new database session for testing with SQLite."""
     async with session_maker() as session:
         yield session
 
@@ -86,7 +95,7 @@ async def admin_token(session: AsyncSession) -> Token:
 
 
 @pytest_asyncio.fixture(name="client")
-async def client_fixture(session: AsyncSession, set_httpx_logger, admin_token):
+async def client_fixture(session_maker: async_sessionmaker, session: AsyncSession, set_httpx_logger, admin_token):
     """FastAPI test client (without LifespanManager).
 
     - LifespanManager is not used: lifespan events are not triggered.
