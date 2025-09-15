@@ -1,16 +1,15 @@
 services:
   postgres:
     image: postgres:16
-    container_name: athena-postgres
+    container_name: postgres
     environment:
       PGUSER: ${POSTGRES_USER:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD-IS-REQUIRED}
       PGDATA: /var/lib/postgresql/data
-      POSTGRES_MULTIPLE_DATABASES: db
+      POSTGRES_DB: db
     volumes:
       - pg-data:/var/lib/postgresql/data
-      - ./pg-entrypoint:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 5s
