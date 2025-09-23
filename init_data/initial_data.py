@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_app_settings
-from app.core.database import default_async_session_maker
+from app.core.transaction import AsyncTransaction
 
 from app.models.users import User
 from app.repos.users import UserRepository
@@ -38,9 +38,9 @@ async def main():
     logger.info("Creating initial data")
     service = UserService(
         get_app_settings(),
-        repo=UserRepository.get_repo(),
+        repo=UserRepository(),
     )
-    async with default_async_session_maker() as session:
+    async with AsyncTransaction() as session:
         await create_first_user(
             session=session,
             service=service

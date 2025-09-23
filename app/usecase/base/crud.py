@@ -33,7 +33,7 @@ class BaseGetMultiUseCase(BaseUseCase, Generic[TService, ModelType]):
     def __init__(self, service: TService):
         self.service = service
 
-    async def execute(self, offset, limit, order_by, where) -> PaginatedList[ModelType]:
+    async def execute(self, offset, limit, order_by=None, where=None) -> PaginatedList[ModelType]:
         async with AsyncTransaction() as session:
             return await self.service.get_multi(session, offset=offset, limit=limit, order_by=order_by, where=where)
 
