@@ -1,51 +1,37 @@
-import abc
 import inspect
-from typing import Type, Any
 
-from app.base.models.mixin import Base
+from sqlalchemy import ColumnElement
 
-
-class SqlFilterCriteriaBase:
-    """Base class for filter options.
-
-    All filter option classes should inherit from this abstract class
-    and implement the build_filter method.
-    """
-
-    @abc.abstractmethod
-    def build_filter(self, orm_model: type[Base]):
-        """Build a filter dependency for a given ORM model.
-
-        Args:
-            orm_model (type[Base]): The SQLAlchemy model class to create filter conditions for.
-
-        Returns:
-            callable: A FastAPI dependency function that returns SQLAlchemy filter conditions.
-        """
-        raise NotImplementedError
+from typing import Callable, Any
+from app.base.filters.base import SqlFilterCriteriaBase
+from app.base.filters.exceptions import ConfigurationError, InvalidValueError
 
 
 def create_combined_filter_dependency(
         *filter_options: SqlFilterCriteriaBase,
-        orm_model: Type[Base],
-):
-    """Dynamically creates filter parameters and returns a FastAPI dependency.
+) -> Callable:
+    """Dynamically creates a single FastAPI dependency from multiple filter criteria.
 
-    Creates a FastAPI dependency that processes multiple filter options and combines
-    their conditions based on the provided filter options.
+    This function allows you to combine multiple filter criteria into a single FastAPI dependency.
+
+    Typical usage:
+        1. Compose filter criteria as arguments to `create_combined_filter_dependency`.
+        2. Pass the resulting dependency to your FastAPI route using `Depends()`.
+        3. Use the resulting list of SQLAlchemy filter conditions in your query.
 
     Args:
-        *filter_options (SqlFilterCriteriaBase): One or more filter option instances.
-        orm_model (Type[Base]): The SQLAlchemy model class to create filter conditions for.
+        *filter_options (SqlFilterCriteriaBase): A sequence of filter criteria
+            instances that define the available filters for the endpoint.
 
     Returns:
-        callable: A FastAPI dependency function that returns combined SQLAlchemy filter conditions.
+        A FastAPI dependency. When injected into an endpoint, it
+        yields a list of SQLAlchemy `ColumnElement` expressions. This list
+        can be directly passed to a SQLAlchemy query's `.where()` clause
+        using the `*` splat operator.
 
     Raises:
-        ValueError: When duplicate parameter names or aliases are found in the filter options.
-
-    Example:
-        build_filter_conditions(FilterName(), FilterCreator(), orm_model=Memo)
+        ConfigurationError: If two or more filter criteria are configured with the
+            same query parameter alias.
     """
     param_definitions: dict[str, Any] = {}
     filter_builders_with_metadata: list[dict] = []
@@ -53,7 +39,7 @@ def create_combined_filter_dependency(
     unique_param_id_counter = 0
 
     for filter_option in filter_options:
-        filter_builder_func = filter_option.build_filter(orm_model)
+        filter_builder_func = filter_option.build_filter()
         filter_metadata = {
             "func": filter_builder_func,
             "params": {},
@@ -67,12 +53,20 @@ def create_combined_filter_dependency(
             unique_param_name = f"{filter_option.__class__.__name__.lower()}_{param_name}_{unique_param_id_counter}"
             unique_param_id_counter += 1
             if unique_param_name in param_definitions:
-                raise ValueError(f"Duplicate parameter name '{param_name}' found.")
+                raise ConfigurationError(
+                    f"Duplicate parameter name '{param_name}' found."
+                )
 
             # Check for duplicate aliases.
-            alias = param_object.default.alias if hasattr(param_object.default, 'alias') else param_object.name
+            alias = (
+                param_object.default.alias
+                if hasattr(param_object.default, "alias")
+                else param_object.name
+            )
             if alias in used_parameter_aliases:
-                raise ValueError(f"Duplicate alias '{alias}' found in filter parameters.")
+                raise InvalidValueError(
+                    f"Duplicate alias '{alias}' found in filter parameters."
+                )
             used_parameter_aliases.add(alias)
 
             # Store the parameter definition for the signature.
@@ -120,20 +114,29 @@ def create_combined_filter_dependency(
     # to understand how to call the dependency, validate inputs, and generate
     # accurate OpenAPI (Swagger/Redoc) documentation.
     _combined_filter_dependency.__signature__ = new_signature
-    _combined_filter_dependency.__annotations__ = {p.name: p.annotation for p in dependency_parameters}
+    _combined_filter_dependency.__annotations__ = {
+        p.name: p.annotation for p in dependency_parameters
+    }
 
     return _combined_filter_dependency
 
 
-def combine_filter_conditions(*filters):
-    """Merges multiple filter conditions into a single list.
+def combine_filter_conditions(*filters) -> list[ColumnElement]:
+    """Flattens and merges multiple filter conditions into a single list.
+
+    This utility function is used internally by the dependency created by
+    `create_combined_filter_dependency`. It takes the results from individual
+    filter builders—which might be `None`, a single SQLAlchemy expression, or a
+    list of expressions—and consolidates them into a single, flat list that is
+    safe to use with a `.where()` clause.
 
     Args:
-        *filters: Filter conditions to merge. Can be None, individual conditions,
-                 or lists of conditions.
+        *filters: A sequence of filter conditions to merge. An item can be
+            `None`, a single `ColumnElement`, or a list of `ColumnElement`s.
 
     Returns:
-        list: A flat list of all non-None filter conditions.
+        A flat list containing all non-None filter
+        conditions.
     """
     results = []
     for f in filters:
