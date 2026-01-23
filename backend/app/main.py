@@ -8,7 +8,7 @@ from app.core.logger import logger
 from app.core.middlewares import (
     cors_middleware,
 )
-from app.core.middlewares import request_id_middleware, static_middleware
+from app.core.middlewares import request_id_middleware
 
 
 def get_lifespan():
@@ -30,10 +30,8 @@ def create_app():
     async def root():
         return RedirectResponse(url="/docs")
 
-    # Add middlewares in order (request ID should be first)
     request_id_middleware.add_middleware(app)
     cors_middleware.add_middleware(app)
-    static_middleware.add_middleware(app)
 
     app.include_router(router)
 
