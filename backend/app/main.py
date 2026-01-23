@@ -24,7 +24,15 @@ def get_lifespan():
 def create_app():
     """Create the FastAPI app and include the router."""
     lifespan = get_lifespan()
-    app = FastAPI(title="ExampleApp", version="0.0.1", lifespan=lifespan)
+    app = FastAPI(
+        title="ExampleApp",
+        version="0.0.1",
+        lifespan=lifespan,
+        swagger_ui_parameters={
+            "persistAuthorization": True,
+            "docExpansion": "none",
+            "filter": True,
+        })
 
     @app.get("/")
     async def root():
