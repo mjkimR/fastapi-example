@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from backend.app.core.exceptions.exceptions import PermissionDeniedException
+from app.base.exceptions.basic import PermissionDeniedException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserUpdate
 from app.features.auth.usecases.crud import GetUserUseCase, UpdateUserUseCase

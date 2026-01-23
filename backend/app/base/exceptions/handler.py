@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from app.core.exceptions.base import CustomException
+from app.base.exceptions.base import CustomException
 from app.core.logger import logger
 
 

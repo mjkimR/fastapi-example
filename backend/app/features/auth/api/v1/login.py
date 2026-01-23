@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps.session import get_session
-from app.core.exceptions.exceptions import IncorrectEmailOrPasswordException
+from app.features.auth.exceptions import IncorrectEmailOrPasswordException
 from app.features.auth.token_schemas import Token
 from app.features.auth.services import UserService
 

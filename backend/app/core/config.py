@@ -8,7 +8,7 @@ import pathlib
 
 def get_repo_path():
     """Get the path to the repository."""
-    path = str(pathlib.Path(__file__).parent.parent.parent.resolve())
+    path = str(pathlib.Path(__file__).parent.parent.parent.parent.resolve())
     return path
 
 

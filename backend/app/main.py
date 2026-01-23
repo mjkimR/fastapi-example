@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 from app.router import router
-from app.core.exceptions.handler import set_exception_handler
+from app.base.exceptions.handler import set_exception_handler
 from app.core.logger import logger
 from app.core.middlewares import (
     cors_middleware,

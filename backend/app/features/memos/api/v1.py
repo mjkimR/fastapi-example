@@ -8,7 +8,7 @@ from app.core.deps.filters.base import create_combined_filter_dependency
 from app.core.deps.filters.generic.criteria_ilike import GenericILikeCriteria
 from app.core.deps.params.order_by import order_by_params
 from app.core.deps.params.page import PaginationParam
-from app.core.exceptions.exceptions import NotFoundException
+from app.base.exceptions.basic import NotFoundException
 from app.features.memos.models import Memo
 from app.base.schemas.paginated import PaginatedList
 from app.features.memos.schemas import MemoRead, MemoUpdate, MemoCreate

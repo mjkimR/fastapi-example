@@ -15,4 +15,4 @@ wheels/
 # Others
 .env
 .test*
-logs/*
+**/logs/*

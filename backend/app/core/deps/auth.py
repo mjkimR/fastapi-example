@@ -6,7 +6,7 @@ import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps.session import get_session
-from app.core.exceptions.exceptions import (
+from app.features.auth.exceptions import (
     InvalidCredentialsException,
     UserNotFoundException,
     PermissionDeniedException,

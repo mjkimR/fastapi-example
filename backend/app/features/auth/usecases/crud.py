@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from app.core.exceptions.exceptions import PermissionDeniedException
+from app.features.auth.exceptions import PermissionDeniedException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserUpdate
 from app.base.services.base import TContextKwargs

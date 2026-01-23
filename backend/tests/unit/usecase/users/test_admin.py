@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pydantic import SecretStr
 
-from backend.app.core.exceptions.exceptions import UserCantDeleteItselfException
+from app.base.exceptions.basic import UserCantDeleteItselfException
 from app.features.auth.models import User
 from backend.app.base.schemas import PaginatedList
 from app.features.auth.schemas import UserCreate

@@ -1,20 +1,9 @@
-from fastapi import status
-from app.core.exceptions.base import CustomException
-
-
-class BadRequestException(CustomException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    message = "Bad Request"
+from app.base.exceptions.basic import BadRequestException, ForbiddenException, NotFoundException, ConflictException
 
 
 class IncorrectEmailOrPasswordException(BadRequestException):
     message = "Incorrect email or password"
     trace = False
-
-
-class ForbiddenException(CustomException):
-    status_code = status.HTTP_403_FORBIDDEN
-    message = "Forbidden"
 
 
 class InvalidCredentialsException(ForbiddenException):
@@ -32,20 +21,9 @@ class UserCantDeleteItselfException(ForbiddenException):
     trace = False
 
 
-class NotFoundException(CustomException):
-    status_code = status.HTTP_404_NOT_FOUND
-    message = "Not Found"
-    trace = False
-
-
 class UserNotFoundException(NotFoundException):
     message = "User not found"
     trace = False
-
-
-class ConflictException(CustomException):
-    status_code = status.HTTP_409_CONFLICT
-    message = "Conflict"
 
 
 class UserAlreadyExistsException(ConflictException):

@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 import jwt
 
 from app.core.config import get_app_settings, AppSettings
-from app.core.exceptions.exceptions import UserAlreadyExistsException
+from app.features.auth.exceptions import UserAlreadyExistsException
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository
 from app.features.auth.schemas import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate

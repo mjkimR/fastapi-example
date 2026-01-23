@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import Depends
 from app.core.transaction import AsyncTransaction
 
-from app.core.exceptions.exceptions import UserCantDeleteItselfException
+from app.features.auth.exceptions import UserCantDeleteItselfException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserCreate
 from app.base.services.base import BaseContextKwargs, TContextKwargs
