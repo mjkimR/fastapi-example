@@ -9,7 +9,7 @@ from app.features.auth.schemas import UserUpdate
 from app.base.services.base import TContextKwargs
 from app.features.auth.services import UserService
 from app.base.usecases.base import BaseUseCase
-from app.core.transaction import AsyncTransaction
+from app.core.database.transaction import AsyncTransaction
 
 
 class GetUserUseCase(BaseUseCase):

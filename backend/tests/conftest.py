@@ -10,8 +10,8 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.app.core.deps.session import get_session
-from backend.app.core.transaction import AsyncTransaction
+from app.core.database.deps import get_session
+from app.core.database.transaction import AsyncTransaction
 from backend.app.main import create_app
 from backend.app.base.models.mixin import Base
 from app.features.auth.repos import UserRepository

@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app.core.deps.auth import get_current_user, on_superuser
+from app.features.auth.deps import get_current_user, on_superuser
 from app.core.deps.params.page import PaginationParam
 from app.base.exceptions.basic import NotFoundException
 from app.features.auth.models import User

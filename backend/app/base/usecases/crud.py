@@ -7,7 +7,7 @@ from app.base.services.base import (
     BaseCreateServiceMixin, BaseGetServiceMixin, BaseGetMultiServiceMixin, BaseUpdateServiceMixin,
     BaseDeleteServiceMixin, TContextKwargs
 )
-from app.core.transaction import AsyncTransaction
+from app.core.database.transaction import AsyncTransaction
 from app.base.usecases.base import BaseUseCase
 
 TService = TypeVar("TService", bound=Union[

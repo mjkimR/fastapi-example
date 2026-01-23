@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import get_app_settings
-from backend.app.core.transaction import AsyncTransaction
+from app.core.database.transaction import AsyncTransaction
 
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository

@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import Depends
-from app.core.transaction import AsyncTransaction
+from app.core.database.transaction import AsyncTransaction
 
 from app.features.auth.exceptions import UserCantDeleteItselfException
 from app.features.auth.models import User

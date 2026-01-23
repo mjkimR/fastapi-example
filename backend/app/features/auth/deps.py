@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps.session import get_session
+from app.core.database.deps import get_session
 from app.features.auth.exceptions import (
     InvalidCredentialsException,
     UserNotFoundException,

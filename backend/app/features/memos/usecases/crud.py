@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from app.core.transaction import AsyncTransaction
+from app.core.database.transaction import AsyncTransaction
 from app.features.memos.models import Memo
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.base.services.base import BaseContextKwargs, TContextKwargs
