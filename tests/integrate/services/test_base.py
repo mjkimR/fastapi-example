@@ -4,11 +4,20 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.base import PaginatedList
-from app.services.base import BaseService
+from app.services.base.base import (
+    BaseCRUDServiceMixin, BaseContextKwargs
+)
 from app.repos.base import BaseRepository
 
 
-class TestBaseService:
+class MockCRUDService(BaseCRUDServiceMixin):
+    """Test service using mixin structure."""
+    def __init__(self, repo):
+        self.repo = repo
+        self.context_model = BaseContextKwargs
+
+
+class TestBaseCRUDServiceMixin:
 
     @pytest.fixture
     def mock_repo(self):
@@ -17,17 +26,17 @@ class TestBaseService:
 
     @pytest.fixture
     def service(self, mock_repo):
-        return BaseService(repo=mock_repo)
+        return MockCRUDService(repo=mock_repo)
 
     @pytest.mark.asyncio
-    async def test_get_by_id(self, service, mock_repo, session: AsyncSession):
+    async def test_get(self, service, mock_repo, session: AsyncSession):
         # Arrange
         test_id = uuid.uuid4()
         expected_result = MagicMock()
         mock_repo.get_by_pk.return_value = expected_result
 
         # Act
-        result = await service.get_by_id(session, test_id)
+        result = await service.get(session, test_id)
 
         # Assert
         mock_repo.get_by_pk.assert_awaited_once_with(session, pk=test_id)
@@ -44,7 +53,7 @@ class TestBaseService:
         result = await service.get_multi(session, offset=offset, limit=limit)
 
         # Assert
-        mock_repo.get_multi.assert_awaited_once_with(session, offset=offset, limit=limit)
+        mock_repo.get_multi.assert_awaited_once_with(session, offset=offset, limit=limit, where=[], order_by=None)
         assert result == expected_result
 
     @pytest.mark.asyncio
@@ -58,11 +67,11 @@ class TestBaseService:
         result = await service.create(session, create_data)
 
         # Assert
-        mock_repo.create.assert_awaited_once_with(session, obj_in=create_data, commit=True)
+        mock_repo.create.assert_awaited_once_with(session, obj_in=create_data)
         assert result == expected_result
 
     @pytest.mark.asyncio
-    async def test_update_by_id(self, service, mock_repo, session: AsyncSession):
+    async def test_update(self, service, mock_repo, session: AsyncSession):
         # Arrange
         test_id = uuid.uuid4()
         update_data = MagicMock()
@@ -70,40 +79,51 @@ class TestBaseService:
         mock_repo.update_by_pk.return_value = expected_result
 
         # Act
-        result = await service.update_by_id(session, test_id, update_data)
+        result = await service.update(session, test_id, update_data)
 
         # Assert
         mock_repo.update_by_pk.assert_awaited_once_with(
-            session, pk=test_id, obj_in=update_data, commit=True
+            session, pk=test_id, obj_in=update_data
         )
         assert result == expected_result
 
     @pytest.mark.asyncio
-    async def test_delete_by_id(self, service, mock_repo, session: AsyncSession):
+    async def test_delete(self, service, mock_repo, session: AsyncSession):
         # Arrange
         test_id = uuid.uuid4()
         mock_repo.delete_by_pk.return_value = True
 
         # Act
-        result = await service.delete_by_id(session, test_id)
+        result = await service.delete(session, test_id)
 
         # Assert
-        mock_repo.delete_by_pk.assert_awaited_once_with(
-            session, pk=test_id, commit=True, soft_delete=False
-        )
+        mock_repo.delete_by_pk.assert_awaited_once_with(session, pk=test_id)
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_delete_by_id_failure(self, service, mock_repo, session: AsyncSession):
+    async def test_delete_failure(self, service, mock_repo, session: AsyncSession):
         # Arrange
         test_id = uuid.uuid4()
         mock_repo.delete_by_pk.return_value = False
 
         # Act
-        result = await service.delete_by_id(session, test_id)
+        result = await service.delete(session, test_id)
 
         # Assert
-        mock_repo.delete_by_pk.assert_awaited_once_with(
-            session, pk=test_id, commit=True, soft_delete=False
-        )
+        mock_repo.delete_by_pk.assert_awaited_once_with(session, pk=test_id)
         assert result is False
+
+    @pytest.mark.asyncio
+    async def test_create_with_context(self, service, mock_repo, session: AsyncSession):
+        # Arrange
+        create_data = MagicMock()
+        expected_result = MagicMock()
+        mock_repo.create.return_value = expected_result
+        context = {}
+
+        # Act
+        result = await service.create(session, create_data, context=context)
+
+        # Assert
+        mock_repo.create.assert_awaited_once_with(session, obj_in=create_data)
+        assert result == expected_result
