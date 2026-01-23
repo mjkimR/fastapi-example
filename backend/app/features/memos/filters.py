@@ -17,11 +17,3 @@ def filter_category(value):
     Filter Memos by field 'category'
     """
     return Memo.category.ilike(f"%{value}%")
-
-
-class FilterTitle(SimpleFilterCriteriaBase):
-    def _filter_logic(self, value):
-        """
-        Filter Memos by field 'title'
-        """
-        return Memo.title.ilike(f"%{value}%")
