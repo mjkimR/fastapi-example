@@ -3,8 +3,8 @@ import inspect
 from sqlalchemy import ColumnElement
 
 from typing import Callable, Any
-from app.base.filters.base import SqlFilterCriteriaBase
-from app.base.filters.exceptions import ConfigurationError, InvalidValueError
+from app.base.deps.filters.base import SqlFilterCriteriaBase
+from app.base.deps.filters.exceptions import ConfigurationError, InvalidValueError
 
 
 def create_combined_filter_dependency(

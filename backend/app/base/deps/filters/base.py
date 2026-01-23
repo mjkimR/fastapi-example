@@ -5,7 +5,7 @@ from typing import Optional, Any, Union, Callable
 from sqlalchemy import ColumnElement
 from fastapi import Query
 
-from app.base.filters.exceptions import (
+from app.base.deps.filters.exceptions import (
     ConfigurationError,
 )
 

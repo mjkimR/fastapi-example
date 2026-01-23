@@ -3,13 +3,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Body, status
 
-from app.base.filters.combine import create_combined_filter_dependency
 from app.features.auth.deps import get_current_user
-from app.core.deps.params.order_by import order_by_params
-from app.core.deps.params.page import PaginationParam
+from app.base.deps.params.page import PaginationParam
 from app.base.exceptions.basic import NotFoundException
-from app.features.memos.filters import filter_title, filter_category
-from app.features.memos.models import Memo
+from app.features.memos.api.filters import MemoFilterDepend
+from app.features.memos.api.order_by import MemoOrderByDepend
 from app.base.schemas.paginated import PaginatedList
 from app.features.memos.schemas import MemoRead, MemoUpdate, MemoCreate
 from app.features.memos.usecases.crud import (
@@ -38,10 +36,8 @@ async def create_memo(
 async def get_memos(
         use_case: Annotated[GetMultiMemoUseCase, Depends()],
         pagination: PaginationParam,
-        order_by=Depends(order_by_params(Memo)),
-        filters=Depends(
-            create_combined_filter_dependency(filter_title, filter_category)
-        ),
+        filters=Depends(MemoFilterDepend),
+        order_by=Depends(MemoOrderByDepend),
 ):
     memos = await use_case.execute(order_by=order_by, where=filters, **pagination)
     return memos

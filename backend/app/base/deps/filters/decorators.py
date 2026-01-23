@@ -1,4 +1,4 @@
-from app.base.filters.base import SimpleFilterCriteriaBase
+from app.base.deps.filters.base import SimpleFilterCriteriaBase
 from typing import Callable, Any
 
 
