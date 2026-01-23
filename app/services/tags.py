@@ -5,12 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.tags import Tag
 from app.repos.tags import TagRepository
-from app.services.base.basic import BasicGetMultiServiceMixin, BasicGetServiceMixin
+from app.services.base.base import BaseGetMultiServiceMixin, BaseGetServiceMixin, BaseContextKwargs
 
 
 class TagService(
-    BasicGetServiceMixin[TagRepository, Tag],
-    BasicGetMultiServiceMixin[TagRepository, Tag]
+    BaseGetServiceMixin[TagRepository, Tag, BaseContextKwargs],
+    BaseGetMultiServiceMixin[TagRepository, Tag, BaseContextKwargs]
 ):
     """Service class for handling tag-related operations."""
 

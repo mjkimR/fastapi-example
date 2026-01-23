@@ -8,7 +8,7 @@ from sqlalchemy import (
 from sqlalchemy import Column, inspect as sa_inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
-
+from sqlalchemy.sql.elements import ColumnElement, UnaryExpression
 from pydantic import BaseModel
 
 from app.schemas.base import PaginatedList
@@ -18,6 +18,7 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 PrimaryKeyType = Union[Sequence[Union[str, int, uuid.UUID]], Union[str, int, uuid.UUID]]
+WhereClause = ColumnElement[bool] | Sequence[ColumnElement[bool]]
 
 
 class BaseRepository(
@@ -61,7 +62,11 @@ class BaseRepository(
             for pk_col, value in zip(self._primary_keys, pk_values)
         ]
 
-    def _select(self, where=(), order_by=()) -> Select:
+    def _select(
+            self,
+            where: WhereClause = (),
+            order_by: Sequence[UnaryExpression] = ()
+    ) -> Select:
         stmt = select(self.model)
         if where is not None:
             if isinstance(where, Sequence):
@@ -81,8 +86,8 @@ class BaseRepository(
     async def get(
             self,
             session: AsyncSession,
-            where=None,
-            order_by=None,
+            where: WhereClause = (),
+            order_by: Sequence[UnaryExpression] = ()
     ) -> Optional[ModelType]:
         stmt = self._select(where, order_by)
         stmt = stmt.limit(1)
@@ -94,8 +99,8 @@ class BaseRepository(
             self,
             session: AsyncSession,
             pk: PrimaryKeyType,
-            where=None,
-            order_by=None,
+            where: WhereClause = (),
+            order_by: Sequence[UnaryExpression] = ()
     ) -> Optional[ModelType]:
         filters = self._get_primary_key_filters(pk)
         return await self.get(session, where=filters or where, order_by=order_by)
@@ -103,7 +108,7 @@ class BaseRepository(
     async def exists(
             self,
             session: AsyncSession,
-            where=None,
+            where: WhereClause = (),
     ) -> bool:
         stmt = select(literal(1))  # select 1
         stmt = stmt.select_from(self.model)
@@ -118,8 +123,10 @@ class BaseRepository(
             self,
             session: AsyncSession,
             obj_in: CreateSchemaType,
+            **update_fields: Any,
     ) -> ModelType:
         obj_dict = obj_in.model_dump()
+        obj_dict.update(update_fields)
         db_obj: ModelType = self.model(**obj_dict)
         session.add(db_obj)
         await session.flush()
@@ -131,8 +138,8 @@ class BaseRepository(
             session: AsyncSession,
             offset: int = 0,
             limit: Optional[int] = 100,
-            where=(),
-            order_by=(),
+            where: WhereClause = (),
+            order_by: Sequence[UnaryExpression] = (),
     ) -> PaginatedList[ModelType]:
         if limit is not None and limit < 0:
             raise ValueError("Limit must be non-negative.")
@@ -162,12 +169,28 @@ class BaseRepository(
             limit=limit,
         )
 
+    async def get_all(
+            self,
+            session: AsyncSession,
+            where: WhereClause = (),
+            order_by: Sequence[UnaryExpression] = ()
+    ) -> Sequence[ModelType]:
+        res = await self.get_multi(
+            session,
+            offset=0,
+            limit=None,
+            where=where,
+            order_by=order_by,
+        )
+        return res.items
+
     async def update_by_pk(
             self,
             session: AsyncSession,
             pk: PrimaryKeyType,
             obj_in: Union[UpdateSchemaType, dict[str, Any]],
             return_updated_obj: bool = True,
+            **update_fields: Any,
     ) -> Optional[ModelType]:
         filters = self._get_primary_key_filters(pk)
         if isinstance(obj_in, dict):
@@ -175,6 +198,7 @@ class BaseRepository(
         else:
             # exclude_unset=True
             update_data = obj_in.model_dump(exclude_unset=True)
+        update_data.update(update_fields)
 
         if not update_data:
             raise ValueError("Update data cannot be empty.")
@@ -211,7 +235,7 @@ class BaseRepository(
                     f"Soft delete is configured to use '{self.deleted_at_column}', but it's missing in model {self.model.__name__}."
                 )
 
-            update_values = {self.is_deleted_column: True}
+            update_values: dict[str, Any] = {self.is_deleted_column: True}
             if self.deleted_at_column and hasattr(self.model, self.deleted_at_column):
                 update_values[self.deleted_at_column] = datetime.now(timezone.utc)
 
@@ -221,7 +245,7 @@ class BaseRepository(
 
         result = await session.execute(stmt)
 
-        deleted_or_updated = result.rowcount > 0
+        deleted_or_updated = int(result.rowcount) > 0
         if deleted_or_updated:
             await session.flush()
         return deleted_or_updated

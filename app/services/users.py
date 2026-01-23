@@ -13,10 +13,10 @@ from app.core.exceptions.exceptions import UserAlreadyExistsException
 from app.models.users import User
 from app.repos.users import UserRepository
 from app.schemas.users import UserCreate, UserUpdate, UserDbCreate, UserDbUpdate
-from app.services.base.basic import (
-    BasicGetServiceMixin,
-    BasicGetMultiServiceMixin,
-    BasicDeleteServiceMixin,
+from app.services.base.base import (
+    BaseGetServiceMixin,
+    BaseGetMultiServiceMixin,
+    BaseDeleteServiceMixin, BaseContextKwargs,
 )
 
 """
@@ -28,9 +28,9 @@ from app.services.base.basic import (
 
 
 class UserService(
-    BasicGetServiceMixin[UserRepository, User],
-    BasicGetMultiServiceMixin[UserRepository, User],
-    BasicDeleteServiceMixin[UserRepository, User],
+    BaseGetServiceMixin[UserRepository, User, BaseContextKwargs],
+    BaseGetMultiServiceMixin[UserRepository, User, BaseContextKwargs],
+    BaseDeleteServiceMixin[UserRepository, User, BaseContextKwargs],
 ):
     """Service class for handling user-related operations."""
 

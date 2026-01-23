@@ -1,11 +1,12 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from app.core.exceptions.exceptions import PermissionDeniedException
 from app.models.users import User
 from app.schemas.users import UserUpdate
+from app.services.base.base import TContextKwargs
 from app.services.users import UserService
 from app.usecase.base.base import BaseUseCase
 from app.core.transaction import AsyncTransaction
@@ -15,13 +16,15 @@ class GetUserUseCase(BaseUseCase):
     def __init__(self, service: Annotated[UserService, Depends()]):
         self.service = service
 
-    async def execute(self, user_id: UUID, current_user: User) -> User:
+    async def execute(
+            self, user_id: UUID, current_user: User, context: Optional[TContextKwargs] = None
+    ) -> User:
         if current_user.id == user_id:
             return current_user
         if current_user.role != User.Role.ADMIN:
             raise PermissionDeniedException()
         async with AsyncTransaction() as session:
-            return await self.service.get(session, user_id)
+            return await self.service.get(session, user_id, context=context)
 
 
 class UpdateUserUseCase(BaseUseCase):
@@ -29,7 +32,8 @@ class UpdateUserUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, obj_data: UserUpdate, user_id: UUID, current_user: User
+            self, obj_data: UserUpdate, user_id: UUID, current_user: User,
+            context: Optional[TContextKwargs] = None
     ) -> User:
         if current_user.id == user_id:
             return current_user

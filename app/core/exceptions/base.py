@@ -34,7 +34,7 @@ class CustomException(Exception):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.message})"
 
-    def __dict__(self):
+    def to_dict(self):
         return {
             "message": self.message,
             "log_message": self.log_message,

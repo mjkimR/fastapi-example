@@ -1,7 +1,9 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from typing import Any
 
 
-class BaseUseCase:
+class BaseUseCase(ABC):
     @abstractmethod
-    async def execute(self, *args, **kwargs):
-        raise NotImplementedError
+    async def execute(self, *args, **kwargs) -> Any:
+        """Execute the use case. Must be implemented by subclasses."""
+        ...

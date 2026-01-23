@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 from app.api import router
 from app.core.exceptions.handler import set_exception_handler
+from app.core.logger import logger
 from app.core.middlewares import (
     static_middleware,
     cors_middleware,
@@ -14,9 +15,9 @@ from app.core.middlewares import (
 def get_lifespan():
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        print("Starting app lifespan")
+        logger.info("Starting app lifespan")
         yield
-        print("End of app lifespan")
+        logger.info("End of app lifespan")
 
     return lifespan
 
