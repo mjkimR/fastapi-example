@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import Generic, Any, TypedDict, Optional
 from typing_extensions import TypeVar
@@ -23,7 +24,8 @@ def _get_adapter(cast_to: type[TContextKwargs]) -> TypeAdapter[TContextKwargs]:
     return TypeAdapter(cast_to)
 
 
-def _ensure_context(context: Optional[TContextKwargs], cast_to: type[TContextKwargs] = BaseContextKwargs) -> TContextKwargs:
+def _ensure_context(context: Optional[TContextKwargs],
+                    cast_to: type[TContextKwargs] = BaseContextKwargs) -> TContextKwargs:
     """
     Ensure context is not None.
 
@@ -46,6 +48,12 @@ def _ensure_context(context: Optional[TContextKwargs], cast_to: type[TContextKwa
 
 class BaseCreateHooks:
     """Hook methods for Create operations."""
+    repo: BaseRepository
+
+    @asynccontextmanager
+    async def _context_create(self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs):
+        """Hook executed within a context before create (validation, cascade handling, etc.)."""
+        yield
 
     def _prepare_create_fields(self, obj_data: CreateSchemaType, context: TContextKwargs) -> dict[str, Any]:
         """Hook to prepare additional fields before create."""
@@ -70,9 +78,10 @@ class BaseCreateServiceMixin(BaseCreateHooks, Generic[TRepo, ModelType, CreateSc
             self, session: AsyncSession, obj_data: CreateSchemaType, context: Optional[TContextKwargs] = None
     ) -> ModelType:
         ctx = _ensure_context(context, self.context_model)
-        extra_fields = self._prepare_create_fields(obj_data, context=ctx)
-        obj = await self.repo.create(session, obj_in=obj_data, **extra_fields)
-        return await self._post_create(session, obj, context=ctx)
+        async with self._context_create(session, obj_data, context=ctx):
+            extra_fields = self._prepare_create_fields(obj_data, context=ctx)
+            obj = await self.repo.create(session, obj_in=obj_data, **extra_fields)
+            return await self._post_create(session, obj, context=ctx)
 
 
 # ============================================================
@@ -81,6 +90,13 @@ class BaseCreateServiceMixin(BaseCreateHooks, Generic[TRepo, ModelType, CreateSc
 
 class BaseUpdateHooks:
     """Hook methods for Update operations."""
+    repo: BaseRepository
+
+    @asynccontextmanager
+    async def _context_update(self, session: AsyncSession, obj_id: uuid.UUID, obj_data: UpdateSchemaType,
+                              context: TContextKwargs):
+        """Hook executed within a context before update (validation, cascade handling, etc.)."""
+        yield
 
     def _prepare_update_fields(self, obj_data: UpdateSchemaType, context: TContextKwargs) -> dict[str, Any]:
         """Hook to prepare additional fields before update."""
@@ -106,9 +122,10 @@ class BaseUpdateServiceMixin(BaseUpdateHooks, Generic[TRepo, ModelType, UpdateSc
             context: Optional[TContextKwargs] = None
     ) -> ModelType:
         ctx = _ensure_context(context, self.context_model)
-        extra_fields = self._prepare_update_fields(obj_data, context=ctx)
-        obj = await self.repo.update_by_pk(session, pk=obj_id, obj_in=obj_data, **extra_fields)
-        return await self._post_update(session, obj, context=ctx)
+        async with self._context_update(session, obj_id, obj_data, context=ctx):
+            extra_fields = self._prepare_update_fields(obj_data, context=ctx)
+            obj = await self.repo.update_by_pk(session, pk=obj_id, obj_in=obj_data, **extra_fields)
+            return await self._post_update(session, obj, context=ctx)
 
 
 # ============================================================
@@ -117,12 +134,15 @@ class BaseUpdateServiceMixin(BaseUpdateHooks, Generic[TRepo, ModelType, UpdateSc
 
 class BaseDeleteHooks:
     """Hook methods for Delete operations."""
+    repo: BaseRepository
 
-    async def _pre_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs) -> None:
-        """Hook executed before delete (validation, cascade handling, etc.)."""
-        pass
+    @asynccontextmanager
+    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
+        """Hook executed within a context before delete (validation, cascade handling, etc.)."""
+        yield
 
-    async def _post_delete(self, session: AsyncSession, obj_id: uuid.UUID, result: bool, context: TContextKwargs) -> bool:
+    async def _post_delete(self, session: AsyncSession, obj_id: uuid.UUID, result: bool,
+                           context: TContextKwargs) -> bool:
         """Hook executed after delete."""
         return result
 
@@ -141,9 +161,9 @@ class BaseDeleteServiceMixin(BaseDeleteHooks, Generic[TRepo, ModelType, TContext
             self, session: AsyncSession, obj_id: uuid.UUID, context: Optional[TContextKwargs] = None
     ) -> bool:
         ctx = _ensure_context(context, self.context_model)
-        await self._pre_delete(session, obj_id, context=ctx)
-        result = await self.repo.delete_by_pk(session, pk=obj_id)
-        return await self._post_delete(session, obj_id, result, context=ctx)
+        async with self._context_delete(session, obj_id, context=ctx):
+            result = await self.repo.delete_by_pk(session, pk=obj_id)
+            return await self._post_delete(session, obj_id, result, context=ctx)
 
 
 # ============================================================
@@ -152,8 +172,15 @@ class BaseDeleteServiceMixin(BaseDeleteHooks, Generic[TRepo, ModelType, TContext
 
 class BaseGetHooks:
     """Hook methods for Get (single item) operations."""
+    repo: BaseRepository
 
-    async def _post_get(self, session: AsyncSession, obj: ModelType | None, context: TContextKwargs) -> ModelType | None:
+    @asynccontextmanager
+    async def _context_get(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
+        """Hook executed within a context before get (validation, cascade handling, etc.)."""
+        yield
+
+    async def _post_get(self, session: AsyncSession, obj: ModelType | None,
+                        context: TContextKwargs) -> ModelType | None:
         """Hook executed after get (data transformation, etc.)."""
         return obj
 
@@ -172,8 +199,9 @@ class BaseGetServiceMixin(BaseGetHooks, Generic[TRepo, ModelType, TContextKwargs
             self, session: AsyncSession, obj_id: uuid.UUID, context: Optional[TContextKwargs] = None
     ) -> ModelType | None:
         ctx = _ensure_context(context, self.context_model)
-        obj = await self.repo.get_by_pk(session, pk=obj_id)
-        return await self._post_get(session, obj, context=ctx)
+        async with self._context_get(session, obj_id, context=ctx):
+            obj = await self.repo.get_by_pk(session, pk=obj_id)
+            return await self._post_get(session, obj, context=ctx)
 
 
 # ============================================================
@@ -182,6 +210,12 @@ class BaseGetServiceMixin(BaseGetHooks, Generic[TRepo, ModelType, TContextKwargs
 
 class BaseGetMultiHooks:
     """Hook methods for Get Multi (list) operations."""
+    repo: BaseRepository
+
+    @asynccontextmanager
+    async def _context_get_multi(self, session: AsyncSession, context: TContextKwargs):
+        """Hook executed within a context before get multi (data transformation, etc.)."""
+        yield
 
     def _prepare_get_multi_filters(self, context: TContextKwargs) -> list[Any]:
         """Hook to prepare additional filter conditions for list queries."""
@@ -211,20 +245,21 @@ class BaseGetMultiServiceMixin(BaseGetMultiHooks, Generic[TRepo, ModelType, TCon
             context: Optional[TContextKwargs] = None
     ) -> PaginatedList[ModelType]:
         ctx = _ensure_context(context, self.context_model)
-        extra_filters = self._prepare_get_multi_filters(context=ctx)
+        async with self._context_get_multi(session, context=ctx):
+            extra_filters = self._prepare_get_multi_filters(context=ctx)
 
-        # Merge where conditions
-        if where is None:
-            where = extra_filters
-        elif isinstance(where, list):
-            where = where + extra_filters
-        elif extra_filters:
-            where = [where] + extra_filters
+            # Merge where conditions
+            if where is None:
+                where = extra_filters
+            elif isinstance(where, list):
+                where = where + extra_filters
+            elif extra_filters:
+                where = [where] + extra_filters
 
-        result = await self.repo.get_multi(
-            session, offset=offset, limit=limit, where=where, order_by=order_by
-        )
-        return await self._post_get_multi(session, result, context=ctx)
+            result = await self.repo.get_multi(
+                session, offset=offset, limit=limit, where=where, order_by=order_by
+            )
+            return await self._post_get_multi(session, result, context=ctx)
 
 
 # ============================================================

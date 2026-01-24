@@ -36,6 +36,10 @@ class BaseRepository(
     def __init__(self):
         self._primary_keys = self._get_primary_keys(self.model)
 
+    @property
+    def model_name(self):
+        return self.model.__name__
+
     def _get_primary_keys(self, model: type[ModelType]) -> Sequence[Column]:
         """Get the primary key of a SQLAlchemy model."""
         inspector_result = sa_inspect(model)
