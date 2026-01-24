@@ -103,11 +103,26 @@ class BaseRepository(
             self,
             session: AsyncSession,
             pk: PrimaryKeyType,
-            where: WhereClause = (),
-            order_by: Sequence[UnaryExpression] = ()
     ) -> Optional[ModelType]:
-        filters = self._get_primary_key_filters(pk)
-        return await self.get(session, where=filters or where, order_by=order_by)
+        if not self._primary_keys:
+            raise ValueError("No primary key defined for this model.")
+
+        pk_values: Union[Sequence, Any]
+        if not isinstance(pk, Sequence) or isinstance(pk, str):
+            pk_values = [pk]
+        else:
+            pk_values = pk
+
+        if len(self._primary_keys) != len(pk_values):
+            raise ValueError(
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+
+        if len(self._primary_keys) == 1:
+            ident = pk_values[0]
+        else:
+            ident = dict(zip([pk_col.key for pk_col in self._primary_keys], pk_values))
+
+        return await session.get(self.model, ident)
 
     async def exists(
             self,
