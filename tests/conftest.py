@@ -1,130 +1,78 @@
-from backend.app.core.config import get_app_settings
+"""
+Main conftest.py for test configuration and shared fixtures.
+
+This is the root configuration file for pytest. It provides:
+- Pytest options and hooks
+- Logging configuration
+- Imports of all fixtures from the fixtures package
+
+Test Structure:
+    tests/
+    ├── conftest.py          <- You are here
+    ├── fixtures/            <- Reusable fixtures (db, auth, clients)
+    ├── factories/           <- Factory classes for test data
+    ├── utils/               <- Test utilities and helpers
+    ├── unit/                <- Unit tests (with mocks)
+    ├── integration/         <- Integration tests (real DB)
+    └── e2e/                 <- End-to-end API tests
+"""
 
 import logging
-from enum import Enum
-
-import orjson
 import pytest
-from httpx import AsyncClient, ASGITransport
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.pool import StaticPool
 
-from app.core.database.deps import get_session
-from app.core.database.transaction import AsyncTransaction
-from backend.app.main import create_app
-from backend.app.base.models.mixin import Base
-from app.features.auth.repos import UserRepository
-from backend.app.features.auth.token_schemas import Token
-from app.features.auth.services import UserService
-from init_data.initial_data import create_first_user
+# Configure logging - reduce noise from SQLAlchemy and httpx
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-@pytest.fixture(name="session_maker")
-async def session_maker_fixture(monkeypatch: pytest.MonkeyPatch):
-    """Create a new database session_maker for testing with SQLite."""
-    async_engine = create_async_engine(
-        "sqlite+aiosqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool
-    )
+# =============================================================================
+# Pytest Hooks & Options
+# =============================================================================
 
-    # Use async method to create tables
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    session_maker = async_sessionmaker(
-        async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autocommit=False,
-        autoflush=False,
-    )
-    monkeypatch.setattr(AsyncTransaction, "DEFAULT_SESSION_MAKER", session_maker)
-
-    yield session_maker
-    await async_engine.dispose()
-
-
-@pytest.fixture(name="session")
-async def session_fixture(session_maker):
-    """Create a new database session for testing with SQLite."""
-    async with session_maker() as session:
-        yield session
-
-
-@pytest.fixture
-def set_httpx_logger():
-    """Set httpx logger to WARNING level."""
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-
-
-class AsyncClientWithJson(AsyncClient):
-    @staticmethod
-    def _json_serializer(obj):
-        if isinstance(obj, Enum):
-            return obj.value
-        # if isinstance(obj, pydantic.BaseModel):
-        #     return obj.model_dump()
-        raise TypeError(f"Object of type '{obj.__class__.__name__}' is not JSON serializable")
-
-    async def request(self, *args, **kwargs):
-        if 'json' in kwargs:
-            kwargs['content'] = orjson.dumps(kwargs.pop('json'), default=self._json_serializer)
-            if kwargs['headers'] is None:
-                kwargs['headers'] = {}
-            kwargs['headers']['Content-Type'] = 'application/json'
-        return await super().request(*args, **kwargs)
-
-
-@pytest_asyncio.fixture
-async def admin_token(session: AsyncSession) -> Token:
-    """Create an admin token for the first user."""
-    service = UserService(
-        settings=get_app_settings(),
-        repo=UserRepository(),
-    )
-    user = await create_first_user(session, service)
-    if user is None:
-        raise ValueError("Super admin user creation failed")
-
-    return Token(
-        access_token=service.create_access_token(user),
-        token_type="bearer",
+def pytest_addoption(parser):
+    """Add custom command line options for pytest."""
+    parser.addoption(
+        "--db-type",
+        action="store",
+        default="sqlite",
+        help="Select database type for tests (sqlite, postgres)",
     )
 
 
-@pytest_asyncio.fixture(name="client")
-async def client_fixture(session_maker: async_sessionmaker, session: AsyncSession, set_httpx_logger, admin_token):
-    """FastAPI test client (without LifespanManager).
-
-    - LifespanManager is not used: lifespan events are not triggered.
-    """
-
-    def get_session_override():
-        return session
-
-    app = create_app()
-    app.dependency_overrides[get_session] = get_session_override
-
-    async with (
-        AsyncClientWithJson(
-            transport=ASGITransport(app=app),
-            base_url="http://testserver/",
-            headers={
-                "Authorization": f"Bearer {admin_token.access_token}",
-            },
-        ) as client,
-    ):
-        yield client
-
-    app.dependency_overrides.clear()
+@pytest.fixture(scope="session")
+def db_type(request):
+    """Fixture to determine the database type for tests."""
+    return request.config.getoption("--db-type")
 
 
-@pytest_asyncio.fixture
-async def admin_header(admin_token: Token) -> dict[str, str]:
-    """Create headers with admin token."""
-    return {
-        "Authorization": f"Bearer {admin_token.access_token}",
-        "Content-Type": "application/json",
-    }
+# =============================================================================
+# Import Fixtures
+# =============================================================================
+
+# Database fixtures
+from tests.fixtures.db import (
+    event_loop_policy,
+    async_engine,
+    session_maker_fixture,
+    session_fixture,
+)
+
+# Authentication fixtures
+from tests.fixtures.auth import (
+    user_service,
+    admin_user,
+    admin_token,
+    admin_headers,
+)
+
+# HTTP Client fixtures
+from tests.fixtures.clients import (
+    AsyncClientWithJson,
+    app_fixture,
+    client_fixture,
+    unauthenticated_client_fixture,
+)
+
+# Test data fixtures
+# Import data frequently changed, so import with *.
+from tests.fixtures.data import *

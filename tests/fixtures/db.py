@@ -1,0 +1,82 @@
+"""
+Database session fixtures for testing with multiple backends.
+Supports SQLite (in-memory) and PostgreSQL (via testcontainers).
+"""
+
+import pytest
+import pytest_asyncio
+from sqlalchemy import StaticPool
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+from app.core.database.transaction import AsyncTransaction
+
+
+def get_base():
+    """Lazy import of Base to avoid model registration conflicts."""
+    from app.base.models.mixin import Base
+    return Base
+
+
+@pytest.fixture(scope="session")
+def event_loop_policy():
+    """Use default event loop policy for tests."""
+    import asyncio
+    return asyncio.DefaultEventLoopPolicy()
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
+async def async_engine():
+    """Test SQLite async database engine fixture."""
+    Base = get_base()
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture(name="session_maker")
+async def session_maker_fixture(async_engine, monkeypatch: pytest.MonkeyPatch):
+    """Create session maker and patch AsyncTransaction."""
+    session_maker = async_sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+    monkeypatch.setattr(AsyncTransaction, "DEFAULT_SESSION_MAKER", session_maker)
+    yield session_maker
+
+
+@pytest_asyncio.fixture(name="session")
+async def session_fixture(session_maker):
+    """Create a new database session for testing."""
+    async with session_maker() as session:
+        yield session
+        await session.rollback()
+
+# Optional: PostgreSQL support with testcontainers
+# Uncomment and install testcontainers-postgres if needed
+#
+# @pytest_asyncio.fixture(scope="session")
+# async def postgres_async_engine():
+#     """Fixture to create a PostgreSQL container for async testing."""
+#     from testcontainers.postgres import PostgresContainer
+#
+#     with PostgresContainer("postgres:16") as postgres:
+#         url = postgres.get_connection_url().replace("postgresql://", "postgresql+asyncpg://")
+#         engine = create_async_engine(url)
+#         async with engine.begin() as conn:
+#             Base = get_base()
+#             await conn.run_sync(Base.metadata.create_all)
+#         yield engine
+#         async with engine.begin() as conn:
+#             await conn.run_sync(Base.metadata.drop_all)
+#         await engine.dispose()
