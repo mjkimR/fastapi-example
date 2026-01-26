@@ -1,3 +1,4 @@
+import uuid
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
@@ -7,8 +8,13 @@ class TagCreate(BaseModel):
     name: str = Field(..., description="The name of the tag.")
 
 
+class TagUpdate(BaseModel):
+    name: str | None = Field(default=None, description="The name of the tag.")
+
+
 class TagRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
     name: str = Field(..., description="The name of the tag.")
+    workspace_id: uuid.UUID = Field(..., description="The workspace id of the tag.")
 
     model_config = ConfigDict(from_attributes=True)
 

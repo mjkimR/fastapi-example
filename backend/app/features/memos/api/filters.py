@@ -8,6 +8,8 @@ def filter_title(value):
     """
     Filter Memos by field 'title'
     """
+    if value is None:
+        return None
     return Memo.title.ilike(f"%{value}%")
 
 
@@ -16,6 +18,8 @@ def filter_category(value):
     """
     Filter Memos by field 'category'
     """
+    if value is None:
+        return None
     return Memo.category.ilike(f"%{value}%")
 
 

@@ -6,8 +6,7 @@ from fastapi import Depends
 from app.core.database.transaction import AsyncTransaction
 from app.features.memos.models import Memo
 from app.features.memos.schemas import MemoCreate, MemoUpdate
-from app.base.services.base import BaseContextKwargs, TContextKwargs
-from app.features.memos.services import MemoService
+from app.features.memos.services import MemoService, MemoContextKwargs
 from app.features.tags.services import TagService
 from app.base.usecases.crud import (
     BaseGetUseCase,
@@ -16,12 +15,12 @@ from app.base.usecases.crud import (
 )
 
 
-class GetMemoUseCase(BaseGetUseCase[MemoService, Memo, BaseContextKwargs]):
+class GetMemoUseCase(BaseGetUseCase[MemoService, Memo, MemoContextKwargs]):
     def __init__(self, service: Annotated[MemoService, Depends()]) -> None:
         super().__init__(service)
 
 
-class GetMultiMemoUseCase(BaseGetMultiUseCase[MemoService, Memo, BaseContextKwargs]):
+class GetMultiMemoUseCase(BaseGetMultiUseCase[MemoService, Memo, MemoContextKwargs]):
     def __init__(self, service: Annotated[MemoService, Depends()]) -> None:
         super().__init__(service)
 
@@ -36,10 +35,10 @@ class CreateMemoUseCase:
         self.tag_service = tag_service
 
     async def execute(
-            self, obj_in: MemoCreate, context: Optional[TContextKwargs] = None
+            self, obj_in: MemoCreate, context: Optional[MemoContextKwargs] = None
     ) -> Memo:
         async with AsyncTransaction() as session:
-            tags = await self.tag_service.get_or_create_tags(session, obj_in.tags)
+            tags = await self.tag_service.get_or_create_tags(session, obj_in.tags, context)
 
             memo_data_for_create = MemoCreate.model_validate(obj_in.model_dump(exclude={"tags"}))
             memo = await self.memo_service.create(
@@ -61,7 +60,7 @@ class UpdateMemoUseCase:
         self.tag_service = tag_service
 
     async def execute(
-            self, obj_id: UUID, obj_in: MemoUpdate, context: Optional[TContextKwargs] = None
+            self, obj_id: UUID, obj_in: MemoUpdate, context: Optional[MemoContextKwargs] = None
     ) -> Memo | None:
         async with AsyncTransaction() as session:
             memo = await self.memo_service.get(session, obj_id, context=context)
@@ -70,7 +69,7 @@ class UpdateMemoUseCase:
 
             if obj_in.tags is not None:
                 tags = await self.tag_service.get_or_create_tags(
-                    session, obj_in.tags
+                    session, obj_in.tags, context
                 )
                 memo.tags = tags
 
@@ -85,6 +84,6 @@ class UpdateMemoUseCase:
             return memo
 
 
-class DeleteMemoUseCase(BaseDeleteUseCase[MemoService, Memo, BaseContextKwargs]):
+class DeleteMemoUseCase(BaseDeleteUseCase[MemoService, Memo, MemoContextKwargs]):
     def __init__(self, service: Annotated[MemoService, Depends()]) -> None:
         super().__init__(service)

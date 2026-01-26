@@ -1,5 +1,4 @@
 from enum import StrEnum
-
 from sqlalchemy.orm import mapped_column, Mapped
 
 from app.base.models.mixin import Base, UUIDMixin, TimestampMixin

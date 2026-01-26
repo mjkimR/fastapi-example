@@ -43,6 +43,8 @@ class UserService(
     ):
         self.settings = settings
         self.repo = repo
+        self.context_model = BaseContextKwargs
+
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     async def validate_email_exists(self, session: AsyncSession, email: Union[str, EmailStr]) -> None:
@@ -78,9 +80,9 @@ class UserService(
             self, session: AsyncSession, obj_data: UserUpdate, user_id: UUID
     ) -> User:
         """Update an existing user."""
-        user_data = UserDbUpdate(**obj_data.model_dump())
+        user_data = UserDbUpdate(**obj_data.model_dump(exclude={"password"}))
         if obj_data.password:
-            user_data.hashed_password = self.get_password_hash(obj_data.password)
+            user_data.hashed_password = self.get_password_hash(obj_data.password.get_secret_value())
         return await self.repo.update_by_pk(session, pk=user_id, obj_in=user_data)
 
     async def get_by_email(self, session: AsyncSession, email: str) -> User | None:

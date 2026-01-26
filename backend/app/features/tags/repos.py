@@ -1,5 +1,6 @@
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
 
 from app.features.tags.models import Tag
 from app.base.repos.base import BaseRepository
@@ -8,13 +9,18 @@ from app.base.repos.base import BaseRepository
 class TagRepository(BaseRepository[Tag, Tag, Tag]):
     model = Tag
 
-    async def get_or_create_tags(self, session: AsyncSession, tag_names: list[str]) -> list[Tag]:
-        """Get existing tags or create new ones for the given names."""
+    async def get_or_create_tags(self, session: AsyncSession, tag_names: list[str], workspace_id: uuid.UUID) -> list[Tag]:
+        """Get existing tags or create new ones for the given names within a workspace."""
         if not tag_names:
             return []
 
-        # Find existing tags
-        stmt = select(self.model).where(self.model.name.in_(tag_names))
+        # Find existing tags within the workspace
+        stmt = select(self.model).where(
+            and_(
+                self.model.name.in_(tag_names),
+                self.model.workspace_id == workspace_id
+            )
+        )
         result = await session.execute(stmt)
         existing_tags = result.scalars().all()
         existing_tag_names = {tag.name for tag in existing_tags}
@@ -25,8 +31,8 @@ class TagRepository(BaseRepository[Tag, Tag, Tag]):
         # Create new tags
         new_tags = []
         if new_tag_names:
-            new_tags = [self.model(name=name) for name in new_tag_names]
+            new_tags = [self.model(name=name, workspace_id=workspace_id) for name in new_tag_names]
             session.add_all(new_tags)
-            await session.flush()  # Flush to get IDs if needed elsewhere, though not strictly necessary here
+            await session.flush()
 
         return list(existing_tags) + new_tags
