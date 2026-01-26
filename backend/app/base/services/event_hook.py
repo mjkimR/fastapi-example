@@ -7,7 +7,7 @@ from app.base.services.base import (
     ModelType, TContextKwargs
 )
 
-class DomainEventHooks(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta):
+class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta):
     """
     A base hook that publishes domain events after CUD (Create, Update, Delete) operations are completed.
     By default, it publishes the resource ID to topics such as 'ModelName.created'.

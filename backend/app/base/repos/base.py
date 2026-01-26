@@ -40,6 +40,24 @@ class BaseRepository(
     def model_name(self):
         return self.model.__name__
 
+    def model_repr(self, pk):
+        if not self._primary_keys:
+            raise ValueError("No primary key defined for this model.")
+
+        if not isinstance(pk, Sequence) or isinstance(pk, str):
+            pk_values = [pk]
+        else:
+            pk_values = pk
+
+        if len(self._primary_keys) != len(pk_values):
+            raise ValueError(
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+        pk_str = ", ".join(
+            f"{pk_col.key}={str(value)}"
+            for pk_col, value in zip(self._primary_keys, pk_values)
+        )
+        return f"{self.model_name}({pk_str})"
+
     def _get_primary_keys(self, model: type[ModelType]) -> Sequence[Column]:
         """Get the primary key of a SQLAlchemy model."""
         inspector_result = sa_inspect(model)

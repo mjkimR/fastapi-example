@@ -16,7 +16,7 @@ class NestedResourceContextKwargs(BaseContextKwargs):
     parent_id: Required[uuid.UUID]
 
 
-class NestedResourceHooks(
+class NestedResourceHooksMixin(
     BaseCreateHooks,
     BaseUpdateHooks,
     BaseGetHooks,
@@ -30,13 +30,13 @@ class NestedResourceHooks(
     # ============================================================
     # Helpers
     # ============================================================
-    
+
     async def _check_parent_exists(self, session: AsyncSession, parent_id: Any) -> None:
         """Check if parent exists, raise NotFoundException if not."""
         #
         if not await self.parent_repo.get_by_pk(session, parent_id):
             raise NotFoundException(
-                f"Parent {self.parent_repo.model_name}(id={parent_id}) not found."
+                log_message=f"Parent {self.parent_repo.model_repr(parent_id)} not found."
             )
 
     async def _ensure_ownership(self, session: AsyncSession, obj_id: uuid.UUID, parent_id: Any):
@@ -54,7 +54,7 @@ class NestedResourceHooks(
         # Compare as strings to avoid type mismatches
         if str(obj_parent_id) != str(parent_id):
             raise NotFoundException(
-                f"{self.repo.model_name}(id={obj_id}) does not belong to Parent(id={parent_id})"
+                log_message=f"{self.repo.model_repr(obj_id)} does not belong to {self.parent_repo.model_repr(parent_id)}"
             )
 
     # ============================================================

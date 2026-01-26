@@ -50,4 +50,4 @@ def create_app():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(create_app(), host="localhost", port=8851)
+    uvicorn.run(create_app(), host="localhost", port=7132)

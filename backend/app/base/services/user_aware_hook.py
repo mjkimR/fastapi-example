@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Required
 
 from app.base.services.base import BaseCreateHooks, BaseUpdateHooks, BaseContextKwargs
@@ -5,7 +6,7 @@ from app.base.services.base import BaseCreateHooks, BaseUpdateHooks, BaseContext
 
 class UserContextKwargs(BaseContextKwargs):
     """User tracking context kwargs."""
-    user_id: Required[str]
+    user_id: Required[uuid.UUID]
 
 
 class UserAwareHooksMixin(BaseCreateHooks, BaseUpdateHooks):

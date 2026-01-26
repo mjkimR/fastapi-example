@@ -17,7 +17,7 @@ from app.base.services.base import (
 )
 
 
-class UniqueConstraintHooks(BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta):
+class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta):
     """
     Async Generator-based Unique Constraint Check Hook.
 
