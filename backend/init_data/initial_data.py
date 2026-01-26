@@ -2,10 +2,11 @@ import asyncio
 import logging
 from typing import Optional
 
+from pydantic import SecretStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.config import get_app_settings
+from app.core.config import get_app_settings
 from app.core.database.transaction import AsyncTransaction
 
 from app.features.auth.models import User
@@ -28,7 +29,7 @@ async def create_first_user(
     if user is None:
         return await service.create_admin(session, UserCreate(
             email=email,
-            password=password,
+            password=SecretStr(password),
             name="Admin",
             surname="Admin",
         ))

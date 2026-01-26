@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from backend.app.base.models.mixin import Base
+from app.base.models.mixin import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,6 +23,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 
 target_metadata = Base.metadata
+from app.main import create_app
 
 
 # other values from the config, defined by the needs of env.py,
@@ -32,7 +33,7 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    from backend.app.core.config import get_app_settings
+    from app.core.config import get_app_settings
     return get_app_settings().DATABASE_URL
 
 
