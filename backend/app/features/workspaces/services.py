@@ -27,9 +27,14 @@ class WorkspaceService(
     BaseGetServiceMixin[WorkspaceRepository, Workspace, UserContextKwargs],
     BaseDeleteServiceMixin[WorkspaceRepository, Workspace, UserContextKwargs],
 ):
+    context_model = UserContextKwargs
+
     def __init__(self, repo: Annotated[WorkspaceRepository, Depends()]):
-        self.repo = repo
-        self.context_model = UserContextKwargs
+        self._repo = repo
+
+    @property
+    def repo(self) -> WorkspaceRepository:
+        return self._repo
 
     async def _unique_constraints(
             self,

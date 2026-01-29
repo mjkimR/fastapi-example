@@ -16,17 +16,24 @@ class TagService(
     BaseGetServiceMixin[TagRepository, Tag, NestedResourceContextKwargs],
 ):
     """Service class for handling tag-related operations within a workspace."""
+    context_model = NestedResourceContextKwargs
+    fk_name = "workspace_id"
 
     def __init__(
             self,
             repo: Annotated[TagRepository, Depends()],
             parent_repo: Annotated[WorkspaceRepository, Depends()]
     ) -> None:
-        self.repo: TagRepository = repo
-        self.context_model = NestedResourceContextKwargs
+        self._repo: TagRepository = repo
+        self._parent_repo = parent_repo
 
-        self.parent_repo = parent_repo
-        self.fk_name = "workspace_id"
+    @property
+    def repo(self) -> TagRepository:
+        return self._repo
+
+    @property
+    def parent_repo(self) -> WorkspaceRepository:
+        return self._parent_repo
 
     async def get_or_create_tags(
             self,

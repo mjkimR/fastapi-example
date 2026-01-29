@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.base.services.base import BaseCreateServiceMixin, BaseGetMultiServiceMixin, BaseUpdateServiceMixin, BaseDeleteServiceMixin, BaseGetServiceMixin
+from app.base.services.base import BaseCreateServiceMixin, BaseGetMultiServiceMixin, BaseUpdateServiceMixin, BaseDeleteServiceMixin, BaseGetServiceMixin, TRepo
 from app.base.services.exists_check_hook import ExistsCheckHooksMixin
 from app.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
 from app.features.memos.repos import MemoRepository
@@ -27,14 +27,21 @@ class MemoService(
     BaseDeleteServiceMixin[MemoRepository, Memo, MemoContextKwargs],
 ):
     """Service class for handling memo-related operations within a workspace."""
+    context_model = MemoContextKwargs
+    fk_name = "workspace_id"
 
     def __init__(
             self,
             repo: Annotated[MemoRepository, Depends()],
             parent_repo: Annotated[WorkspaceRepository, Depends()]
     ):
-        self.repo = repo
-        self.context_model = MemoContextKwargs
+        self._repo = repo
+        self._parent_repo = parent_repo
 
-        self.parent_repo = parent_repo
-        self.fk_name = "workspace_id"
+    @property
+    def repo(self) -> MemoRepository:
+        return self._repo
+
+    @property
+    def parent_repo(self) -> WorkspaceRepository:
+        return self._parent_repo

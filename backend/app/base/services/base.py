@@ -1,3 +1,4 @@
+from abc import abstractmethod, ABC
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import Generic, Any, TypedDict, Optional
@@ -28,6 +29,18 @@ class BaseServiceMixinInterface:
     """Base Service class."""
     repo: TRepo
     context_model: type[TContextKwargs]
+
+    @property
+    @abstractmethod
+    def repo(self) -> TRepo:
+        """Repository instance."""
+        pass
+
+    @property
+    @abstractmethod
+    def context_model(self) -> type[TContextKwargs]:
+        """Pydantic model for context kwargs."""
+        pass
 
     @classmethod
     @lru_cache
@@ -76,7 +89,7 @@ class BaseCreateHooks(BaseHooksInterface):
 
 
 class BaseCreateServiceMixin(
-    BaseCreateHooks, BaseServiceMixinInterface,
+    ABC, BaseCreateHooks, BaseServiceMixinInterface,
     Generic[TRepo, ModelType, CreateSchemaType, TContextKwargs],
 ):
     """
@@ -119,7 +132,7 @@ class BaseUpdateHooks(BaseHooksInterface):
 
 
 class BaseUpdateServiceMixin(
-    BaseUpdateHooks, BaseServiceMixinInterface,
+    ABC, BaseUpdateHooks, BaseServiceMixinInterface,
     Generic[TRepo, ModelType, UpdateSchemaType, TContextKwargs]
 ):
     """
@@ -160,7 +173,7 @@ class BaseDeleteHooks(BaseHooksInterface):
 
 
 class BaseDeleteServiceMixin(
-    BaseDeleteHooks, BaseServiceMixinInterface,
+    ABC, BaseDeleteHooks, BaseServiceMixinInterface,
     Generic[TRepo, ModelType, TContextKwargs]
 ):
     """
@@ -198,7 +211,7 @@ class BaseGetHooks(BaseHooksInterface):
 
 
 class BaseGetServiceMixin(
-    BaseGetHooks, BaseServiceMixinInterface,
+    ABC, BaseGetHooks, BaseServiceMixinInterface,
     Generic[TRepo, ModelType, TContextKwargs]
 ):
     """
@@ -241,7 +254,7 @@ class BaseGetMultiHooks(BaseHooksInterface):
 
 
 class BaseGetMultiServiceMixin(
-    BaseGetMultiHooks, BaseServiceMixinInterface,
+    ABC, BaseGetMultiHooks, BaseServiceMixinInterface,
     Generic[TRepo, ModelType, TContextKwargs]
 ):
     """

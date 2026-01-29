@@ -1,4 +1,5 @@
 import uuid
+from abc import abstractmethod
 
 from contextlib import asynccontextmanager
 from typing import Required, Any
@@ -23,9 +24,16 @@ class NestedResourceHooksMixin(
     BaseGetMultiHooks,
     BaseDeleteHooks,
 ):
-    repo: BaseRepository
-    parent_repo: BaseRepository
-    fk_name: str = "parent_id"
+    @property
+    @abstractmethod
+    def parent_repo(self) -> BaseRepository:
+        """The repository of the parent resource."""
+        pass
+
+    @property
+    def fk_name(self) -> str:
+        """The name of the foreign key field in the child model that references the parent."""
+        return "parent_id"
 
     # ============================================================
     # Helpers

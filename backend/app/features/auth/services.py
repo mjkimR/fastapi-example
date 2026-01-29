@@ -16,7 +16,7 @@ from app.features.auth.schemas import UserCreate, UserUpdate, UserDbCreate, User
 from app.base.services.base import (
     BaseGetServiceMixin,
     BaseGetMultiServiceMixin,
-    BaseDeleteServiceMixin, BaseContextKwargs,
+    BaseDeleteServiceMixin, BaseContextKwargs, TRepo,
 )
 
 """
@@ -35,6 +35,7 @@ class UserService(
     """Service class for handling user-related operations."""
 
     ALGORITHM = "HS256"
+    context_model = BaseContextKwargs
 
     def __init__(
             self,
@@ -42,10 +43,13 @@ class UserService(
             repo: Annotated[UserRepository, Depends()],
     ):
         self.settings = settings
-        self.repo = repo
-        self.context_model = BaseContextKwargs
+        self._repo = repo
 
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    @property
+    def repo(self) -> UserRepository:
+        return self._repo
 
     async def validate_email_exists(self, session: AsyncSession, email: Union[str, EmailStr]) -> None:
         """Validate if an email exists."""
