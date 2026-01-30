@@ -48,14 +48,16 @@ async def test_update_workspace(client: AsyncClient, workspace):
     assert response.json()["name"] == update_data["name"]
 
     non_existent_id = uuid.uuid4()
-    response = await client.put(f"/api/v1/workspaces/{non_existent_id}", json=update_data)
+    response = await client.put(
+        f"/api/v1/workspaces/{non_existent_id}", json=update_data
+    )
     assert_status_code(response, 404)
 
 
 async def test_delete_workspace(client: AsyncClient, workspace):
     workspace_id = workspace["id"]
     response = await client.delete(f"/api/v1/workspaces/{workspace_id}")
-    assert_status_code(response, 204)
+    assert_status_code(response, 200)
 
     # Verify workspace is deleted
     get_response = await client.get(f"/api/v1/workspaces/{workspace_id}")

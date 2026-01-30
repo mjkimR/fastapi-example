@@ -41,9 +41,9 @@ class WorkspaceNotificationPayload(BaseModel):
     def from_orm(
         cls, orm_obj: "Workspace", user_id: uuid.UUID, event_type: WorkspaceEventType
     ) -> dict:
-        return cls(
-            id=orm_obj.id,
-            name=orm_obj.name,
-            user_id=user_id,
-            event_type=event_type,
-        ).model_dump()
+        return {
+            "id": str(orm_obj.id),
+            "name": orm_obj.name,
+            "user_id": str(user_id),
+            "event_type": event_type,
+        }
