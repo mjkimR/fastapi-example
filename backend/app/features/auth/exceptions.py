@@ -1,4 +1,9 @@
-from app.base.exceptions.basic import BadRequestException, ForbiddenException, NotFoundException, ConflictException
+from app.base.exceptions.basic import (
+    BadRequestException,
+    ForbiddenException,
+    NotFoundException,
+    ConflictException,
+)
 
 
 class IncorrectEmailOrPasswordException(BadRequestException):

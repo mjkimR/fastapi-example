@@ -10,11 +10,11 @@ class CustomException(Exception):
     trace = True
 
     def __init__(
-            self,
-            message: Optional[str] = None,
-            log_message: Optional[str] = None,
-            status_code: Optional[int] = None,
-            trace: Optional[bool] = None,
+        self,
+        message: Optional[str] = None,
+        log_message: Optional[str] = None,
+        status_code: Optional[int] = None,
+        trace: Optional[bool] = None,
     ):
         if message is not None:
             self.message = message

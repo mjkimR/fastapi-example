@@ -5,6 +5,7 @@ from app.features.auth.schemas import UserDbCreate, UserDbUpdate
 
 class UserRepository(BaseRepository[User, UserDbCreate, UserDbUpdate]):
     """Repository for User model."""
+
     model = User
 
     async def get_by_email(self, session, email: str) -> User | None:

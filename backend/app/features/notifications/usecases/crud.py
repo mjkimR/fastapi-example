@@ -17,5 +17,7 @@ class CreateNotificationUseCase:
         self, notification_data: NotificationCreate, context: Optional[dict] = None
     ) -> Notification:
         async with AsyncTransaction() as session:
-            notification = await self.service.create(session, notification_data, context=context)
+            notification = await self.service.create(
+                session, notification_data, context=context
+            )
             return notification

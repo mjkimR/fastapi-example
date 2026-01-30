@@ -23,7 +23,10 @@ class DeleteUserUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, user_id: UUID, current_user: User, context: Optional[TContextKwargs] = None
+        self,
+        user_id: UUID,
+        current_user: User,
+        context: Optional[TContextKwargs] = None,
     ) -> bool:
         if current_user.id == user_id:
             raise UserCantDeleteItselfException()
@@ -36,7 +39,7 @@ class CreateUserUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
+        self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
     ) -> User:
         async with AsyncTransaction() as session:
             return await self.service.create_user(session, obj_data)
@@ -47,7 +50,7 @@ class CreateAdminUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
+        self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
     ) -> User:
         async with AsyncTransaction() as session:
             return await self.service.create_admin(session, obj_data)

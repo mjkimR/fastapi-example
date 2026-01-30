@@ -9,10 +9,7 @@ class OrderByCriteria:
     """Container for individual ordering logic."""
 
     def __init__(
-            self,
-            alias: str,
-            func: OrderByLogicFunc,
-            description: Optional[str] = None
+        self, alias: str, func: OrderByLogicFunc, description: Optional[str] = None
     ):
         self.alias = alias
         self.func = func
@@ -26,8 +23,7 @@ class OrderByCriteria:
 
 
 def order_by_for(
-        alias: Optional[str] = None,
-        description: Optional[str] = None
+    alias: Optional[str] = None, description: Optional[str] = None
 ) -> Callable[[OrderByLogicFunc], OrderByCriteria]:
     """Decorator to create an OrderByCriteria instance from a sorting logic function.
 

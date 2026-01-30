@@ -20,7 +20,11 @@ class Outbox(Base, UUIDMixin, TimestampMixin):
     aggregate_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String(255), nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    status: Mapped[EventStatus] = mapped_column(EnumColumn(EventStatus), nullable=False, default=EventStatus.PENDING, index=True)
-    
+    status: Mapped[EventStatus] = mapped_column(
+        EnumColumn(EventStatus), nullable=False, default=EventStatus.PENDING, index=True
+    )
+
     retry_count: Mapped[int] = mapped_column(default=0)
-    processed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    processed_at: Mapped[Optional[datetime.datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

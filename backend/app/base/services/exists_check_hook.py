@@ -11,8 +11,13 @@ from app.base.services.base import BaseUpdateHooks, BaseDeleteHooks, TContextKwa
 class ExistsCheckHooksMixin(BaseUpdateHooks, BaseDeleteHooks):
 
     @asynccontextmanager
-    async def _context_update(self, session: AsyncSession, obj_id: uuid.UUID, obj_data: UpdateSchemaType,
-                              context: TContextKwargs):
+    async def _context_update(
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        obj_data: UpdateSchemaType,
+        context: TContextKwargs,
+    ):
         if not await self.repo.get_by_pk(session, obj_id):
             raise NotFoundException(
                 log_message=f"{self.repo.model_repr(obj_id)} does not exist."
@@ -20,7 +25,9 @@ class ExistsCheckHooksMixin(BaseUpdateHooks, BaseDeleteHooks):
         yield
 
     @asynccontextmanager
-    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
+    async def _context_delete(
+        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
+    ):
         if await self.repo.get_by_pk(session, obj_id) is None:
             raise NotFoundException(
                 log_message=f"{self.repo.model_repr(obj_id)} does not exist."

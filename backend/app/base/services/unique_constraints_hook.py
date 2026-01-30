@@ -17,7 +17,9 @@ from app.base.services.base import (
 )
 
 
-class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta):
+class UniqueConstraintHooksMixin(
+    BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta
+):
     """
     Async Generator-based Unique Constraint Check Hook.
 
@@ -37,9 +39,9 @@ class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc
 
     @abc.abstractmethod
     async def _unique_constraints(
-            self,
-            obj_data: Union[CreateSchemaType, UpdateSchemaType],
-            context: TContextKwargs,
+        self,
+        obj_data: Union[CreateSchemaType, UpdateSchemaType],
+        context: TContextKwargs,
     ) -> AsyncIterator[Tuple[ColumnElement[bool], str]]:
         """
         [Override Required] Yields SQLAlchemy conditions to check for uniqueness.
@@ -56,11 +58,11 @@ class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc
         yield
 
     async def _check_constraint(
-            self,
-            session: AsyncSession,
-            condition: ColumnElement[bool],
-            message: str,
-            exclude_id: Any = None,
+        self,
+        session: AsyncSession,
+        condition: ColumnElement[bool],
+        message: str,
+        exclude_id: Any = None,
     ) -> None:
         """Executes the DB query to check if the unique condition is violated."""
         if exclude_id is not None:
@@ -75,10 +77,10 @@ class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc
             raise BadRequestException(message)
 
     async def _process_constraints(
-            self,
-            session: AsyncSession,
-            constraints: AsyncIterator[Tuple[ColumnElement[bool], str]],
-            exclude_id: Any = None,
+        self,
+        session: AsyncSession,
+        constraints: AsyncIterator[Tuple[ColumnElement[bool], str]],
+        exclude_id: Any = None,
     ) -> None:
         """Iterates over the constraints generator and performs checks."""
         async for item in constraints:
@@ -96,7 +98,7 @@ class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc
 
     @asynccontextmanager
     async def _context_create(
-            self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
+        self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
     ):
         """
         Extends the create context to run unique constraint checks.
@@ -108,11 +110,11 @@ class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc
 
     @asynccontextmanager
     async def _context_update(
-            self,
-            session: AsyncSession,
-            obj_id: uuid.UUID,
-            obj_data: UpdateSchemaType,
-            context: TContextKwargs,
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        obj_data: UpdateSchemaType,
+        context: TContextKwargs,
     ):
         """
         Extends the update context to run unique constraint checks, excluding the current object.

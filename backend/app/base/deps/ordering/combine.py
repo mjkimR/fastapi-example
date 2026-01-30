@@ -6,9 +6,9 @@ from app.base.deps.ordering.base import OrderByCriteria
 
 
 def create_order_by_dependency(
-        *criteria: OrderByCriteria,
-        default_order: str = "-created_at",
-        tie_breaker: Optional[OrderByCriteria] = None
+    *criteria: OrderByCriteria,
+    default_order: str = "-created_at",
+    tie_breaker: Optional[OrderByCriteria] = None,
 ) -> Callable:
     """Creates a FastAPI dependency for handling dynamic order_by query parameters.
 
@@ -44,16 +44,15 @@ def create_order_by_dependency(
 
     desc_lines.append("\n**Usage:**")
     desc_lines.append("* Prefix with `-` for descending order (e.g., `-title`).")
-    desc_lines.append("* Multiple fields can be separated by commas (e.g., `-created_at,title`).")
+    desc_lines.append(
+        "* Multiple fields can be separated by commas (e.g., `-created_at,title`)."
+    )
     desc_lines.append(f"* **Default:** `{default_order}`")
 
     final_description = "\n".join(desc_lines)
 
     def dependency(
-            order_by: Optional[str] = Query(
-                default=None,
-                description=final_description
-            )
+        order_by: Optional[str] = Query(default=None, description=final_description)
     ) -> List[ColumnElement]:
         if not order_by:
             order_by = default_order

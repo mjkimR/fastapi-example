@@ -19,20 +19,23 @@ logger = logging.getLogger(__name__)
 
 
 async def create_first_user(
-        session: AsyncSession,
-        service: UserService,
+    session: AsyncSession,
+    service: UserService,
 ):
     email = service.settings.FIRST_USER_EMAIL
     password = service.settings.FIRST_USER_PASSWORD.get_secret_value()
     result = await session.execute(select(User).where(User.email == email))
     user: Optional[User] = result.scalars().first()
     if user is None:
-        return await service.create_admin(session, UserCreate(
-            email=email,
-            password=SecretStr(password),
-            name="Admin",
-            surname="Admin",
-        ))
+        return await service.create_admin(
+            session,
+            UserCreate(
+                email=email,
+                password=SecretStr(password),
+                name="Admin",
+                surname="Admin",
+            ),
+        )
 
 
 async def main():
@@ -42,10 +45,7 @@ async def main():
         repo=UserRepository(),
     )
     async with AsyncTransaction() as session:
-        await create_first_user(
-            session=session,
-            service=service
-        )
+        await create_first_user(session=session, service=service)
     logger.info("Initial data created")
 
 

@@ -3,7 +3,7 @@ from typing import Callable, Any
 
 
 def filter_for(
-        bound_type: type, alias=None, description=None, **query_params
+    bound_type: type, alias=None, description=None, **query_params
 ) -> Callable[[Callable[..., Any]], SimpleFilterCriteriaBase]:
     """
     Decorator to create a SimpleFilterCriteriaBase subclass from a filter logic function.

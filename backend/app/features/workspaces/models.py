@@ -15,5 +15,9 @@ class Workspace(Base, UUIDMixin, TimestampMixin, AuditMixin):
 
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    memos: Mapped[List["Memo"]] = relationship(back_populates="workspace", cascade="all, delete-orphan")
-    tags: Mapped[List["Tag"]] = relationship(back_populates="workspace", cascade="all, delete-orphan")
+    memos: Mapped[List["Memo"]] = relationship(
+        back_populates="workspace", cascade="all, delete-orphan"
+    )
+    tags: Mapped[List["Tag"]] = relationship(
+        back_populates="workspace", cascade="all, delete-orphan"
+    )

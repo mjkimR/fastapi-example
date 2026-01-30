@@ -3,7 +3,11 @@ from datetime import datetime, timezone
 from typing import Optional, Union, Generic, Sequence, TypeVar, Any
 
 from sqlalchemy import (
-    select, update, delete, literal, func,
+    select,
+    update,
+    delete,
+    literal,
+    func,
 )
 from sqlalchemy import Column, inspect as sa_inspect
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,7 +55,8 @@ class BaseRepository(
 
         if len(self._primary_keys) != len(pk_values):
             raise ValueError(
-                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}."
+            )
         pk_str = ", ".join(
             f"{pk_col.key}={str(value)}"
             for pk_col, value in zip(self._primary_keys, pk_values)
@@ -77,17 +82,13 @@ class BaseRepository(
 
         if len(self._primary_keys) != len(pk_values):
             raise ValueError(
-                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}."
+            )
 
-        return [
-            pk_col == value
-            for pk_col, value in zip(self._primary_keys, pk_values)
-        ]
+        return [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)]
 
     def _select(
-            self,
-            where: WhereClause = (),
-            order_by: Sequence[UnaryExpression] = ()
+        self, where: WhereClause = (), order_by: Sequence[UnaryExpression] = ()
     ) -> Select:
         stmt = select(self.model)
         if where is not None:
@@ -106,10 +107,10 @@ class BaseRepository(
         return stmt
 
     async def get(
-            self,
-            session: AsyncSession,
-            where: WhereClause = (),
-            order_by: Sequence[UnaryExpression] = ()
+        self,
+        session: AsyncSession,
+        where: WhereClause = (),
+        order_by: Sequence[UnaryExpression] = (),
     ) -> Optional[ModelType]:
         stmt = self._select(where, order_by)
         stmt = stmt.limit(1)
@@ -118,9 +119,9 @@ class BaseRepository(
         return db_row.scalar_one_or_none()
 
     async def get_by_pk(
-            self,
-            session: AsyncSession,
-            pk: PrimaryKeyType,
+        self,
+        session: AsyncSession,
+        pk: PrimaryKeyType,
     ) -> Optional[ModelType]:
         if not self._primary_keys:
             raise ValueError("No primary key defined for this model.")
@@ -133,7 +134,8 @@ class BaseRepository(
 
         if len(self._primary_keys) != len(pk_values):
             raise ValueError(
-                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}.")
+                f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}."
+            )
 
         if len(self._primary_keys) == 1:
             ident = pk_values[0]
@@ -143,9 +145,9 @@ class BaseRepository(
         return await session.get(self.model, ident)
 
     async def exists(
-            self,
-            session: AsyncSession,
-            where: WhereClause = (),
+        self,
+        session: AsyncSession,
+        where: WhereClause = (),
     ) -> bool:
         stmt = select(literal(1))  # select 1
         stmt = stmt.select_from(self.model)
@@ -157,10 +159,10 @@ class BaseRepository(
         return result.scalar_one_or_none() is not None
 
     async def create(
-            self,
-            session: AsyncSession,
-            obj_in: CreateSchemaType,
-            **update_fields: Any,
+        self,
+        session: AsyncSession,
+        obj_in: CreateSchemaType,
+        **update_fields: Any,
     ) -> ModelType:
         obj_dict = obj_in.model_dump()
         obj_dict.update(update_fields)
@@ -171,12 +173,12 @@ class BaseRepository(
         return db_obj
 
     async def get_multi(
-            self,
-            session: AsyncSession,
-            offset: int = 0,
-            limit: Optional[int] = 100,
-            where: WhereClause = (),
-            order_by: Sequence[UnaryExpression] = (),
+        self,
+        session: AsyncSession,
+        offset: int = 0,
+        limit: Optional[int] = 100,
+        where: WhereClause = (),
+        order_by: Sequence[UnaryExpression] = (),
     ) -> PaginatedList[ModelType]:
         if limit is not None and limit < 0:
             raise ValueError("Limit must be non-negative.")
@@ -207,10 +209,10 @@ class BaseRepository(
         )
 
     async def get_all(
-            self,
-            session: AsyncSession,
-            where: WhereClause = (),
-            order_by: Sequence[UnaryExpression] = ()
+        self,
+        session: AsyncSession,
+        where: WhereClause = (),
+        order_by: Sequence[UnaryExpression] = (),
     ) -> Sequence[ModelType]:
         res = await self.get_multi(
             session,
@@ -222,12 +224,12 @@ class BaseRepository(
         return res.items
 
     async def update_by_pk(
-            self,
-            session: AsyncSession,
-            pk: PrimaryKeyType,
-            obj_in: Union[UpdateSchemaType, dict[str, Any]],
-            return_updated_obj: bool = True,
-            **update_fields: Any,
+        self,
+        session: AsyncSession,
+        pk: PrimaryKeyType,
+        obj_in: Union[UpdateSchemaType, dict[str, Any]],
+        return_updated_obj: bool = True,
+        **update_fields: Any,
     ) -> Optional[ModelType]:
         filters = self._get_primary_key_filters(pk)
         if isinstance(obj_in, dict):
@@ -243,7 +245,9 @@ class BaseRepository(
         model_columns = {col.key for col in sa_inspect(self.model).mapper.columns}
         extra_fields = set(update_data.keys()) - model_columns
         if extra_fields:
-            raise ValueError(f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}")
+            raise ValueError(
+                f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}"
+            )
 
         stmt = update(self.model).filter(*filters).values(**update_data)
         result = await session.execute(stmt)
@@ -254,10 +258,10 @@ class BaseRepository(
         return await self.get(session, where=filters) if return_updated_obj else None
 
     async def delete_by_pk(
-            self,
-            session: AsyncSession,
-            pk: PrimaryKeyType,
-            soft_delete: bool = False,
+        self,
+        session: AsyncSession,
+        pk: PrimaryKeyType,
+        soft_delete: bool = False,
     ) -> bool:
         filters = self._get_primary_key_filters(pk)
         if soft_delete:
@@ -265,9 +269,12 @@ class BaseRepository(
 
             if not has_is_deleted:
                 raise ValueError(
-                    f"Soft delete requires the column '{self.is_deleted_column}' in model {self.model.__name__}.")
+                    f"Soft delete requires the column '{self.is_deleted_column}' in model {self.model.__name__}."
+                )
 
-            if self.deleted_at_column and not hasattr(self.model, self.deleted_at_column):
+            if self.deleted_at_column and not hasattr(
+                self.model, self.deleted_at_column
+            ):
                 raise ValueError(
                     f"Soft delete is configured to use '{self.deleted_at_column}', but it's missing in model {self.model.__name__}."
                 )

@@ -43,7 +43,7 @@ class OutboxService:
         update_data = OutboxUpdate(status=status)
         if status == EventStatus.COMPLETED:
             update_data.processed_at = datetime.datetime.now(datetime.timezone.utc)
-        
+
         if retry_count is not None:
             update_data.retry_count = retry_count
 

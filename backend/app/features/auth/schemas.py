@@ -29,7 +29,9 @@ class UserDbUpdate(BaseModel):
     name: str | None = Field(default=None, description="The user's first name.")
     surname: str | None = Field(default=None, description="The user's last name.")
     password: SecretStr | None = Field(default=None, description="The user's password.")
-    hashed_password: str | None = Field(default=None, description="The user's hashed password.")
+    hashed_password: str | None = Field(
+        default=None, description="The user's hashed password."
+    )
 
 
 class UserRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):

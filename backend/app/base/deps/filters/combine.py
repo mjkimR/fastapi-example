@@ -8,7 +8,7 @@ from app.base.deps.filters.exceptions import ConfigurationError, InvalidValueErr
 
 
 def create_combined_filter_dependency(
-        *filter_options: SqlFilterCriteriaBase,
+    *filter_options: SqlFilterCriteriaBase,
 ) -> Callable:
     """Dynamically creates a single FastAPI dependency from multiple filter criteria.
 

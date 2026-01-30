@@ -18,7 +18,7 @@ def set_exception_handler(app: FastAPI):
             status_code=exc.status_code,
             content={
                 "message": exc.message,
-            }
+            },
         )
 
     @app.exception_handler(HTTPException)
@@ -28,11 +28,13 @@ def set_exception_handler(app: FastAPI):
             status_code=exc.status_code,
             content={
                 "message": exc.detail,
-            }
+            },
         )
 
     @app.exception_handler(NotImplementedError)
-    async def not_implemented_exception_handler(_request: Request, exc: NotImplementedError):
+    async def not_implemented_exception_handler(
+        _request: Request, exc: NotImplementedError
+    ):
         return JSONResponse(
             status_code=HTTPStatus.NOT_IMPLEMENTED,
             content={
@@ -47,7 +49,7 @@ def set_exception_handler(app: FastAPI):
             status_code=HTTPStatus.BAD_REQUEST,
             content={
                 "message": "Invalid input provided.",
-            }
+            },
         )
 
     @app.exception_handler(Exception)

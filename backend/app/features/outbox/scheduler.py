@@ -28,7 +28,9 @@ async def process_outbox_events_job():
         try:
             repo = OutboxRepository()
 
-            events_to_process = await repo.get_and_lock_pending_events(session, limit=10)
+            events_to_process = await repo.get_and_lock_pending_events(
+                session, limit=10
+            )
 
             if not events_to_process:
                 logger.info("No pending outbox events found.")
@@ -64,7 +66,13 @@ async def process_outbox_events_job():
 @asynccontextmanager
 async def scheduler_lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(process_outbox_events_job, 'interval', seconds=10, id='process_outbox', max_instances=1)
+    scheduler.add_job(
+        process_outbox_events_job,
+        "interval",
+        seconds=10,
+        id="process_outbox",
+        max_instances=1,
+    )
     scheduler.start()
     logger.info("Scheduler started.")
     yield

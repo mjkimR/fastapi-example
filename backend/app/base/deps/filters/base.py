@@ -18,7 +18,9 @@ class SqlFilterCriteriaBase(metaclass=ABCMeta):
     """
 
     @abc.abstractmethod
-    def build_filter(self) -> Callable[..., Optional[Union[ColumnElement, list[ColumnElement]]]]:
+    def build_filter(
+        self,
+    ) -> Callable[..., Optional[Union[ColumnElement, list[ColumnElement]]]]:
         """Creates a FastAPI dependency that generates a filter condition.
 
         This abstract method must be implemented by all subclasses. The
@@ -44,11 +46,11 @@ class SimpleFilterCriteriaBase(SqlFilterCriteriaBase):
     """
 
     def __init__(
-            self,
-            alias: str,
-            bound_type: type,
-            description: Optional[str] = None,
-            **query_params: Any,
+        self,
+        alias: str,
+        bound_type: type,
+        description: Optional[str] = None,
+        **query_params: Any,
     ):
         """
         Initialize a simple filter criterion.
@@ -97,12 +99,12 @@ class SimpleFilterCriteriaBase(SqlFilterCriteriaBase):
         description = self.description or f"Filter query parameter ({self.alias})"
 
         def filter_dependency(
-                value: Optional[self.bound_type] = Query(  # type: ignore
-                    default=None,
-                    alias=self.alias,
-                    description=description,
-                    **self.query_params,
-                )
+            value: Optional[self.bound_type] = Query(  # type: ignore
+                default=None,
+                alias=self.alias,
+                description=description,
+                **self.query_params,
+            )
         ) -> Optional[ColumnElement]:
             """
             FastAPI dependency that returns the filter expression for this criterion.

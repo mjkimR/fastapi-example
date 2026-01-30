@@ -12,11 +12,13 @@ router = APIRouter(tags=["Login"])
 
 @router.post("/login/", response_model=Token)
 async def login(
-        data: OAuth2PasswordRequestForm = Depends(),
-        session: AsyncSession = Depends(get_session),
-        service: UserService = Depends(),
+    data: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_session),
+    service: UserService = Depends(),
 ):
-    user = await service.authenticate(session, email=data.username, password=data.password)
+    user = await service.authenticate(
+        session, email=data.username, password=data.password
+    )
     if user is None:
         raise IncorrectEmailOrPasswordException()
     return Token(

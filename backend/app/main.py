@@ -35,7 +35,8 @@ def create_app():
             "persistAuthorization": True,
             "docExpansion": "none",
             "filter": True,
-        })
+        },
+    )
 
     @app.get("/")
     async def root():

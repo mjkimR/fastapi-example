@@ -5,4 +5,5 @@ from app.features.memos.schemas import MemoCreate, MemoUpdate
 
 class MemoRepository(BaseRepository[Memo, MemoCreate, MemoUpdate]):
     """Repository for Memo model."""
+
     model = Memo

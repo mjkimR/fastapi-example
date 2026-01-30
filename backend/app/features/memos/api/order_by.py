@@ -22,7 +22,9 @@ def order_by_id(desc: bool):
 
 
 MemoOrderByDepend = create_order_by_dependency(
-    order_by_title, order_by_created_at, order_by_id,
+    order_by_title,
+    order_by_created_at,
+    order_by_id,
     default_order="-created_at,id",
     tie_breaker=order_by_id,
 )

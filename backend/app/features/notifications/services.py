@@ -9,10 +9,13 @@ from app.features.notifications.schemas import NotificationCreate
 
 
 class NotificationService(
-    BaseCreateServiceMixin[NotificationRepository, Notification, NotificationCreate, dict],
+    BaseCreateServiceMixin[
+        NotificationRepository, Notification, NotificationCreate, dict
+    ],
 ):
     """Service class for handling notification operations."""
-    context_model = dict # No specific context needed for now
+
+    context_model = dict  # No specific context needed for now
 
     def __init__(self, repo: Annotated[NotificationRepository, Depends()]):
         self._repo = repo

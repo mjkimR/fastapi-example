@@ -17,7 +17,10 @@ class GetUserUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, user_id: UUID, current_user: User, context: Optional[TContextKwargs] = None
+        self,
+        user_id: UUID,
+        current_user: User,
+        context: Optional[TContextKwargs] = None,
     ) -> User:
         if current_user.id == user_id:
             return current_user
@@ -32,8 +35,11 @@ class UpdateUserUseCase(BaseUseCase):
         self.service = service
 
     async def execute(
-            self, obj_data: UserUpdate, user_id: UUID, current_user: User,
-            context: Optional[TContextKwargs] = None
+        self,
+        obj_data: UserUpdate,
+        user_id: UUID,
+        current_user: User,
+        context: Optional[TContextKwargs] = None,
     ) -> User:
         if current_user.id == user_id:
             return current_user

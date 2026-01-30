@@ -3,11 +3,17 @@ from typing import Any, Dict, Optional
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.base.services.base import (
-    BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks,
-    ModelType, TContextKwargs
+    BaseCreateHooks,
+    BaseUpdateHooks,
+    BaseDeleteHooks,
+    ModelType,
+    TContextKwargs,
 )
 
-class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta):
+
+class DomainEventHooksMixin(
+    BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta
+):
     """
     A base hook that publishes domain events after CUD (Create, Update, Delete) operations are completed.
     By default, it publishes the resource ID to topics such as 'ModelName.created'.
@@ -18,8 +24,9 @@ class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, m
         # Example: await self.event_bus.publish(topic, payload)
         pass
 
-
-    def _get_event_payload(self, event_type: str, obj_id: uuid.UUID, obj: Optional[ModelType] = None) -> Dict[str, Any]:
+    def _get_event_payload(
+        self, event_type: str, obj_id: uuid.UUID, obj: Optional[ModelType] = None
+    ) -> Dict[str, Any]:
         """
         Get the event payload.
 
@@ -32,7 +39,9 @@ class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, m
             "event_type": event_type,
         }
 
-    async def _post_create(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
+    async def _post_create(
+        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
+    ) -> ModelType:
         """
         Publish a domain event after an object is created.
         """
@@ -40,30 +49,38 @@ class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, m
         topic = f"{self.repo.model_name}.created"
         payload = self._get_event_payload("created", obj.id, obj)
         await self.publish_event(topic, payload)
-        
+
         return obj
 
-    async def _post_update(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
+    async def _post_update(
+        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
+    ) -> ModelType:
         """
         Publish a domain event after an object is updated.
         """
         obj = await super()._post_update(session, obj, context)
-        
+
         topic = f"{self.repo.model_name}.updated"
         payload = self._get_event_payload("updated", obj.id, obj)
         await self.publish_event(topic, payload)
-        
+
         return obj
 
-    async def _post_delete(self, session: AsyncSession, obj_id: uuid.UUID, result: bool, context: TContextKwargs) -> bool:
+    async def _post_delete(
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        result: bool,
+        context: TContextKwargs,
+    ) -> bool:
         """
         Publish a domain event after an object is deleted.
         """
         result = await super()._post_delete(session, obj_id, result, context)
-        
+
         if result:
             topic = f"{self.repo.model_name}.deleted"
             payload = self._get_event_payload("deleted", obj_id)
             await self.publish_event(topic, payload)
-            
+
         return result
