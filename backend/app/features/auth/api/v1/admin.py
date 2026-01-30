@@ -3,9 +3,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app.base.schemas.delete_resp import DeleteResponse
 from app.features.auth.deps import get_current_user, on_superuser
 from app.base.deps.params.page import PaginationParam
-from app.base.exceptions.basic import NotFoundException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserRead, UsersRead, UserCreate
 from app.features.auth.usecases.admin import (
@@ -22,8 +22,8 @@ router = APIRouter(
 
 @router.post("/user", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 async def create_user(
-        user_in: UserCreate,
-        use_case: Annotated[CreateUserUseCase, Depends()],
+    user_in: UserCreate,
+    use_case: Annotated[CreateUserUseCase, Depends()],
 ):
     """Create new user."""
     user = await use_case.execute(obj_data=user_in)
@@ -32,8 +32,8 @@ async def create_user(
 
 @router.post("/admin", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 async def create_admin(
-        user_in: UserCreate,
-        use_case: Annotated[CreateAdminUseCase, Depends()],
+    user_in: UserCreate,
+    use_case: Annotated[CreateAdminUseCase, Depends()],
 ):
     """Create new admin user."""
     user = await use_case.execute(obj_data=user_in)
@@ -42,21 +42,18 @@ async def create_admin(
 
 @router.get("/", response_model=UsersRead)
 async def read_users(
-        pagination: PaginationParam,
-        use_case: Annotated[GetMultiUserUseCase, Depends()],
+    pagination: PaginationParam,
+    use_case: Annotated[GetMultiUserUseCase, Depends()],
 ):
     """Get user list."""
     users = await use_case.execute(**pagination)
     return users
 
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", response_model=DeleteResponse)
 async def delete_user(
-        use_case: Annotated[DeleteUserUseCase, Depends()],
-        user_id: uuid.UUID,
-        current_user: Annotated[User, Depends(get_current_user)],
+    use_case: Annotated[DeleteUserUseCase, Depends()],
+    user_id: uuid.UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
-    if await use_case.execute(user_id, current_user):
-        return {"detail": f"User with id {user_id} has been deleted"}
-    else:
-        raise NotFoundException()
+    return await use_case.execute(user_id, current_user)

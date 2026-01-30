@@ -6,27 +6,38 @@ from typing_extensions import TypeVar
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.base.repos.base import BaseRepository, ModelType, CreateSchemaType, UpdateSchemaType
+from app.base.repos.base import (
+    BaseRepository,
+    ModelType,
+    CreateSchemaType,
+    UpdateSchemaType,
+)
+from app.base.schemas.delete_resp import DeleteResponse
 from app.base.schemas.paginated import PaginatedList
 from pydantic import TypeAdapter, ValidationError
 
 
 class BaseContextKwargs(TypedDict):
     """Base context kwargs (empty, for extension)."""
+
     pass
 
 
 TRepo = TypeVar("TRepo", bound=BaseRepository)
-TContextKwargs = TypeVar("TContextKwargs", bound=BaseContextKwargs, default=BaseContextKwargs)
+TContextKwargs = TypeVar(
+    "TContextKwargs", bound=BaseContextKwargs, default=BaseContextKwargs
+)
 
 
 class BaseHooksInterface:
     """Base Hooks Interface."""
+
     repo: BaseRepository
 
 
 class BaseServiceMixinInterface:
     """Base Service class."""
+
     repo: TRepo
     context_model: type[TContextKwargs]
 
@@ -49,8 +60,11 @@ class BaseServiceMixinInterface:
         return TypeAdapter(cast_to)
 
     @classmethod
-    def _ensure_context(cls, context: Optional[TContextKwargs],
-                        cast_to: type[TContextKwargs] = BaseContextKwargs) -> TContextKwargs:
+    def _ensure_context(
+        cls,
+        context: Optional[TContextKwargs],
+        cast_to: type[TContextKwargs] = BaseContextKwargs,
+    ) -> TContextKwargs:
         """
         Ensure context is not None.
 
@@ -71,25 +85,34 @@ class BaseServiceMixinInterface:
 # Create Hooks & Mixin
 # ============================================================
 
+
 class BaseCreateHooks(BaseHooksInterface):
     """Hook methods for Create operations."""
 
     @asynccontextmanager
-    async def _context_create(self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs):
+    async def _context_create(
+        self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
+    ):
         """Hook executed within a context before create (validation, cascade handling, etc.)."""
         yield
 
-    def _prepare_create_fields(self, obj_data: CreateSchemaType, context: TContextKwargs) -> dict[str, Any]:
+    def _prepare_create_fields(
+        self, obj_data: CreateSchemaType, context: TContextKwargs
+    ) -> dict[str, Any]:
         """Hook to prepare additional fields before create."""
         return {}
 
-    async def _post_create(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
+    async def _post_create(
+        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
+    ) -> ModelType:
         """Hook executed after create."""
         return obj
 
 
 class BaseCreateServiceMixin(
-    ABC, BaseCreateHooks, BaseServiceMixinInterface,
+    ABC,
+    BaseCreateHooks,
+    BaseServiceMixinInterface,
     Generic[TRepo, ModelType, CreateSchemaType, TContextKwargs],
 ):
     """
@@ -100,7 +123,10 @@ class BaseCreateServiceMixin(
     """
 
     async def create(
-            self, session: AsyncSession, obj_data: CreateSchemaType, context: Optional[TContextKwargs] = None
+        self,
+        session: AsyncSession,
+        obj_data: CreateSchemaType,
+        context: Optional[TContextKwargs] = None,
     ) -> ModelType:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_create(session, obj_data, context=ctx):
@@ -113,27 +139,39 @@ class BaseCreateServiceMixin(
 # Update Hooks & Mixin
 # ============================================================
 
+
 class BaseUpdateHooks(BaseHooksInterface):
     """Hook methods for Update operations."""
 
     @asynccontextmanager
-    async def _context_update(self, session: AsyncSession, obj_id: uuid.UUID, obj_data: UpdateSchemaType,
-                              context: TContextKwargs):
+    async def _context_update(
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        obj_data: UpdateSchemaType,
+        context: TContextKwargs,
+    ):
         """Hook executed within a context before update (validation, cascade handling, etc.)."""
         yield
 
-    def _prepare_update_fields(self, obj_data: UpdateSchemaType, context: TContextKwargs) -> dict[str, Any]:
+    def _prepare_update_fields(
+        self, obj_data: UpdateSchemaType, context: TContextKwargs
+    ) -> dict[str, Any]:
         """Hook to prepare additional fields before update."""
         return {}
 
-    async def _post_update(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
+    async def _post_update(
+        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
+    ) -> ModelType:
         """Hook executed after update."""
         return obj
 
 
 class BaseUpdateServiceMixin(
-    ABC, BaseUpdateHooks, BaseServiceMixinInterface,
-    Generic[TRepo, ModelType, UpdateSchemaType, TContextKwargs]
+    ABC,
+    BaseUpdateHooks,
+    BaseServiceMixinInterface,
+    Generic[TRepo, ModelType, UpdateSchemaType, TContextKwargs],
 ):
     """
     Update operation Mixin with hooks.
@@ -143,13 +181,18 @@ class BaseUpdateServiceMixin(
     """
 
     async def update(
-            self, session: AsyncSession, obj_id: uuid.UUID, obj_data: UpdateSchemaType,
-            context: Optional[TContextKwargs] = None
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        obj_data: UpdateSchemaType,
+        context: Optional[TContextKwargs] = None,
     ) -> ModelType:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_update(session, obj_id, obj_data, context=ctx):
             extra_fields = self._prepare_update_fields(obj_data, context=ctx)
-            obj = await self.repo.update_by_pk(session, pk=obj_id, obj_in=obj_data, **extra_fields)
+            obj = await self.repo.update_by_pk(
+                session, pk=obj_id, obj_in=obj_data, **extra_fields
+            )
             return await self._post_update(session, obj, context=ctx)
 
 
@@ -162,19 +205,28 @@ class BaseDeleteHooks(BaseHooksInterface):
     """Hook methods for Delete operations."""
 
     @asynccontextmanager
-    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
+    async def _context_delete(
+        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
+    ):
         """Hook executed within a context before delete (validation, cascade handling, etc.)."""
         yield
 
-    async def _post_delete(self, session: AsyncSession, obj_id: uuid.UUID, result: bool,
-                           context: TContextKwargs) -> bool:
+    async def _post_delete(
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        result: DeleteResponse,
+        context: TContextKwargs,
+    ) -> DeleteResponse:
         """Hook executed after delete."""
         return result
 
 
 class BaseDeleteServiceMixin(
-    ABC, BaseDeleteHooks, BaseServiceMixinInterface,
-    Generic[TRepo, ModelType, TContextKwargs]
+    ABC,
+    BaseDeleteHooks,
+    BaseServiceMixinInterface,
+    Generic[TRepo, ModelType, TContextKwargs],
 ):
     """
     Delete operation Mixin with hooks.
@@ -184,35 +236,46 @@ class BaseDeleteServiceMixin(
     """
 
     async def delete(
-            self, session: AsyncSession, obj_id: uuid.UUID, context: Optional[TContextKwargs] = None
-    ) -> bool:
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        context: Optional[TContextKwargs] = None,
+    ) -> DeleteResponse:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_delete(session, obj_id, context=ctx):
-            result = await self.repo.delete_by_pk(session, pk=obj_id)
-            return await self._post_delete(session, obj_id, result, context=ctx)
+            success = await self.repo.delete_by_pk(session, pk=obj_id)
+            result = DeleteResponse(success=success, identity=obj_id)
+            result = await self._post_delete(session, obj_id, result, context=ctx)
+            return result
 
 
 # ============================================================
 # Get (Single) Hooks & Mixin
 # ============================================================
 
+
 class BaseGetHooks(BaseHooksInterface):
     """Hook methods for Get (single item) operations."""
 
     @asynccontextmanager
-    async def _context_get(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
+    async def _context_get(
+        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
+    ):
         """Hook executed within a context before get (validation, cascade handling, etc.)."""
         yield
 
-    async def _post_get(self, session: AsyncSession, obj: ModelType | None,
-                        context: TContextKwargs) -> ModelType | None:
+    async def _post_get(
+        self, session: AsyncSession, obj: ModelType | None, context: TContextKwargs
+    ) -> ModelType | None:
         """Hook executed after get (data transformation, etc.)."""
         return obj
 
 
 class BaseGetServiceMixin(
-    ABC, BaseGetHooks, BaseServiceMixinInterface,
-    Generic[TRepo, ModelType, TContextKwargs]
+    ABC,
+    BaseGetHooks,
+    BaseServiceMixinInterface,
+    Generic[TRepo, ModelType, TContextKwargs],
 ):
     """
     Get (single item) operation Mixin with hooks.
@@ -222,7 +285,10 @@ class BaseGetServiceMixin(
     """
 
     async def get(
-            self, session: AsyncSession, obj_id: uuid.UUID, context: Optional[TContextKwargs] = None
+        self,
+        session: AsyncSession,
+        obj_id: uuid.UUID,
+        context: Optional[TContextKwargs] = None,
     ) -> ModelType | None:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_get(session, obj_id, context=ctx):
@@ -233,6 +299,7 @@ class BaseGetServiceMixin(
 # ============================================================
 # Get Multi (List) Hooks & Mixin
 # ============================================================
+
 
 class BaseGetMultiHooks(BaseHooksInterface):
     """Hook methods for Get Multi (list) operations."""
@@ -247,15 +314,20 @@ class BaseGetMultiHooks(BaseHooksInterface):
         return []
 
     async def _post_get_multi(
-            self, session: AsyncSession, result: PaginatedList[ModelType], context: TContextKwargs
+        self,
+        session: AsyncSession,
+        result: PaginatedList[ModelType],
+        context: TContextKwargs,
     ) -> PaginatedList[ModelType]:
         """Hook executed after get multi (data transformation, etc.)."""
         return result
 
 
 class BaseGetMultiServiceMixin(
-    ABC, BaseGetMultiHooks, BaseServiceMixinInterface,
-    Generic[TRepo, ModelType, TContextKwargs]
+    ABC,
+    BaseGetMultiHooks,
+    BaseServiceMixinInterface,
+    Generic[TRepo, ModelType, TContextKwargs],
 ):
     """
     Get Multi (list) operation Mixin with hooks.
@@ -265,10 +337,13 @@ class BaseGetMultiServiceMixin(
     """
 
     async def get_multi(
-            self, session: AsyncSession,
-            offset: int = 0, limit: int = 100,
-            order_by=None, where=None,
-            context: Optional[TContextKwargs] = None
+        self,
+        session: AsyncSession,
+        offset: int = 0,
+        limit: int = 100,
+        order_by=None,
+        where=None,
+        context: Optional[TContextKwargs] = None,
     ) -> PaginatedList[ModelType]:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_get_multi(session, context=ctx):

@@ -16,7 +16,9 @@ from app.features.auth.schemas import UserCreate, UserUpdate, UserDbCreate, User
 from app.base.services.base import (
     BaseGetServiceMixin,
     BaseGetMultiServiceMixin,
-    BaseDeleteServiceMixin, BaseContextKwargs, TRepo,
+    BaseDeleteServiceMixin,
+    BaseContextKwargs,
+    TRepo,
 )
 
 """
@@ -38,9 +40,9 @@ class UserService(
     context_model = BaseContextKwargs
 
     def __init__(
-            self,
-            settings: Annotated[AppSettings, Depends(get_app_settings)],
-            repo: Annotated[UserRepository, Depends()],
+        self,
+        settings: Annotated[AppSettings, Depends(get_app_settings)],
+        repo: Annotated[UserRepository, Depends()],
     ):
         self.settings = settings
         self._repo = repo
@@ -51,7 +53,9 @@ class UserService(
     def repo(self) -> UserRepository:
         return self._repo
 
-    async def validate_email_exists(self, session: AsyncSession, email: Union[str, EmailStr]) -> None:
+    async def validate_email_exists(
+        self, session: AsyncSession, email: Union[str, EmailStr]
+    ) -> None:
         """Validate if an email exists."""
         if await self.repo.exists(session, where=User.email == str(email)):
             raise UserAlreadyExistsException()
@@ -81,12 +85,14 @@ class UserService(
         return await self.repo.create(session, user_data)
 
     async def update_user(
-            self, session: AsyncSession, obj_data: UserUpdate, user_id: UUID
+        self, session: AsyncSession, obj_data: UserUpdate, user_id: UUID
     ) -> User:
         """Update an existing user."""
         user_data = UserDbUpdate(**obj_data.model_dump(exclude={"password"}))
         if obj_data.password:
-            user_data.hashed_password = self.get_password_hash(obj_data.password.get_secret_value())
+            user_data.hashed_password = self.get_password_hash(
+                obj_data.password.get_secret_value()
+            )
         return await self.repo.update_by_pk(session, pk=user_id, obj_in=user_data)
 
     async def get_by_email(self, session: AsyncSession, email: str) -> User | None:
@@ -94,7 +100,7 @@ class UserService(
         return await self.repo.get_by_email(session, email=email)
 
     async def authenticate(
-            self, session: AsyncSession, email: str, password: str
+        self, session: AsyncSession, email: str, password: str
     ) -> User | None:
         user = await self.repo.get_by_email(session, email=email)
         if user is not None and self.is_valid_password(password, user.hashed_password):
