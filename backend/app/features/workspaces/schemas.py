@@ -32,6 +32,7 @@ class WorkspaceNotificationPayload(BaseModel):
 
     id: uuid.UUID = Field(description="The ID of the workspace.")
     name: str = Field(description="The name of the workspace.")
+    user_id: uuid.UUID = Field(description="The ID of the user performing the action.")
     event_type: WorkspaceEventType = Field(
         description="The event type of the workspace notification."
     )

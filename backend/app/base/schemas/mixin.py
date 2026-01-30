@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List, Generic, TypeVar, Any, Sequence
-from pydantic import BaseModel, computed_field
+from typing import Optional
+from pydantic import BaseModel
 
 
 class UUIDSchemaMixin(BaseModel):
@@ -24,4 +24,4 @@ class SoftDeleteSchemaMixin(BaseModel):
 
 
 class TaggableSchemaMixin(BaseModel):
-    tags: Optional[List[str]] = None
+    tags: Optional[list[str]] = None

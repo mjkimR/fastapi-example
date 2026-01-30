@@ -122,10 +122,10 @@ class BaseUpdateUseCase(
     async def _post_execute(
         self,
         session: AsyncSession,
-        obj: ModelType,
+        obj: ModelType | None,
         obj_data: UpdateSchemaType,
         context: Optional[TContextKwargs],
-    ) -> ModelType:
+    ) -> ModelType | None:
         return obj
 
     async def execute(
@@ -133,7 +133,7 @@ class BaseUpdateUseCase(
         obj_id: UUID,
         obj_data: UpdateSchemaType,
         context: Optional[TContextKwargs] = None,
-    ) -> ModelType:
+    ) -> ModelType | None:
         async with AsyncTransaction() as session:
             async with self._context_execute(session, obj_data, context):
                 obj = await self.service.update(

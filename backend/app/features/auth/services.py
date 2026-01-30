@@ -37,7 +37,6 @@ class UserService(
     """Service class for handling user-related operations."""
 
     ALGORITHM = "HS256"
-    context_model = BaseContextKwargs
 
     def __init__(
         self,
@@ -52,6 +51,10 @@ class UserService(
     @property
     def repo(self) -> UserRepository:
         return self._repo
+
+    @property
+    def context_model(self):
+        return BaseContextKwargs
 
     async def validate_email_exists(
         self, session: AsyncSession, email: Union[str, EmailStr]
@@ -86,7 +89,7 @@ class UserService(
 
     async def update_user(
         self, session: AsyncSession, obj_data: UserUpdate, user_id: UUID
-    ) -> User:
+    ) -> User | None:
         """Update an existing user."""
         user_data = UserDbUpdate(**obj_data.model_dump(exclude={"password"}))
         if obj_data.password:

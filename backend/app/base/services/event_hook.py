@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.base.schemas.delete_resp import DeleteResponse
@@ -21,13 +21,13 @@ class DomainEventHooksMixin(
     """
 
     @abc.abstractmethod
-    async def publish_event(self, topic: str, payload: Dict[str, Any]) -> None:
+    async def publish_event(self, topic: str, payload: dict[str, Any]) -> None:
         # Example: await self.event_bus.publish(topic, payload)
         pass
 
     def _get_event_payload(
         self, event_type: str, obj_id: uuid.UUID, obj: Optional[ModelType] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get the event payload.
 

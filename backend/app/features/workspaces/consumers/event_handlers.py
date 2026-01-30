@@ -30,13 +30,13 @@ async def handle_workspace_created_event(payload: dict):
         notification_data = NotificationCreate(
             user_id=payload_obj.user_id,
             message=f"A new workspace '{payload_obj.name}' has been created.",
-            resource_id=payload_obj.workspace_id,
+            resource_id=payload_obj.id,
             resource_type=WORKSPACE_RES_NAME,
             event_type=payload_obj.event_type,
         )
         await create_notification_use_case.execute(notification_data)
         logger.info(
-            f"Notification created for user {payload_obj.user_id} regarding workspace {payload_obj.workspace_id}."
+            f"Notification created for user {payload_obj.user_id} regarding workspace {payload_obj.id}."
         )
     except Exception as e:
         logger.error(

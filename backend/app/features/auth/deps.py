@@ -36,6 +36,8 @@ async def get_current_user(
     session: Annotated[AsyncSession, Depends(get_session)],
     user_service: Annotated[UserService, Depends()],
 ) -> User:
+    if token.user_id is None:
+        raise InvalidCredentialsException()
     user = await user_service.get(session, obj_id=token.user_id)
     if user is None:
         raise UserNotFoundException()

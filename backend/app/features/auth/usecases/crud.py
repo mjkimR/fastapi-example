@@ -21,7 +21,7 @@ class GetUserUseCase(BaseUseCase):
         user_id: UUID,
         current_user: User,
         context: Optional[TContextKwargs] = None,
-    ) -> User:
+    ) -> User | None:
         if current_user.id == user_id:
             return current_user
         if current_user.role != User.Role.ADMIN:
@@ -40,7 +40,7 @@ class UpdateUserUseCase(BaseUseCase):
         user_id: UUID,
         current_user: User,
         context: Optional[TContextKwargs] = None,
-    ) -> User:
+    ) -> User | None:
         if current_user.id == user_id:
             return current_user
         if current_user.role != User.Role.ADMIN:

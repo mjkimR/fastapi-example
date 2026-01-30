@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends
@@ -33,15 +33,13 @@ class CreateMemoUseCase:
         self,
         memo_service: Annotated[MemoService, Depends()],
         tag_service: Annotated[TagService, Depends()],
-        outbox_service: Annotated[OutboxService, Depends()],  # NEW dependency
+        outbox_service: Annotated[OutboxService, Depends()],
     ) -> None:
         self.memo_service = memo_service
         self.tag_service = tag_service
-        self.outbox_service = outbox_service  # Store it
+        self.outbox_service = outbox_service
 
-    async def execute(
-        self, obj_in: MemoCreate, context: Optional[MemoContextKwargs] = None
-    ) -> Memo:
+    async def execute(self, obj_in: MemoCreate, context: MemoContextKwargs) -> Memo:
         async with AsyncTransaction() as session:
             tags = await self.tag_service.get_or_create_tags(
                 session, obj_in.tags, context
@@ -62,7 +60,7 @@ class CreateMemoUseCase:
                 aggregate_id=str(memo.id),
                 event_type=MemoEventType.CREATE,
                 payload=MemoNotificationPayload.from_orm(
-                    memo, context.user_id, MemoEventType.CREATE
+                    memo, context["user_id"], MemoEventType.CREATE
                 ),
             )
             await self.outbox_service.add_event(session, event_data)
@@ -84,7 +82,7 @@ class UpdateMemoUseCase:
         self,
         obj_id: UUID,
         obj_in: MemoUpdate,
-        context: Optional[MemoContextKwargs] = None,
+        context: MemoContextKwargs,
     ) -> Memo | None:
         async with AsyncTransaction() as session:
             memo = await self.memo_service.get(session, obj_id, context=context)

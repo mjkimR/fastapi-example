@@ -40,9 +40,6 @@ class MemoService(
 ):
     """Service class for handling memo-related operations within a workspace."""
 
-    context_model = MemoContextKwargs
-    fk_name = "workspace_id"
-
     def __init__(
         self,
         repo: Annotated[MemoRepository, Depends()],
@@ -58,3 +55,11 @@ class MemoService(
     @property
     def parent_repo(self) -> WorkspaceRepository:
         return self._parent_repo
+
+    @property
+    def context_model(self):
+        return MemoContextKwargs
+
+    @property
+    def fk_name(self) -> str:
+        return "workspace_id"

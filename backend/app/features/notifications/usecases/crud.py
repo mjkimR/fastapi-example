@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import Depends
 
+from app.base.services.base import BaseContextKwargs
 from app.core.database.transaction import AsyncTransaction
 from app.features.notifications.models import Notification
 from app.features.notifications.schemas import NotificationCreate
@@ -14,7 +15,9 @@ class CreateNotificationUseCase:
         self.service = service
 
     async def execute(
-        self, notification_data: NotificationCreate, context: Optional[dict] = None
+        self,
+        notification_data: NotificationCreate,
+        context: Optional[BaseContextKwargs] = None,
     ) -> Notification:
         async with AsyncTransaction() as session:
             notification = await self.service.create(

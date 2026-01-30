@@ -2,6 +2,7 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import Depends
+from app.base.schemas.delete_resp import DeleteResponse
 from app.core.database.transaction import AsyncTransaction
 
 from app.features.auth.exceptions import UserCantDeleteItselfException
@@ -27,7 +28,7 @@ class DeleteUserUseCase(BaseUseCase):
         user_id: UUID,
         current_user: User,
         context: Optional[TContextKwargs] = None,
-    ) -> bool:
+    ) -> DeleteResponse:
         if current_user.id == user_id:
             raise UserCantDeleteItselfException()
         async with AsyncTransaction() as session:
