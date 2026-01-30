@@ -99,7 +99,11 @@ class TestBaseCreateServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
+
+            @property
+            def repo(self):
+                return self._repo
 
         return TestCreateService()
 
@@ -130,8 +134,12 @@ class TestBaseCreateServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
                 self.repo.create.return_value = mock_model
+
+            @property
+            def repo(self):
+                return self._repo
 
             def _prepare_create_fields(self, obj_data, context):
                 return {"extra_field": "extra_value"}
@@ -159,7 +167,11 @@ class TestBaseUpdateServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
+
+            @property
+            def repo(self):
+                return self._repo
 
         return TestUpdateService()
 
@@ -183,8 +195,12 @@ class TestBaseUpdateServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
                 self.repo.update_by_pk.return_value = mock_model
+
+            @property
+            def repo(self):
+                return self._repo
 
             def _prepare_update_fields(self, obj_data, context):
                 return {"updated_by": uuid.uuid4()}
@@ -211,7 +227,11 @@ class TestBaseDeleteServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
+
+            @property
+            def repo(self):
+                return self._repo
 
         return TestDeleteService()
 
@@ -250,7 +270,11 @@ class TestBaseGetServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
+
+            @property
+            def repo(self):
+                return self._repo
 
         return TestGetService()
 
@@ -281,8 +305,12 @@ class TestBaseGetServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
                 self.repo.get_by_pk.return_value = mock_model
+
+            @property
+            def repo(self):
+                return self._repo
 
             async def _post_get(self, session, obj, context):
                 if obj:
@@ -310,7 +338,11 @@ class TestBaseGetMultiServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
+
+            @property
+            def repo(self):
+                return self._repo
 
         return TestGetMultiService()
 
@@ -345,9 +377,13 @@ class TestBaseGetMultiServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
                 paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
                 self.repo.get_multi.return_value = paginated
+
+            @property
+            def repo(self):
+                return self._repo
 
             def _prepare_get_multi_filters(self, context):
                 return [MagicMock(name="extra_filter")]
@@ -366,9 +402,13 @@ class TestBaseGetMultiServiceMixin:
             context_model = BaseContextKwargs
 
             def __init__(self):
-                self.repo = AsyncMock()
+                self._repo = AsyncMock()
                 paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
                 self.repo.get_multi.return_value = paginated
+
+            @property
+            def repo(self):
+                return self._repo
 
             def _prepare_get_multi_filters(self, context):
                 return [MagicMock(name="extra_filter")]

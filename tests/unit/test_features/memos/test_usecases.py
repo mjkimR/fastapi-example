@@ -93,15 +93,20 @@ class TestCreateMemoUseCase:
     """Tests for CreateMemoUseCase."""
 
     @pytest.fixture
-    def use_case(self):
+    def mock_outbox_service(self) -> AsyncMock:
+        """Create a mock OutboxService instance."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def use_case(self, mock_outbox_service: AsyncMock):
         """Create use case with mocked services."""
         memo_service = AsyncMock()
         tag_service = AsyncMock()
-        return CreateMemoUseCase(memo_service=memo_service, tag_service=tag_service)
+        return CreateMemoUseCase(memo_service=memo_service, tag_service=tag_service, outbox_service=mock_outbox_service)
 
     @pytest.mark.asyncio
-    async def test_execute_creates_memo_with_tags(self, use_case, mock_memo, mock_tags, mock_user, mock_workspace):
-        """Should create memo and associate tags."""
+    async def test_execute_creates_memo_with_tags(self, use_case, mock_memo, mock_tags, mock_user, mock_workspace, mock_outbox_service: AsyncMock):
+        """Should create memo, associate tags, and add outbox event."""
         use_case.tag_service.get_or_create_tags.return_value = mock_tags
         use_case.memo_service.create.return_value = mock_memo
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
@@ -120,19 +125,30 @@ class TestCreateMemoUseCase:
 
         use_case.tag_service.get_or_create_tags.assert_called_once_with(mock_session, memo_data.tags, context)
         use_case.memo_service.create.assert_called_once()
+        
+        # Assert outbox_service.add_event was called
+        mock_outbox_service.add_event.assert_called_once()
+        call_args = mock_outbox_service.add_event.call_args[0]
+        assert call_args[0] == mock_session
+        assert call_args[1].aggregate_type == "memo"
+        assert call_args[1].event_type == "MEMO_CREATED"
+        assert call_args[1].payload["id"] == str(mock_memo.id)
+        assert call_args[1].payload["created_by"] == str(mock_user.id)
+        assert call_args[1].payload["title"] == mock_memo.title
+        
         assert result == mock_memo
 
     @pytest.mark.asyncio
-    async def test_execute_creates_memo_without_tags(self, use_case, mock_memo, mock_user, mock_workspace):
-        """Should create memo without tags."""
+    async def test_execute_creates_memo_without_tags(self, use_case, mock_memo, mock_user, mock_workspace, mock_outbox_service: AsyncMock):
+        """Should create memo without tags and add outbox event."""
         use_case.tag_service.get_or_create_tags.return_value = []
         use_case.memo_service.create.return_value = mock_memo
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
 
         memo_data = MemoCreate(
             category="Test",
-            title="Test Title",
-            contents="Test Contents",
+            title="Test Title No Tags",
+            contents="Test Contents No Tags",
             tags=[]
         )
 
@@ -141,6 +157,19 @@ class TestCreateMemoUseCase:
             mock_tx.return_value.__aenter__.return_value = mock_session
             result = await use_case.execute(memo_data, context=context)
 
+        use_case.tag_service.get_or_create_tags.assert_called_once_with(mock_session, memo_data.tags, context)
+        use_case.memo_service.create.assert_called_once()
+        
+        # Assert outbox_service.add_event was called
+        mock_outbox_service.add_event.assert_called_once()
+        call_args = mock_outbox_service.add_event.call_args[0]
+        assert call_args[0] == mock_session
+        assert call_args[1].aggregate_type == "memo"
+        assert call_args[1].event_type == "MEMO_CREATED"
+        assert call_args[1].payload["id"] == str(mock_memo.id)
+        assert call_args[1].payload["created_by"] == str(mock_user.id)
+        assert call_args[1].payload["title"] == mock_memo.title # Verify title is passed
+        
         assert result == mock_memo
 
 

@@ -8,8 +8,6 @@ import pytest_asyncio
 from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from app.core.database.transaction import AsyncTransaction
-
 
 def get_base():
     """Lazy import of Base to avoid model registration conflicts."""
@@ -26,7 +24,7 @@ def event_loop_policy():
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def async_engine():
-    """Test SQLite async database engine fixture."""
+    """Test SQLite async database engine fixture, patch get_async_engine."""
     Base = get_base()
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
@@ -43,7 +41,7 @@ async def async_engine():
 
 @pytest_asyncio.fixture(name="session_maker")
 async def session_maker_fixture(async_engine, monkeypatch: pytest.MonkeyPatch):
-    """Create session maker and patch AsyncTransaction."""
+    """Create session maker and patch get_session_maker."""
     session_maker = async_sessionmaker(
         async_engine,
         class_=AsyncSession,
@@ -51,7 +49,10 @@ async def session_maker_fixture(async_engine, monkeypatch: pytest.MonkeyPatch):
         autocommit=False,
         autoflush=False,
     )
-    monkeypatch.setattr(AsyncTransaction, "DEFAULT_SESSION_MAKER", session_maker)
+    # Patch get_session_maker to return this test session_maker
+    from app.core.database import engine as db_engine_mod
+    monkeypatch.setattr(db_engine_mod, "get_async_engine", lambda: async_engine)
+    monkeypatch.setattr(db_engine_mod, "get_session_maker", lambda: session_maker)
     yield session_maker
 
 
@@ -60,7 +61,14 @@ async def session_fixture(session_maker):
     """Create a new database session for testing."""
     async with session_maker() as session:
         yield session
-        await session.rollback()
+        await session.commit()
+
+
+@pytest.fixture(name="inspect_session")
+async def inspect_session(session_maker):
+    """Fixture to provide a session for inspection without committing changes."""
+    async with session_maker() as session:
+        yield session
 
 # Optional: PostgreSQL support with testcontainers
 # Uncomment and install testcontainers-postgres if needed

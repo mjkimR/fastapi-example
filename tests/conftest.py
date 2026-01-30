@@ -55,6 +55,7 @@ from tests.fixtures.db import (
     async_engine,
     session_maker_fixture,
     session_fixture,
+    inspect_session,
 )
 
 # Authentication fixtures

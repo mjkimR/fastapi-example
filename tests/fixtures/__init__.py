@@ -7,6 +7,7 @@ from tests.fixtures.db import (
     async_engine,
     session_maker_fixture,
     session_fixture,
+    inspect_session,
 )
 from tests.fixtures.clients import (
     AsyncClientWithJson,

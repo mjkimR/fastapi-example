@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.core.database.engine import default_async_session_maker
+from app.core.database.engine import get_session_maker
 
 
 class AsyncTransaction:
@@ -18,8 +18,6 @@ class AsyncTransaction:
             await session.execute(...)
     """
 
-    DEFAULT_SESSION_MAKER = default_async_session_maker
-
     def __init__(self, session_maker: Optional[async_sessionmaker] = None) -> None:
         """Initialize AsyncTransaction with an async session maker.
 
@@ -27,9 +25,7 @@ class AsyncTransaction:
             session_maker: Optional async_sessionmaker to create sessions. If not
                 provided, uses ``app.core.database.async_session``.
         """
-        self._session_maker: async_sessionmaker = (
-                session_maker or self.DEFAULT_SESSION_MAKER
-        )
+        self._session_maker: async_sessionmaker = session_maker or get_session_maker()
         self._session: Optional[AsyncSession] = None
 
     async def __aenter__(self) -> AsyncSession:
