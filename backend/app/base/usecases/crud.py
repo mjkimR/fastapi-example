@@ -17,21 +17,23 @@ from app.base.services.base import (
 from app.core.database.transaction import AsyncTransaction
 from app.base.usecases.base import BaseUseCase
 
-TService = TypeVar(
-    "TService",
-    bound=Union[
-        BaseCreateServiceMixin,
-        BaseGetServiceMixin,
-        BaseGetMultiServiceMixin,
-        BaseUpdateServiceMixin,
-        BaseDeleteServiceMixin,
-        Any,
-    ],
+TBaseCreateService = TypeVar(
+    "TBaseCreateService", bound=Union[BaseCreateServiceMixin, Any]
+)
+TBaseGetMultiService = TypeVar(
+    "TBaseGetMultiService", bound=Union[BaseGetMultiServiceMixin, Any]
+)
+TBaseGetService = TypeVar("TBaseGetService", bound=Union[BaseGetServiceMixin, Any])
+TBaseUpdateService = TypeVar(
+    "TBaseUpdateService", bound=Union[BaseUpdateServiceMixin, Any]
+)
+TBaseDeleteService = TypeVar(
+    "TBaseDeleteService", bound=Union[BaseDeleteServiceMixin, Any]
 )
 
 
-class BaseGetUseCase(BaseUseCase, Generic[TService, ModelType, TContextKwargs]):
-    def __init__(self, service: TService):
+class BaseGetUseCase(BaseUseCase, Generic[TBaseGetService, ModelType, TContextKwargs]):
+    def __init__(self, service: TBaseGetService):
         self.service = service
 
     async def execute(
@@ -41,8 +43,10 @@ class BaseGetUseCase(BaseUseCase, Generic[TService, ModelType, TContextKwargs]):
             return await self.service.get(session, obj_id, context=context)
 
 
-class BaseGetMultiUseCase(BaseUseCase, Generic[TService, ModelType, TContextKwargs]):
-    def __init__(self, service: TService):
+class BaseGetMultiUseCase(
+    BaseUseCase, Generic[TBaseGetMultiService, ModelType, TContextKwargs]
+):
+    def __init__(self, service: TBaseGetMultiService):
         self.service = service
 
     async def execute(
@@ -65,9 +69,10 @@ class BaseGetMultiUseCase(BaseUseCase, Generic[TService, ModelType, TContextKwar
 
 
 class BaseCreateUseCase(
-    BaseUseCase, Generic[TService, ModelType, CreateSchemaType, TContextKwargs]
+    BaseUseCase,
+    Generic[TBaseCreateService, ModelType, CreateSchemaType, TContextKwargs],
 ):
-    def __init__(self, service: TService):
+    def __init__(self, service: TBaseCreateService):
         self.service = service
 
     @asynccontextmanager
@@ -99,9 +104,10 @@ class BaseCreateUseCase(
 
 
 class BaseUpdateUseCase(
-    BaseUseCase, Generic[TService, ModelType, UpdateSchemaType, TContextKwargs]
+    BaseUseCase,
+    Generic[TBaseUpdateService, ModelType, UpdateSchemaType, TContextKwargs],
 ):
-    def __init__(self, service: TService):
+    def __init__(self, service: TBaseUpdateService):
         self.service = service
 
     @asynccontextmanager
@@ -137,8 +143,10 @@ class BaseUpdateUseCase(
                 return obj
 
 
-class BaseDeleteUseCase(BaseUseCase, Generic[TService, ModelType, TContextKwargs]):
-    def __init__(self, service: TService):
+class BaseDeleteUseCase(
+    BaseUseCase, Generic[TBaseDeleteService, ModelType, TContextKwargs]
+):
+    def __init__(self, service: TBaseDeleteService):
         self.service = service
 
     @asynccontextmanager

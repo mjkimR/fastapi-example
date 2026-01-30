@@ -2,6 +2,7 @@ import abc
 from typing import Any, Dict, Optional
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.base.schemas.delete_resp import DeleteResponse
 from app.base.services.base import (
     BaseCreateHooks,
     BaseUpdateHooks,
@@ -70,15 +71,15 @@ class DomainEventHooksMixin(
         self,
         session: AsyncSession,
         obj_id: uuid.UUID,
-        result: bool,
+        result: DeleteResponse,
         context: TContextKwargs,
-    ) -> bool:
+    ) -> DeleteResponse:
         """
         Publish a domain event after an object is deleted.
         """
         result = await super()._post_delete(session, obj_id, result, context)
 
-        if result:
+        if result.success:
             topic = f"{self.repo.model_name}.deleted"
             payload = self._get_event_payload("deleted", obj_id)
             await self.publish_event(topic, payload)

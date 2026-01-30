@@ -14,7 +14,7 @@ from app.base.repos.base import (
 )
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.schemas.paginated import PaginatedList
-from pydantic import TypeAdapter, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 
 class BaseContextKwargs(TypedDict):
@@ -38,12 +38,9 @@ class BaseHooksInterface:
 class BaseServiceMixinInterface:
     """Base Service class."""
 
-    repo: TRepo
-    context_model: type[TContextKwargs]
-
     @property
     @abstractmethod
-    def repo(self) -> TRepo:
+    def repo(self) -> BaseRepository:
         """Repository instance."""
         pass
 
@@ -55,7 +52,7 @@ class BaseServiceMixinInterface:
 
     @classmethod
     @lru_cache
-    def _get_adapter(cls, cast_to: type[TContextKwargs]) -> TypeAdapter[TContextKwargs]:
+    def _get_adapter(cls, cast_to: Any) -> TypeAdapter[TContextKwargs]:
         """Get Pydantic TypeAdapter for the given context type."""
         return TypeAdapter(cast_to)
 
@@ -63,7 +60,7 @@ class BaseServiceMixinInterface:
     def _ensure_context(
         cls,
         context: Optional[TContextKwargs],
-        cast_to: type[TContextKwargs] = BaseContextKwargs,
+        cast_to: Any = BaseContextKwargs,
     ) -> TContextKwargs:
         """
         Ensure context is not None.
@@ -71,12 +68,10 @@ class BaseServiceMixinInterface:
         If context is None, returns an empty dict cast to TContextKwargs.
         Note: If TContextKwargs has required fields, caller must provide a valid context.
         """
-        if context is None:
-            context = {}
-        # Use Pydantic TypeAdapter to validate and cast the context
+        _context = context if context is not None else {}
         try:
             adapter = cls._get_adapter(cast_to)
-            return adapter.validate_python(context)
+            return adapter.validate_python(_context)
         except ValidationError as e:
             raise ValueError(f"Invalid context provided: {e}") from e
 
@@ -91,13 +86,13 @@ class BaseCreateHooks(BaseHooksInterface):
 
     @asynccontextmanager
     async def _context_create(
-        self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
+        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
     ):
         """Hook executed within a context before create (validation, cascade handling, etc.)."""
         yield
 
     def _prepare_create_fields(
-        self, obj_data: CreateSchemaType, context: TContextKwargs
+        self, obj_data: BaseModel, context: TContextKwargs
     ) -> dict[str, Any]:
         """Hook to prepare additional fields before create."""
         return {}
@@ -148,14 +143,14 @@ class BaseUpdateHooks(BaseHooksInterface):
         self,
         session: AsyncSession,
         obj_id: uuid.UUID,
-        obj_data: UpdateSchemaType,
+        obj_data: BaseModel,
         context: TContextKwargs,
     ):
         """Hook executed within a context before update (validation, cascade handling, etc.)."""
         yield
 
     def _prepare_update_fields(
-        self, obj_data: UpdateSchemaType, context: TContextKwargs
+        self, obj_data: BaseModel, context: TContextKwargs
     ) -> dict[str, Any]:
         """Hook to prepare additional fields before update."""
         return {}
@@ -186,7 +181,7 @@ class BaseUpdateServiceMixin(
         obj_id: uuid.UUID,
         obj_data: UpdateSchemaType,
         context: Optional[TContextKwargs] = None,
-    ) -> ModelType:
+    ) -> ModelType | None:
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_update(session, obj_id, obj_data, context=ctx):
             extra_fields = self._prepare_update_fields(obj_data, context=ctx)
@@ -341,8 +336,8 @@ class BaseGetMultiServiceMixin(
         session: AsyncSession,
         offset: int = 0,
         limit: int = 100,
-        order_by=None,
-        where=None,
+        order_by=(),
+        where=(),
         context: Optional[TContextKwargs] = None,
     ) -> PaginatedList[ModelType]:
         ctx = self._ensure_context(context, self.context_model)

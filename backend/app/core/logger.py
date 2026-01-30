@@ -6,7 +6,7 @@ from contextvars import ContextVar
 from loguru import logger
 
 # Request ID context variable
-request_id_var = ContextVar[str]("request_id", default=None)
+request_id_var = ContextVar[str]("request_id", default="N/A")
 
 
 def get_request_id():

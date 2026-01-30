@@ -3,6 +3,7 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Tuple, Union
 
+from pydantic import BaseModel
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import ColumnElement
@@ -55,7 +56,7 @@ class UniqueConstraintHooksMixin(
         """
         # This is an async generator abstract method.
         # Subclasses must implement this method and use 'yield'.
-        yield
+        yield  # type: ignore (abstract async generator)
 
     async def _check_constraint(
         self,
@@ -98,7 +99,7 @@ class UniqueConstraintHooksMixin(
 
     @asynccontextmanager
     async def _context_create(
-        self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
+        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
     ):
         """
         Extends the create context to run unique constraint checks.
@@ -113,7 +114,7 @@ class UniqueConstraintHooksMixin(
         self,
         session: AsyncSession,
         obj_id: uuid.UUID,
-        obj_data: UpdateSchemaType,
+        obj_data: BaseModel,
         context: TContextKwargs,
     ):
         """

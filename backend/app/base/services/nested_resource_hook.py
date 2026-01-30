@@ -4,10 +4,11 @@ from abc import abstractmethod
 from contextlib import asynccontextmanager
 from typing import Required, Any
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.base.exceptions.basic import NotFoundException
-from app.base.repos.base import BaseRepository, CreateSchemaType, UpdateSchemaType
+from app.base.repos.base import BaseRepository
 from app.base.services.base import (
     BaseCreateHooks,
     BaseContextKwargs,
@@ -81,7 +82,7 @@ class NestedResourceHooksMixin(
 
     @asynccontextmanager
     async def _context_create(
-        self, session: AsyncSession, obj_data: CreateSchemaType, context: TContextKwargs
+        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
     ):
         async with super()._context_create(session, obj_data, context):
             parent_id = context["parent_id"]
@@ -89,7 +90,7 @@ class NestedResourceHooksMixin(
             yield
 
     def _prepare_create_fields(
-        self, obj_data: CreateSchemaType, context: TContextKwargs
+        self, obj_data: BaseModel, context: TContextKwargs
     ) -> dict[str, Any]:
         """Inject parent_id into the creation data."""
         data = super()._prepare_create_fields(obj_data, context)
@@ -139,7 +140,7 @@ class NestedResourceHooksMixin(
         self,
         session: AsyncSession,
         obj_id: uuid.UUID,
-        obj_data: UpdateSchemaType,
+        obj_data: BaseModel,
         context: TContextKwargs,
     ):
         """Ensure the object being updated belongs to the parent context."""

@@ -101,9 +101,10 @@ class BaseRepository(
         if order_by is not None and order_by != ():
             stmt = stmt.order_by(*order_by)
         else:
-            default_order_by = getattr(self.model, self.default_order_by_col, None)
-            if default_order_by is not None:
-                stmt = stmt.order_by(default_order_by.desc())
+            if self.default_order_by_col:
+                default_order_by = getattr(self.model, self.default_order_by_col)
+                if default_order_by is not None:
+                    stmt = stmt.order_by(default_order_by.desc())
         return stmt
 
     async def get(
@@ -152,7 +153,8 @@ class BaseRepository(
         stmt = select(literal(1))  # select 1
         stmt = stmt.select_from(self.model)
         if where is not None:
-            stmt = stmt.where(where)
+            where = where if isinstance(where, Sequence) else (where,)
+            stmt = stmt.where(*where)
         stmt = stmt.limit(1)
 
         result = await session.execute(stmt)
@@ -265,6 +267,8 @@ class BaseRepository(
     ) -> bool:
         filters = self._get_primary_key_filters(pk)
         if soft_delete:
+            if not self.is_deleted_column:
+                raise ValueError("is_deleted_column is not configured for soft delete.")
             has_is_deleted = hasattr(self.model, self.is_deleted_column)
 
             if not has_is_deleted:

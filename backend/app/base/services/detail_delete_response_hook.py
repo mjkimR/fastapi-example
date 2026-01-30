@@ -1,8 +1,8 @@
+from typing import Any
 import uuid
 from abc import abstractmethod
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.base.repos.base import ModelType
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.services.base import BaseDeleteHooks, TContextKwargs
 
@@ -11,7 +11,7 @@ class DetailDeleteResponseHookMixin(BaseDeleteHooks):
     _delete_represent_text: str
 
     @abstractmethod
-    def _parse_delete_represent_text(self, obj: ModelType) -> str:
+    def _parse_delete_represent_text(self, obj: Any) -> str:
         pass
 
     def _set_delete_represent_text(self, text: str) -> None:

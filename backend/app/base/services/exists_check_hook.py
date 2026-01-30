@@ -1,10 +1,10 @@
 import uuid
 from contextlib import asynccontextmanager
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.base.exceptions.basic import NotFoundException
-from app.base.repos.base import UpdateSchemaType
 from app.base.services.base import BaseUpdateHooks, BaseDeleteHooks, TContextKwargs
 
 
@@ -15,7 +15,7 @@ class ExistsCheckHooksMixin(BaseUpdateHooks, BaseDeleteHooks):
         self,
         session: AsyncSession,
         obj_id: uuid.UUID,
-        obj_data: UpdateSchemaType,
+        obj_data: BaseModel,
         context: TContextKwargs,
     ):
         if not await self.repo.get_by_pk(session, obj_id):

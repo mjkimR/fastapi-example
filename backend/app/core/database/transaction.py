@@ -31,6 +31,8 @@ class AsyncTransaction:
     async def __aenter__(self) -> AsyncSession:
         """Create and return a new AsyncSession instance."""
         self._session = self._session_maker()
+        if self._session is None:
+            raise RuntimeError("Failed to create AsyncSession")
         return self._session
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
