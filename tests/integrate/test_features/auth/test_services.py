@@ -38,7 +38,7 @@ class TestUserServiceIntegration:
             name="Service",
             surname="Test",
             email="servicetest@example.com",
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
 
         result = await service.create_user(session, user_data)
@@ -56,7 +56,7 @@ class TestUserServiceIntegration:
             name="Admin",
             surname="User",
             email="adminservice@example.com",
-            password=SecretStr("adminpassword123")
+            password=SecretStr("adminpassword123"),
         )
 
         result = await service.create_admin(session, user_data)
@@ -65,20 +65,24 @@ class TestUserServiceIntegration:
         assert result.role == User.Role.ADMIN
 
     @pytest.mark.asyncio
-    async def test_create_user_duplicate_email(self, session: AsyncSession, service: UserService, regular_user: User):
+    async def test_create_user_duplicate_email(
+        self, session: AsyncSession, service: UserService, regular_user: User
+    ):
         """Should raise exception when creating user with duplicate email."""
         user_data = UserCreate(
             name="Duplicate",
             surname="User",
             email=regular_user.email,
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
 
         with pytest.raises(UserAlreadyExistsException):
             await service.create_user(session, user_data)
 
     @pytest.mark.asyncio
-    async def test_get_user_by_email(self, session: AsyncSession, service: UserService, regular_user: User):
+    async def test_get_user_by_email(
+        self, session: AsyncSession, service: UserService, regular_user: User
+    ):
         """Should retrieve a user by email through service."""
         result = await service.get_by_email(session, email=regular_user.email)
 
@@ -87,17 +91,22 @@ class TestUserServiceIntegration:
         assert result.email == regular_user.email
 
     @pytest.mark.asyncio
-    async def test_get_user_by_email_not_found(self, session: AsyncSession, service: UserService):
+    async def test_get_user_by_email_not_found(
+        self, session: AsyncSession, service: UserService
+    ):
         """Should return None when email not found."""
         result = await service.get_by_email(session, email="notfound@example.com")
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_multi_users(self, session: AsyncSession, service: UserService, sample_users: list[User]):
+    async def test_get_multi_users(
+        self, session: AsyncSession, service: UserService, sample_users: list[User]
+    ):
         """Should retrieve multiple users through service."""
         result = await service.get_multi(session, offset=0, limit=10)
 
+        assert result.total_count is not None
         assert result.total_count >= len(sample_users)
         assert len(result.items) >= 1
 
@@ -109,12 +118,16 @@ class TestUserServiceIntegration:
             name="ToUpdate",
             surname="User",
             email="updatetest@example.com",
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
         user = await service.create_user(session, user_data)
 
         # Update with new password (required for update_user to work properly)
-        update_data = UserUpdate(name="UpdatedServiceName", surname="UpdatedSurname", password=SecretStr("newpassword"))
+        update_data = UserUpdate(
+            name="UpdatedServiceName",
+            surname="UpdatedSurname",
+            password=SecretStr("newpassword"),
+        )
 
         result = await service.update_user(session, update_data, user_id=user.id)
 
@@ -123,18 +136,22 @@ class TestUserServiceIntegration:
         assert result.surname == "UpdatedSurname"
 
     @pytest.mark.asyncio
-    async def test_delete_user(self, session: AsyncSession, service: UserService, regular_user: User):
+    async def test_delete_user(
+        self, session: AsyncSession, service: UserService, regular_user: User
+    ):
         """Should delete a user through service."""
         result = await service.delete(session, obj_id=regular_user.id)
 
-        assert result is True
+        assert result.success is True
 
         # Verify deletion
         deleted_user = await service.get_by_email(session, email=regular_user.email)
         assert deleted_user is None
 
     @pytest.mark.asyncio
-    async def test_authenticate_valid_credentials(self, session: AsyncSession, service: UserService):
+    async def test_authenticate_valid_credentials(
+        self, session: AsyncSession, service: UserService
+    ):
         """Should authenticate user with valid credentials."""
         # First create a user with known password
         password = "testpassword123"
@@ -142,49 +159,61 @@ class TestUserServiceIntegration:
             name="Auth",
             surname="Test",
             email="authtest@example.com",
-            password=SecretStr(password)
+            password=SecretStr(password),
         )
         created_user = await service.create_user(session, user_data)
 
         # Authenticate
-        result = await service.authenticate(session, email=created_user.email, password=password)
+        result = await service.authenticate(
+            session, email=created_user.email, password=password
+        )
 
         assert result is not None
         assert result.id == created_user.id
 
     @pytest.mark.asyncio
-    async def test_authenticate_invalid_password(self, session: AsyncSession, service: UserService):
+    async def test_authenticate_invalid_password(
+        self, session: AsyncSession, service: UserService
+    ):
         """Should return None for invalid password."""
         # First create a user
         user_data = UserCreate(
             name="Auth",
             surname="Invalid",
             email="authinvalid@example.com",
-            password=SecretStr("correctpassword")
+            password=SecretStr("correctpassword"),
         )
         await service.create_user(session, user_data)
 
         # Try to authenticate with wrong password
-        result = await service.authenticate(session, email="authinvalid@example.com", password="wrongpassword")
+        result = await service.authenticate(
+            session, email="authinvalid@example.com", password="wrongpassword"
+        )
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_authenticate_nonexistent_user(self, session: AsyncSession, service: UserService):
+    async def test_authenticate_nonexistent_user(
+        self, session: AsyncSession, service: UserService
+    ):
         """Should return None for nonexistent user."""
-        result = await service.authenticate(session, email="nonexistent@example.com", password="anypassword")
+        result = await service.authenticate(
+            session, email="nonexistent@example.com", password="anypassword"
+        )
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_create_access_token(self, session: AsyncSession, service: UserService):
+    async def test_create_access_token(
+        self, session: AsyncSession, service: UserService
+    ):
         """Should create a valid access token."""
         # Create a user
         user_data = UserCreate(
             name="Token",
             surname="Test",
             email="tokentest@example.com",
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
         user = await service.create_user(session, user_data)
 

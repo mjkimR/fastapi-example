@@ -4,9 +4,10 @@ import uuid
 
 from app.features.tags.models import Tag
 from app.base.repos.base import BaseRepository
+from app.features.tags.schemas import TagCreate, TagUpdate
 
 
-class TagRepository(BaseRepository[Tag, Tag, Tag]):
+class TagRepository(BaseRepository[Tag, TagCreate, TagUpdate]):
     model = Tag
 
     async def get_or_create_tags(

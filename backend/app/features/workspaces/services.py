@@ -1,4 +1,4 @@
-from typing import Union, AsyncIterator, Tuple, Annotated
+from typing import Any, Union, AsyncIterator, Tuple, Annotated
 from fastapi import Depends
 from sqlalchemy.sql.expression import ColumnElement
 
@@ -43,6 +43,9 @@ class WorkspaceService(
     @property
     def context_model(self):
         return UserContextKwargs
+
+    def _parse_delete_represent_text(self, obj: Any) -> str:
+        return obj.name
 
     async def _unique_constraints(
         self,

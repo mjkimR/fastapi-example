@@ -16,7 +16,7 @@ class Notification(Base, UUIDMixin, TimestampMixin):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id"), nullable=False, index=True
     )
-    user: Mapped["User"] = relationship(back_populates="notifications")
+    user: Mapped["User"] = relationship()
 
     message: Mapped[str] = mapped_column(String(500), nullable=False)
     is_read: Mapped[bool] = mapped_column(default=False, nullable=False)

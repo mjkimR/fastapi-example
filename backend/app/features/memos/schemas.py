@@ -60,10 +60,10 @@ class MemoNotificationPayload(BaseModel):
         user_id: uuid.UUID,
         event_type: MemoEventType,
     ) -> dict:
-        return cls(
-            id=orm_obj.id,
-            workspace_id=orm_obj.workspace_id,
-            user_id=user_id,
-            title=orm_obj.title,
-            event_type=event_type,
-        ).model_dump()
+        return {
+            "id": str(orm_obj.id),
+            "workspace_id": str(orm_obj.workspace_id),
+            "user_id": str(user_id),
+            "title": orm_obj.title,
+            "event_type": event_type,
+        }

@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.base.schemas.paginated import PaginatedList
+from app.base.services.user_aware_hook import UserContextKwargs
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.usecases.crud import (
@@ -47,7 +48,9 @@ class TestGetMultiWorkspaceUseCase:
     @pytest.mark.asyncio
     async def test_execute_returns_paginated_workspaces(self, use_case, mock_workspace):
         """Should return paginated list of workspaces."""
-        paginated = PaginatedList(items=[mock_workspace], total_count=1, offset=0, limit=10)
+        paginated = PaginatedList(
+            items=[mock_workspace], total_count=1, offset=0, limit=10
+        )
         use_case.service.get_multi.return_value = paginated
 
         with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
@@ -63,21 +66,24 @@ class TestCreateWorkspaceUseCase:
     @pytest.fixture
     def use_case(self):
         """Create use case with mocked service."""
-        service = AsyncMock()
-        return CreateWorkspaceUseCase(service=service)
+        workspace_service = AsyncMock()
+        outbox_service = AsyncMock()
+        return CreateWorkspaceUseCase(
+            workspace_service=workspace_service, outbox_service=outbox_service
+        )
 
     @pytest.mark.asyncio
-    async def test_execute_creates_workspace(self, use_case, mock_workspace):
+    async def test_execute_creates_workspace(self, use_case, mock_workspace, mock_user):
         """Should create workspace via service."""
-        use_case.service.create.return_value = mock_workspace
+        use_case.workspace_service.create.return_value = mock_workspace
         workspace_data = WorkspaceCreate(name="Test Workspace")
-
+        context: UserContextKwargs = {"user_id": mock_user.id}
         with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
-            result = await use_case.execute(workspace_data)
+            result = await use_case.execute(workspace_data, context=context)
 
         assert result == mock_workspace
-        use_case.service.create.assert_called_once()
+        use_case.workspace_service.create.assert_called_once()
 
 
 class TestUpdateWorkspaceUseCase:

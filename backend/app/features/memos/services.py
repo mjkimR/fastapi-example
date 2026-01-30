@@ -63,3 +63,6 @@ class MemoService(
     @property
     def fk_name(self) -> str:
         return "workspace_id"
+
+    def _parse_delete_represent_text(self, obj: Memo) -> str:
+        return obj.title
