@@ -8,6 +8,8 @@ from app.features.memos.models import Memo
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.services import MemoService, MemoContextKwargs
 from app.features.tags.services import TagService
+from app.features.outbox.services import OutboxService
+from app.features.outbox.schemas import OutboxCreate
 from app.base.usecases.crud import (
     BaseGetUseCase,
     BaseGetMultiUseCase,
@@ -30,9 +32,11 @@ class CreateMemoUseCase:
             self,
             memo_service: Annotated[MemoService, Depends()],
             tag_service: Annotated[TagService, Depends()],
+            outbox_service: Annotated[OutboxService, Depends()], # NEW dependency
     ) -> None:
         self.memo_service = memo_service
         self.tag_service = tag_service
+        self.outbox_service = outbox_service # Store it
 
     async def execute(
             self, obj_in: MemoCreate, context: Optional[MemoContextKwargs] = None
@@ -46,6 +50,21 @@ class CreateMemoUseCase:
             )
             memo.tags = tags
             await session.flush()
+
+            # Create and add the outbox event in the same transaction
+            event_data = OutboxCreate(
+                aggregate_type="memo",
+                aggregate_id=str(memo.id),
+                event_type="MEMO_CREATED",
+                payload={
+                    "id": str(memo.id),
+                    "workspace_id": str(memo.workspace_id),
+                    "created_by": str(context["user_id"]),
+                    "title": memo.title # Add title to payload
+                }
+            )
+            await self.outbox_service.add_event(session, event_data)
+            
             await session.refresh(memo)
             return memo
 

@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from starlette.responses import RedirectResponse
+
+from app.features.outbox.scheduler import scheduler_lifespan
 from app.router import router
 from app.base.exceptions.handler import set_exception_handler
 from app.core.logger import logger
@@ -15,7 +17,8 @@ def get_lifespan():
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         logger.info("Starting app lifespan")
-        yield
+        async with scheduler_lifespan(app):
+            yield
         logger.info("End of app lifespan")
 
     return lifespan
