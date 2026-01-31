@@ -1,9 +1,15 @@
 import datetime
-from typing import Any
+from typing import Any, TypedDict
 from pydantic import BaseModel, Field, ConfigDict
 
 from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
 from app.features.outbox.models import EventStatus
+
+
+class OutboxIdentityDict(TypedDict):
+    aggregate_type: str
+    aggregate_id: str
+    event_type: str
 
 
 class OutboxCreate(BaseModel):

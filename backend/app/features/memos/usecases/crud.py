@@ -4,13 +4,11 @@ from uuid import UUID
 from fastapi import Depends
 
 from app.core.database.transaction import AsyncTransaction
-from app.features.memos.enum import MEMO_RES_NAME, MemoEventType
 from app.features.memos.models import Memo
-from app.features.memos.schemas import MemoCreate, MemoNotificationPayload, MemoUpdate
+from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.services import MemoService, MemoContextKwargs
 from app.features.tags.services import TagService
 from app.features.outbox.services import OutboxService
-from app.features.outbox.schemas import OutboxCreate
 from app.base.usecases.crud import (
     BaseGetUseCase,
     BaseGetMultiUseCase,
@@ -53,18 +51,6 @@ class CreateMemoUseCase:
             )
             memo.tags = tags
             await session.flush()
-
-            # Create and add the outbox event in the same transaction
-            event_data = OutboxCreate(
-                aggregate_type=MEMO_RES_NAME,
-                aggregate_id=str(memo.id),
-                event_type=MemoEventType.CREATE,
-                payload=MemoNotificationPayload.from_orm(
-                    memo, context["user_id"], MemoEventType.CREATE
-                ),
-            )
-            await self.outbox_service.add_event(session, event_data)
-
             await session.refresh(memo)
             return memo
 

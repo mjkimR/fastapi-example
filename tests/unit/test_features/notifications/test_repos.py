@@ -1,5 +1,4 @@
 import uuid
-from unittest.mock import MagicMock, AsyncMock
 
 import pytest
 
@@ -22,24 +21,28 @@ class TestNotificationRepository:
         assert notification_repo.model == Notification
 
     @pytest.mark.asyncio
-    async def test_create_notification(self, notification_repo, mock_async_session, mock_user, mock_memo):
+    async def test_create_notification(
+        self, notification_repo, mock_async_session, mock_user, mock_memo
+    ):
         """Should create a new notification."""
         create_data = NotificationCreate(
             user_id=mock_user.id,
             message="New memo created!",
             resource_id=mock_memo.id,
-            resource_type=notification_repo.model_name,
+            resource_type=notification_repo.model_name(),
             event_type="MEMO_CREATED",
         )
-        
+
         # Mock the refresh to return the created_notification
         created_notification = Notification(
             id=uuid.uuid4(),
             user_id=create_data.user_id,
             message=create_data.message,
-            resource_id=create_data.resource_id
+            resource_id=create_data.resource_id,
         )
-        mock_async_session.refresh.side_effect = lambda obj: setattr(obj, 'id', created_notification.id)
+        mock_async_session.refresh.side_effect = lambda obj: setattr(
+            obj, "id", created_notification.id
+        )
         mock_async_session.add.return_value = None
 
         result = await notification_repo.create(mock_async_session, create_data)
@@ -52,4 +55,3 @@ class TestNotificationRepository:
         assert result.resource_id == create_data.resource_id
         assert result.resource_type == create_data.resource_type
         assert result.event_type == create_data.event_type
-

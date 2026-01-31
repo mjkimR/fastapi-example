@@ -36,11 +36,16 @@ class BaseGetUseCase(BaseUseCase, Generic[TBaseGetService, ModelType, TContextKw
     def __init__(self, service: TBaseGetService):
         self.service = service
 
+    async def _execute(
+        self, session: AsyncSession, obj_id: UUID, context: Optional[TContextKwargs]
+    ) -> Optional[ModelType]:
+        return await self.service.get(session, obj_id, context=context)
+
     async def execute(
         self, obj_id: UUID, context: Optional[TContextKwargs] = None
     ) -> Optional[ModelType]:
         async with AsyncTransaction() as session:
-            return await self.service.get(session, obj_id, context=context)
+            return await self._execute(session, obj_id, context=context)
 
 
 class BaseGetMultiUseCase(
@@ -48,6 +53,24 @@ class BaseGetMultiUseCase(
 ):
     def __init__(self, service: TBaseGetMultiService):
         self.service = service
+
+    async def _execute(
+        self,
+        session: AsyncSession,
+        offset: int,
+        limit: int,
+        order_by: Any = None,
+        where: Any = None,
+        context: Optional[TContextKwargs] = None,
+    ) -> PaginatedList[ModelType]:
+        return await self.service.get_multi(
+            session,
+            offset=offset,
+            limit=limit,
+            order_by=order_by,
+            where=where,
+            context=context,
+        )
 
     async def execute(
         self,
@@ -58,7 +81,7 @@ class BaseGetMultiUseCase(
         context: Optional[TContextKwargs] = None,
     ) -> PaginatedList[ModelType]:
         async with AsyncTransaction() as session:
-            return await self.service.get_multi(
+            return await self._execute(
                 session,
                 offset=offset,
                 limit=limit,
@@ -84,6 +107,14 @@ class BaseCreateUseCase(
     ):
         yield
 
+    async def _execute(
+        self,
+        session: AsyncSession,
+        obj_data: CreateSchemaType,
+        context: Optional[TContextKwargs],
+    ) -> ModelType:
+        return await self.service.create(session, obj_data, context=context)
+
     async def _post_execute(
         self,
         session: AsyncSession,
@@ -98,7 +129,7 @@ class BaseCreateUseCase(
     ) -> ModelType:
         async with AsyncTransaction() as session:
             async with self._context_execute(session, obj_data, context):
-                obj = await self.service.create(session, obj_data, context=context)
+                obj = await self._execute(session, obj_data, context=context)
                 obj = await self._post_execute(session, obj, obj_data, context)
                 return obj
 
@@ -119,6 +150,15 @@ class BaseUpdateUseCase(
     ):
         yield
 
+    async def _execute(
+        self,
+        session: AsyncSession,
+        obj_id: UUID,
+        obj_data: UpdateSchemaType,
+        context: Optional[TContextKwargs],
+    ) -> ModelType | None:
+        return await self.service.update(session, obj_id, obj_data, context=context)
+
     async def _post_execute(
         self,
         session: AsyncSession,
@@ -136,9 +176,7 @@ class BaseUpdateUseCase(
     ) -> ModelType | None:
         async with AsyncTransaction() as session:
             async with self._context_execute(session, obj_data, context):
-                obj = await self.service.update(
-                    session, obj_id, obj_data, context=context
-                )
+                obj = await self._execute(session, obj_id, obj_data, context=context)
                 obj = await self._post_execute(session, obj, obj_data, context)
                 return obj
 
@@ -158,6 +196,14 @@ class BaseDeleteUseCase(
     ):
         yield
 
+    async def _execute(
+        self,
+        session: AsyncSession,
+        obj_id: UUID,
+        context: Optional[TContextKwargs],
+    ) -> DeleteResponse:
+        return await self.service.delete(session, obj_id, context=context)
+
     async def _post_execute(
         self,
         session: AsyncSession,
@@ -169,5 +215,5 @@ class BaseDeleteUseCase(
     async def execute(self, obj_id: UUID, context: Optional[TContextKwargs] = None):
         async with AsyncTransaction() as session:
             async with self._context_execute(session, obj_id, context):
-                obj = await self.service.delete(session, obj_id, context=context)
+                obj = await self._execute(session, obj_id, context=context)
                 return await self._post_execute(session, obj, context)

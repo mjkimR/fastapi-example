@@ -52,18 +52,3 @@ class MemoNotificationPayload(BaseModel):
     event_type: MemoEventType = Field(
         description="The event type of the memo notification."
     )
-
-    @classmethod
-    def from_orm(
-        cls,
-        orm_obj: "Memo",
-        user_id: uuid.UUID,
-        event_type: MemoEventType,
-    ) -> dict:
-        return {
-            "id": str(orm_obj.id),
-            "workspace_id": str(orm_obj.workspace_id),
-            "user_id": str(user_id),
-            "title": orm_obj.title,
-            "event_type": event_type,
-        }

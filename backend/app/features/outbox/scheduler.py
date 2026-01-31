@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
+from app.base.schemas.event import DomainEvent
 from app.core.database.transaction import AsyncTransaction
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.models import EventStatus
@@ -46,7 +47,19 @@ async def process_outbox_events_job():
             # Process each event
             for event in events_to_process:
                 try:
-                    await dispatch_event(event.event_type, event.payload)
+                    await dispatch_event(
+                        event.event_type,
+                        DomainEvent(
+                            id=event.id,
+                            event_type=event.event_type,
+                            payload=event.payload,
+                            meta={
+                                "aggregate_type": event.aggregate_type,
+                                "aggregate_id": event.aggregate_id,
+                                "event_id": str(event.id),
+                            },
+                        ),
+                    )
                     event.status = EventStatus.COMPLETED
                     event.processed_at = datetime.datetime.now(datetime.timezone.utc)
                 except Exception as e:
