@@ -34,6 +34,9 @@ class AppSettings(BaseSettings):
     SECRET_KEY: SecretStr  # openssl rand -hex 64
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=10)
 
+    LOG_JSON_FORMAT: bool = Field(default=False)
+    LOG_LEVEL: str = Field(default="INFO")
+
 
 @functools.lru_cache
 def get_app_settings():
