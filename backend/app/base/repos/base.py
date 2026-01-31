@@ -33,6 +33,8 @@ class BaseRepository(
     ]
 ):
     model: type[ModelType]
+    resource_name: str
+
     default_order_by_col: Optional[str] = "updated_at"
     is_deleted_column: Optional[str] = "is_deleted"
     deleted_at_column: Optional[str] = "deleted_at"
@@ -40,9 +42,9 @@ class BaseRepository(
     def __init__(self):
         self._primary_keys = self._get_primary_keys(self.model)
 
-    @property
-    def model_name(self):
-        return self.model.__name__
+    @classmethod
+    def model_name(cls):
+        return cls.model.__name__
 
     def model_repr(self, pk):
         if not self._primary_keys:
@@ -61,7 +63,7 @@ class BaseRepository(
             f"{pk_col.key}={str(value)}"
             for pk_col, value in zip(self._primary_keys, pk_values)
         )
-        return f"{self.model_name}({pk_str})"
+        return f"{self.model_name()}({pk_str})"
 
     def _get_primary_keys(self, model: type[ModelType]) -> Sequence[Column]:
         """Get the primary key of a SQLAlchemy model."""

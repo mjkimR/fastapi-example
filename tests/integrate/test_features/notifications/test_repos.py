@@ -17,14 +17,20 @@ class TestNotificationRepositoryIntegration:
         return NotificationRepository()
 
     @pytest.mark.asyncio
-    async def test_create_notification(self, session: AsyncSession, repo: NotificationRepository, regular_user, single_memo):
+    async def test_create_notification(
+        self,
+        session: AsyncSession,
+        repo: NotificationRepository,
+        regular_user,
+        single_memo,
+    ):
         """Should create a new notification in the database."""
         notification_data = NotificationCreate(
             user_id=regular_user.id,
             message="Your memo was created!",
             resource_id=single_memo.id,
-            resource_type=repo.model_name,
-            event_type="MEMO_CREATED"
+            resource_type=repo.model_name(),
+            event_type="MEMO_CREATED",
         )
 
         result = await repo.create(session, notification_data)

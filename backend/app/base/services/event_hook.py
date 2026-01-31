@@ -36,7 +36,7 @@ class DomainEventHooksMixin(
         """
         return {
             "resource_id": str(obj_id),
-            "resource_type": self.repo.model_name,
+            "resource_type": self.repo.model_name(),
             "event_type": event_type,
         }
 
@@ -47,7 +47,7 @@ class DomainEventHooksMixin(
         Publish a domain event after an object is created.
         """
         obj = await super()._post_create(session, obj, context)
-        topic = f"{self.repo.model_name}.created"
+        topic = f"{self.repo.model_name()}.created"
         payload = self._get_event_payload("created", obj.id, obj)
         await self.publish_event(topic, payload)
 
@@ -61,7 +61,7 @@ class DomainEventHooksMixin(
         """
         obj = await super()._post_update(session, obj, context)
 
-        topic = f"{self.repo.model_name}.updated"
+        topic = f"{self.repo.model_name()}.updated"
         payload = self._get_event_payload("updated", obj.id, obj)
         await self.publish_event(topic, payload)
 
@@ -80,7 +80,7 @@ class DomainEventHooksMixin(
         result = await super()._post_delete(session, obj_id, result, context)
 
         if result.success:
-            topic = f"{self.repo.model_name}.deleted"
+            topic = f"{self.repo.model_name()}.deleted"
             payload = self._get_event_payload("deleted", obj_id)
             await self.publish_event(topic, payload)
 

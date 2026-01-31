@@ -34,7 +34,9 @@ class TestBaseRepositoryPrimaryKeys:
         filters = mock_repository._get_primary_key_filters([sample_uuid])
         assert len(filters) == 1
 
-    def test_get_primary_key_filters_mismatched_count_raises_error(self, mock_repository, sample_uuid):
+    def test_get_primary_key_filters_mismatched_count_raises_error(
+        self, mock_repository, sample_uuid
+    ):
         """Should raise error when PK count doesn't match."""
         with pytest.raises(ValueError, match="Incorrect number of primary key values"):
             mock_repository._get_primary_key_filters([sample_uuid, sample_uuid])
@@ -51,6 +53,7 @@ class TestBaseRepositorySelect:
     def test_select_with_single_where_condition(self, mock_repository):
         """Should apply single where condition."""
         from tests.unit.test_base.conftest import MockModel
+
         condition = MockModel.name == "test"
         stmt = mock_repository._select(where=condition)
         assert stmt is not None
@@ -58,6 +61,7 @@ class TestBaseRepositorySelect:
     def test_select_with_sequence_where_conditions(self, mock_repository):
         """Should apply multiple where conditions from sequence."""
         from tests.unit.test_base.conftest import MockModel
+
         conditions = [MockModel.name == "test", MockModel.description == "desc"]
         stmt = mock_repository._select(where=conditions)
         assert stmt is not None
@@ -70,6 +74,7 @@ class TestBaseRepositorySelect:
     def test_select_with_order_by(self, mock_repository):
         """Should apply order_by conditions."""
         from tests.unit.test_base.conftest import MockModel
+
         stmt = mock_repository._select(order_by=[MockModel.name.asc()])
         assert stmt is not None
 
@@ -84,7 +89,9 @@ class TestBaseRepositoryGet:
     """Tests for get operations."""
 
     @pytest.mark.asyncio
-    async def test_get_returns_model_when_found(self, mock_repository, mock_async_session, mock_model):
+    async def test_get_returns_model_when_found(
+        self, mock_repository, mock_async_session, mock_model
+    ):
         """Should return model when found."""
         # Setup mock
         mock_result = MagicMock()
@@ -97,7 +104,9 @@ class TestBaseRepositoryGet:
         mock_async_session.execute.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_returns_none_when_not_found(self, mock_repository, mock_async_session):
+    async def test_get_returns_none_when_not_found(
+        self, mock_repository, mock_async_session
+    ):
         """Should return None when no model found."""
         mock_result = MagicMock()
         mock_result.scalar_one_or_none.return_value = None
@@ -108,7 +117,9 @@ class TestBaseRepositoryGet:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_by_pk_returns_model(self, mock_repository, mock_async_session, mock_model, sample_uuid):
+    async def test_get_by_pk_returns_model(
+        self, mock_repository, mock_async_session, mock_model, sample_uuid
+    ):
         """Should return model by primary key."""
         mock_async_session.get.return_value = mock_model
 
@@ -118,7 +129,9 @@ class TestBaseRepositoryGet:
         mock_async_session.get.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_by_pk_with_sequence_pk(self, mock_repository, mock_async_session, mock_model, sample_uuid):
+    async def test_get_by_pk_with_sequence_pk(
+        self, mock_repository, mock_async_session, mock_model, sample_uuid
+    ):
         """Should handle sequence of PK values."""
         mock_async_session.get.return_value = mock_model
 
@@ -131,7 +144,9 @@ class TestBaseRepositoryExists:
     """Tests for exists method."""
 
     @pytest.mark.asyncio
-    async def test_exists_returns_true_when_found(self, mock_repository, mock_async_session):
+    async def test_exists_returns_true_when_found(
+        self, mock_repository, mock_async_session
+    ):
         """Should return True when record exists."""
         from tests.unit.test_base.conftest import MockModel
 
@@ -140,12 +155,16 @@ class TestBaseRepositoryExists:
         mock_async_session.execute.return_value = mock_result
 
         # Provide a proper where condition
-        result = await mock_repository.exists(mock_async_session, where=MockModel.name == "test")
+        result = await mock_repository.exists(
+            mock_async_session, where=MockModel.name == "test"
+        )
 
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_exists_returns_false_when_not_found(self, mock_repository, mock_async_session):
+    async def test_exists_returns_false_when_not_found(
+        self, mock_repository, mock_async_session
+    ):
         """Should return False when record doesn't exist."""
         from tests.unit.test_base.conftest import MockModel
 
@@ -153,12 +172,16 @@ class TestBaseRepositoryExists:
         mock_result.scalar_one_or_none.return_value = None
         mock_async_session.execute.return_value = mock_result
 
-        result = await mock_repository.exists(mock_async_session, where=MockModel.name == "test")
+        result = await mock_repository.exists(
+            mock_async_session, where=MockModel.name == "test"
+        )
 
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_exists_with_no_where_clause(self, mock_repository, mock_async_session):
+    async def test_exists_with_no_where_clause(
+        self, mock_repository, mock_async_session
+    ):
         """Should handle None where clause (check any existence)."""
         mock_result = MagicMock()
         mock_result.scalar_one_or_none.return_value = 1
@@ -174,7 +197,9 @@ class TestBaseRepositoryCreate:
     """Tests for create operation."""
 
     @pytest.mark.asyncio
-    async def test_create_adds_and_flushes(self, mock_repository, mock_async_session, mock_create_schema):
+    async def test_create_adds_and_flushes(
+        self, mock_repository, mock_async_session, mock_create_schema
+    ):
         """Should add model to session and flush."""
         await mock_repository.create(mock_async_session, mock_create_schema)
 
@@ -183,11 +208,15 @@ class TestBaseRepositoryCreate:
         mock_async_session.refresh.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_with_extra_fields(self, mock_repository, mock_async_session, mock_create_schema):
+    async def test_create_with_extra_fields(
+        self, mock_repository, mock_async_session, mock_create_schema
+    ):
         """Should apply extra fields to created model."""
         extra_id = uuid.uuid4()
 
-        await mock_repository.create(mock_async_session, mock_create_schema, id=extra_id)
+        await mock_repository.create(
+            mock_async_session, mock_create_schema, id=extra_id
+        )
 
         # Verify add was called with a model that has the extra field
         call_args = mock_async_session.add.call_args
@@ -199,7 +228,9 @@ class TestBaseRepositoryGetMulti:
     """Tests for get_multi (pagination) operations."""
 
     @pytest.mark.asyncio
-    async def test_get_multi_returns_paginated_list(self, mock_repository, mock_async_session, mock_model):
+    async def test_get_multi_returns_paginated_list(
+        self, mock_repository, mock_async_session, mock_model
+    ):
         """Should return PaginatedList with items."""
         # Mock count query
         count_result = MagicMock()
@@ -222,19 +253,25 @@ class TestBaseRepositoryGetMulti:
         assert result.limit == 10
 
     @pytest.mark.asyncio
-    async def test_get_multi_negative_limit_raises_error(self, mock_repository, mock_async_session):
+    async def test_get_multi_negative_limit_raises_error(
+        self, mock_repository, mock_async_session
+    ):
         """Should raise ValueError for negative limit."""
         with pytest.raises(ValueError, match="Limit must be non-negative"):
             await mock_repository.get_multi(mock_async_session, limit=-1)
 
     @pytest.mark.asyncio
-    async def test_get_multi_negative_offset_raises_error(self, mock_repository, mock_async_session):
+    async def test_get_multi_negative_offset_raises_error(
+        self, mock_repository, mock_async_session
+    ):
         """Should raise ValueError for negative offset."""
         with pytest.raises(ValueError, match="Offset must be non-negative"):
             await mock_repository.get_multi(mock_async_session, offset=-1)
 
     @pytest.mark.asyncio
-    async def test_get_multi_with_none_limit(self, mock_repository, mock_async_session, mock_model):
+    async def test_get_multi_with_none_limit(
+        self, mock_repository, mock_async_session, mock_model
+    ):
         """Should handle None limit (no limit)."""
         count_result = MagicMock()
         count_result.scalar_one.return_value = 100
@@ -246,7 +283,9 @@ class TestBaseRepositoryGetMulti:
 
         mock_async_session.execute.side_effect = [count_result, data_result]
 
-        result = await mock_repository.get_multi(mock_async_session, offset=0, limit=None)
+        result = await mock_repository.get_multi(
+            mock_async_session, offset=0, limit=None
+        )
 
         assert result.limit is None
         assert len(result.items) == 100
@@ -256,7 +295,9 @@ class TestBaseRepositoryUpdate:
     """Tests for update operations."""
 
     @pytest.mark.asyncio
-    async def test_update_by_pk_with_schema(self, mock_repository, mock_async_session, mock_model, sample_uuid):
+    async def test_update_by_pk_with_schema(
+        self, mock_repository, mock_async_session, mock_model, sample_uuid
+    ):
         """Should update model with schema data."""
         from tests.unit.test_base.conftest import MockUpdateSchema
 
@@ -270,13 +311,17 @@ class TestBaseRepositoryUpdate:
         mock_async_session.execute.side_effect = [mock_result, get_result]
 
         update_schema = MockUpdateSchema(name="Updated Name")
-        result = await mock_repository.update_by_pk(mock_async_session, sample_uuid, update_schema)
+        result = await mock_repository.update_by_pk(
+            mock_async_session, sample_uuid, update_schema
+        )
 
         assert result is not None
         mock_async_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_update_by_pk_with_dict(self, mock_repository, mock_async_session, mock_model, sample_uuid):
+    async def test_update_by_pk_with_dict(
+        self, mock_repository, mock_async_session, mock_model, sample_uuid
+    ):
         """Should update model with dict data."""
         mock_result = MagicMock()
         mock_result.rowcount = 1
@@ -293,7 +338,9 @@ class TestBaseRepositoryUpdate:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_update_by_pk_empty_data_raises_error(self, mock_repository, mock_async_session, sample_uuid):
+    async def test_update_by_pk_empty_data_raises_error(
+        self, mock_repository, mock_async_session, sample_uuid
+    ):
         """Should raise error when update data is empty."""
         from tests.unit.test_base.conftest import MockUpdateSchema
 
@@ -301,10 +348,14 @@ class TestBaseRepositoryUpdate:
         update_schema = MockUpdateSchema()
 
         with pytest.raises(ValueError, match="Update data cannot be empty"):
-            await mock_repository.update_by_pk(mock_async_session, sample_uuid, update_schema)
+            await mock_repository.update_by_pk(
+                mock_async_session, sample_uuid, update_schema
+            )
 
     @pytest.mark.asyncio
-    async def test_update_by_pk_extra_fields_raises_error(self, mock_repository, mock_async_session, sample_uuid):
+    async def test_update_by_pk_extra_fields_raises_error(
+        self, mock_repository, mock_async_session, sample_uuid
+    ):
         """Should raise error when extra fields not in model are provided."""
         with pytest.raises(ValueError, match="Extra fields provided"):
             await mock_repository.update_by_pk(
@@ -312,7 +363,9 @@ class TestBaseRepositoryUpdate:
             )
 
     @pytest.mark.asyncio
-    async def test_update_by_pk_returns_none_when_not_found(self, mock_repository, mock_async_session, sample_uuid):
+    async def test_update_by_pk_returns_none_when_not_found(
+        self, mock_repository, mock_async_session, sample_uuid
+    ):
         """Should return None when record not found."""
         from tests.unit.test_base.conftest import MockUpdateSchema
 
@@ -321,7 +374,9 @@ class TestBaseRepositoryUpdate:
         mock_async_session.execute.return_value = mock_result
 
         update_schema = MockUpdateSchema(name="Updated")
-        result = await mock_repository.update_by_pk(mock_async_session, sample_uuid, update_schema)
+        result = await mock_repository.update_by_pk(
+            mock_async_session, sample_uuid, update_schema
+        )
 
         assert result is None
 
@@ -330,7 +385,9 @@ class TestBaseRepositoryDelete:
     """Tests for delete operations."""
 
     @pytest.mark.asyncio
-    async def test_delete_by_pk_hard_delete(self, mock_repository, mock_async_session, sample_uuid):
+    async def test_delete_by_pk_hard_delete(
+        self, mock_repository, mock_async_session, sample_uuid
+    ):
         """Should perform hard delete by default."""
         mock_result = MagicMock()
         mock_result.rowcount = 1
@@ -342,7 +399,9 @@ class TestBaseRepositoryDelete:
         mock_async_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_delete_by_pk_returns_false_when_not_found(self, mock_repository, mock_async_session, sample_uuid):
+    async def test_delete_by_pk_returns_false_when_not_found(
+        self, mock_repository, mock_async_session, sample_uuid
+    ):
         """Should return False when record not found."""
         mock_result = MagicMock()
         mock_result.rowcount = 0
@@ -354,7 +413,9 @@ class TestBaseRepositoryDelete:
         mock_async_session.flush.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_delete_by_pk_soft_delete(self, mock_soft_delete_repository, mock_async_session, sample_uuid):
+    async def test_delete_by_pk_soft_delete(
+        self, mock_soft_delete_repository, mock_async_session, sample_uuid
+    ):
         """Should perform soft delete when flag is True."""
         mock_result = MagicMock()
         mock_result.rowcount = 1
@@ -369,11 +430,13 @@ class TestBaseRepositoryDelete:
 
     @pytest.mark.asyncio
     async def test_delete_by_pk_soft_delete_without_column_raises_error(
-            self, mock_repository, mock_async_session, sample_uuid
+        self, mock_repository, mock_async_session, sample_uuid
     ):
         """Should raise error when soft delete requested but model lacks is_deleted column."""
         with pytest.raises(ValueError, match="Soft delete requires"):
-            await mock_repository.delete_by_pk(mock_async_session, sample_uuid, soft_delete=True)
+            await mock_repository.delete_by_pk(
+                mock_async_session, sample_uuid, soft_delete=True
+            )
 
 
 class TestBaseRepositoryModelName:
@@ -381,4 +444,4 @@ class TestBaseRepositoryModelName:
 
     def test_model_name_returns_class_name(self, mock_repository):
         """Should return the model class name."""
-        assert mock_repository.model_name == "MockModel"
+        assert mock_repository.model_name() == "MockModel"
