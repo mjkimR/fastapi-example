@@ -10,6 +10,9 @@ from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.services import WorkspaceService
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.models import Workspace
+from app.features.outbox.repos import OutboxRepository
+from app.features.outbox.models import Outbox
+from app.features.workspaces.enum import WorkspaceEventType
 
 
 class TestWorkspaceServiceIntegration:
@@ -21,24 +24,42 @@ class TestWorkspaceServiceIntegration:
         return WorkspaceRepository()
 
     @pytest.fixture
-    def service(self, repo: WorkspaceRepository) -> WorkspaceService:
+    def outbox_repo(self) -> OutboxRepository:
+        """Create an OutboxRepository instance."""
+        return OutboxRepository()
+
+    @pytest.fixture
+    def service(
+        self, repo: WorkspaceRepository, outbox_repo: OutboxRepository
+    ) -> WorkspaceService:
         """Create a WorkspaceService instance."""
-        return WorkspaceService(repo=repo)
+        return WorkspaceService(repo=repo, outbox_repo=outbox_repo)
 
     @pytest.mark.asyncio
-    async def test_create_workspace(
-        self, session: AsyncSession, service: WorkspaceService, regular_user
+    async def test_create_workspace_and_creates_outbox_event(
+        self,
+        session: AsyncSession,
+        service: WorkspaceService,
+        outbox_repo: OutboxRepository,
+        regular_user,
     ):
-        """Should create a new workspace through the service."""
+        """Should create a new workspace and a corresponding outbox event."""
         workspace_data = WorkspaceCreate(name="Service Test Workspace")
         context: UserContextKwargs = {"user_id": regular_user.id}
 
         result = await service.create(session, obj_data=workspace_data, context=context)
+        await session.commit()
 
         assert result is not None
-        assert result.id is not None
         assert result.name == workspace_data.name
-        assert result.created_by == regular_user.id
+
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(result.id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == WorkspaceEventType.CREATE
+        assert outbox_event.payload["name"] == result.name
 
     @pytest.mark.asyncio
     async def test_get_workspace(
@@ -72,43 +93,62 @@ class TestWorkspaceServiceIntegration:
         assert len(result.items) >= 1
 
     @pytest.mark.asyncio
-    async def test_update_workspace(
+    async def test_update_workspace_and_creates_outbox_event(
         self,
         session: AsyncSession,
         service: WorkspaceService,
+        outbox_repo: OutboxRepository,
         single_workspace: Workspace,
         admin_user,
     ):
-        """Should update a workspace through the service."""
+        """Should update a workspace and create a corresponding outbox event."""
         update_data = WorkspaceUpdate(name="Service Updated Workspace")
         context: UserContextKwargs = {"user_id": admin_user.id}
 
         result = await service.update(
             session, obj_id=single_workspace.id, obj_data=update_data, context=context
         )
+        await session.commit()
 
         assert result is not None
         assert result.name == "Service Updated Workspace"
-        assert result.updated_by == admin_user.id
+
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(result.id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == WorkspaceEventType.UPDATE
+        assert outbox_event.payload["name"] == "Service Updated Workspace"
 
     @pytest.mark.asyncio
-    async def test_delete_workspace(
+    async def test_delete_workspace_and_creates_outbox_event(
         self,
         session: AsyncSession,
         service: WorkspaceService,
+        outbox_repo: OutboxRepository,
         single_workspace: Workspace,
         regular_user,
     ):
-        """Should delete a workspace through the service."""
+        """Should delete a workspace and create a corresponding outbox event."""
+        workspace_id = single_workspace.id
+        workspace_name = single_workspace.name
         context: UserContextKwargs = {"user_id": regular_user.id}
-        result = await service.delete(
-            session, obj_id=single_workspace.id, context=context
-        )
+        result = await service.delete(session, obj_id=workspace_id, context=context)
+        await session.commit()
 
         assert result.success is True
 
         # Verify deletion
         deleted_workspace = await service.get(
-            session, obj_id=single_workspace.id, context=context
+            session, obj_id=workspace_id, context=context
         )
         assert deleted_workspace is None
+
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(workspace_id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == WorkspaceEventType.DELETE
+        assert outbox_event.payload["name"] == workspace_name

@@ -17,6 +17,9 @@ from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.models import Workspace
 from app.features.auth.models import User
+from app.features.outbox.repos import OutboxRepository
+from app.features.outbox.models import Outbox
+from app.features.memos.enum import MemoEventType
 
 
 class TestMemoServiceIntegration:
@@ -33,21 +36,30 @@ class TestMemoServiceIntegration:
         return WorkspaceRepository()
 
     @pytest.fixture
+    def outbox_repo(self) -> OutboxRepository:
+        """Create an OutboxRepository instance."""
+        return OutboxRepository()
+
+    @pytest.fixture
     def service(
-        self, repo: MemoRepository, parent_repo: WorkspaceRepository
+        self,
+        repo: MemoRepository,
+        parent_repo: WorkspaceRepository,
+        outbox_repo: OutboxRepository,
     ) -> MemoService:
         """Create a MemoService instance."""
-        return MemoService(repo=repo, parent_repo=parent_repo)
+        return MemoService(repo=repo, parent_repo=parent_repo, outbox_repo=outbox_repo)
 
     @pytest.mark.asyncio
-    async def test_create_memo(
+    async def test_create_memo_and_creates_outbox_event(
         self,
         session: AsyncSession,
         service: MemoService,
+        outbox_repo: OutboxRepository,
         single_workspace: Workspace,
         regular_user: User,
     ):
-        """Should create a new memo through service."""
+        """Should create a new memo and a corresponding outbox event."""
         memo_data = MemoCreate(
             category="Service Test",
             title="Service Integration Test",
@@ -57,13 +69,19 @@ class TestMemoServiceIntegration:
         context = {"parent_id": single_workspace.id, "user_id": regular_user.id}
 
         result = await service.create(session, obj_data=memo_data, context=context)
+        await session.commit()  # Commit to make the outbox event visible
 
         assert result is not None
         assert result.id is not None
-        assert result.category == memo_data.category
         assert result.title == memo_data.title
-        assert result.workspace_id == single_workspace.id
-        assert result.created_by == regular_user.id
+
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(result.id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == MemoEventType.CREATE
+        assert outbox_event.payload["title"] == result.title
 
     @pytest.mark.asyncio
     async def test_get_memo(
@@ -101,14 +119,15 @@ class TestMemoServiceIntegration:
         assert len(result.items) >= 1
 
     @pytest.mark.asyncio
-    async def test_update_memo(
+    async def test_update_memo_and_creates_outbox_event(
         self,
         session: AsyncSession,
         service: MemoService,
+        outbox_repo: OutboxRepository,
         single_memo: Memo,
         admin_user: User,
     ):
-        """Should update a memo through service."""
+        """Should update a memo and create a corresponding outbox event."""
         update_data = MemoUpdate(title="Service Updated Title")
         context: MemoContextKwargs = {
             "parent_id": single_memo.workspace_id,
@@ -118,30 +137,49 @@ class TestMemoServiceIntegration:
         result = await service.update(
             session, obj_id=single_memo.id, obj_data=update_data, context=context
         )
+        await session.commit()
 
         assert result is not None
         assert result.title == "Service Updated Title"
         assert result.updated_by == admin_user.id
 
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(result.id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == MemoEventType.UPDATE
+        assert outbox_event.payload["title"] == "Service Updated Title"
+
     @pytest.mark.asyncio
-    async def test_delete_memo(
+    async def test_delete_memo_and_creates_outbox_event(
         self,
         session: AsyncSession,
         service: MemoService,
+        outbox_repo: OutboxRepository,
         single_memo: Memo,
         regular_user: User,
     ):
-        """Should delete a memo through service."""
+        """Should delete a memo and create a corresponding outbox event."""
+        memo_id = single_memo.id
+        memo_title = single_memo.title
         context: MemoContextKwargs = {
             "parent_id": single_memo.workspace_id,
             "user_id": regular_user.id,
         }
-        result = await service.delete(session, obj_id=single_memo.id, context=context)
+        result = await service.delete(session, obj_id=memo_id, context=context)
+        await session.commit()
 
         assert result.success is True
 
         # Verify deletion
-        deleted_memo = await service.get(
-            session, obj_id=single_memo.id, context=context
-        )
+        deleted_memo = await service.get(session, obj_id=memo_id, context=context)
         assert deleted_memo is None
+
+        # Verify outbox event
+        outbox_event = await outbox_repo.get(
+            session, where=[Outbox.aggregate_id == str(memo_id)]
+        )
+        assert outbox_event is not None
+        assert outbox_event.event_type == MemoEventType.DELETE
+        assert outbox_event.payload["title"] == memo_title

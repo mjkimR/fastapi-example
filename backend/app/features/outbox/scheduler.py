@@ -21,7 +21,7 @@ async def process_outbox_events_job():
 
     Simply processes pending outbox events. (Not ideal for production use. Just a demo.)
 
-    TODO: more sophisticated scheduling, backoff, batching, etc.
+    TODO: more sophisticated scheduling, backoff, batching, exception handling, etc.
     """
     logger.info("Running outbox processor job...")
 

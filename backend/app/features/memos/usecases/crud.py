@@ -2,16 +2,17 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database.transaction import AsyncTransaction
 from app.features.memos.models import Memo
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.services import MemoService, MemoContextKwargs
 from app.features.tags.services import TagService
-from app.features.outbox.services import OutboxService
 from app.base.usecases.crud import (
     BaseGetUseCase,
     BaseGetMultiUseCase,
+    BaseCreateUseCase,
+    BaseUpdateUseCase,
     BaseDeleteUseCase,
 )
 
@@ -26,70 +27,62 @@ class GetMultiMemoUseCase(BaseGetMultiUseCase[MemoService, Memo, MemoContextKwar
         super().__init__(service)
 
 
-class CreateMemoUseCase:
+class CreateMemoUseCase(
+    BaseCreateUseCase[MemoService, Memo, MemoCreate, MemoContextKwargs]
+):
     def __init__(
         self,
-        memo_service: Annotated[MemoService, Depends()],
+        service: Annotated[MemoService, Depends()],
         tag_service: Annotated[TagService, Depends()],
-        outbox_service: Annotated[OutboxService, Depends()],
     ) -> None:
-        self.memo_service = memo_service
+        super().__init__(service)
         self.tag_service = tag_service
-        self.outbox_service = outbox_service
 
-    async def execute(self, obj_in: MemoCreate, context: MemoContextKwargs) -> Memo:
-        async with AsyncTransaction() as session:
+    async def _post_execute(
+        self,
+        session: AsyncSession,
+        obj: Memo,
+        obj_data: MemoCreate,
+        context: MemoContextKwargs | None,
+    ) -> Memo:
+        if obj_data.tags:
             tags = await self.tag_service.get_or_create_tags(
-                session, obj_in.tags, context
+                session, obj_data.tags, context
             )
-
-            memo_data_for_create = MemoCreate.model_validate(
-                obj_in.model_dump(exclude={"tags"})
-            )
-            memo = await self.memo_service.create(
-                session, obj_data=memo_data_for_create, context=context
-            )
-            memo.tags = tags
+            obj.tags = tags
+            session.add(obj)
             await session.flush()
-            await session.refresh(memo)
-            return memo
+            await session.refresh(obj)
+        return await super()._post_execute(session, obj, obj_data, context)
 
 
-class UpdateMemoUseCase:
+class UpdateMemoUseCase(
+    BaseUpdateUseCase[MemoService, Memo, MemoUpdate, MemoContextKwargs]
+):
     def __init__(
         self,
-        memo_service: Annotated[MemoService, Depends()],
+        service: Annotated[MemoService, Depends()],
         tag_service: Annotated[TagService, Depends()],
     ) -> None:
-        self.memo_service = memo_service
+        super().__init__(service)
         self.tag_service = tag_service
 
-    async def execute(
+    async def _post_execute(
         self,
-        obj_id: UUID,
-        obj_in: MemoUpdate,
-        context: MemoContextKwargs,
+        session: AsyncSession,
+        obj: Memo | None,
+        obj_data: MemoUpdate,
+        context: MemoContextKwargs | None,
     ) -> Memo | None:
-        async with AsyncTransaction() as session:
-            memo = await self.memo_service.get(session, obj_id, context=context)
-            if not memo:
-                return None
-
-            if obj_in.tags is not None:
-                tags = await self.tag_service.get_or_create_tags(
-                    session, obj_in.tags, context
-                )
-                memo.tags = tags
-
-            update_data = obj_in.model_dump(exclude_unset=True, exclude={"tags"})
-            if update_data:
-                for field, value in update_data.items():
-                    setattr(memo, field, value)
-
-            session.add(memo)
+        if obj and obj_data.tags is not None:
+            tags = await self.tag_service.get_or_create_tags(
+                session, obj_data.tags, context
+            )
+            obj.tags = tags
+            session.add(obj)
             await session.flush()
-            await session.refresh(memo)
-            return memo
+            await session.refresh(obj)
+        return await super()._post_execute(session, obj, obj_data, context)
 
 
 class DeleteMemoUseCase(BaseDeleteUseCase[MemoService, Memo, MemoContextKwargs]):

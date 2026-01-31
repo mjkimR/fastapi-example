@@ -4,7 +4,6 @@ import pytest
 
 from app.base.schemas.paginated import PaginatedList
 from app.base.services.user_aware_hook import UserContextKwargs
-from app.features.workspaces.models import Workspace
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.usecases.crud import (
     GetWorkspaceUseCase,
@@ -29,11 +28,11 @@ class TestGetWorkspaceUseCase:
         """Should return workspace when found."""
         use_case.service.get.return_value = mock_workspace
 
-        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
-            mock_tx.return_value.__aenter__.return_value = AsyncMock()
+        with patch("app.base.usecases.crud.AsyncTransaction"):
             result = await use_case.execute(mock_workspace.id)
 
         assert result == mock_workspace
+        use_case.service.get.assert_called_once()
 
 
 class TestGetMultiWorkspaceUseCase:
@@ -53,11 +52,11 @@ class TestGetMultiWorkspaceUseCase:
         )
         use_case.service.get_multi.return_value = paginated
 
-        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
-            mock_tx.return_value.__aenter__.return_value = AsyncMock()
+        with patch("app.base.usecases.crud.AsyncTransaction"):
             result = await use_case.execute(offset=0, limit=10)
 
         assert result == paginated
+        use_case.service.get_multi.assert_called_once()
 
 
 class TestCreateWorkspaceUseCase:
@@ -67,23 +66,19 @@ class TestCreateWorkspaceUseCase:
     def use_case(self):
         """Create use case with mocked service."""
         workspace_service = AsyncMock()
-        outbox_service = AsyncMock()
-        return CreateWorkspaceUseCase(
-            workspace_service=workspace_service, outbox_service=outbox_service
-        )
+        return CreateWorkspaceUseCase(service=workspace_service)
 
     @pytest.mark.asyncio
     async def test_execute_creates_workspace(self, use_case, mock_workspace, mock_user):
         """Should create workspace via service."""
-        use_case.workspace_service.create.return_value = mock_workspace
+        use_case.service.create.return_value = mock_workspace
         workspace_data = WorkspaceCreate(name="Test Workspace")
         context: UserContextKwargs = {"user_id": mock_user.id}
-        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
-            mock_tx.return_value.__aenter__.return_value = AsyncMock()
+        with patch("app.base.usecases.crud.AsyncTransaction"):
             result = await use_case.execute(workspace_data, context=context)
 
         assert result == mock_workspace
-        use_case.workspace_service.create.assert_called_once()
+        use_case.service.create.assert_called_once()
 
 
 class TestUpdateWorkspaceUseCase:
@@ -101,8 +96,7 @@ class TestUpdateWorkspaceUseCase:
         use_case.service.update.return_value = mock_workspace
         update_data = WorkspaceUpdate(name="Updated Workspace")
 
-        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
-            mock_tx.return_value.__aenter__.return_value = AsyncMock()
+        with patch("app.base.usecases.crud.AsyncTransaction"):
             result = await use_case.execute(mock_workspace.id, update_data)
 
         assert result == mock_workspace
@@ -121,11 +115,10 @@ class TestDeleteWorkspaceUseCase:
     @pytest.mark.asyncio
     async def test_execute_deletes_workspace(self, use_case, mock_workspace):
         """Should delete workspace via service."""
-        use_case.service.delete.return_value = True
+        use_case.service.delete.return_value = "DeleteResponse"
 
-        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
-            mock_tx.return_value.__aenter__.return_value = AsyncMock()
+        with patch("app.base.usecases.crud.AsyncTransaction"):
             result = await use_case.execute(mock_workspace.id)
 
-        assert result is True
+        assert result == "DeleteResponse"
         use_case.service.delete.assert_called_once()
