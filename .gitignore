@@ -22,4 +22,4 @@ wheels/
 .env
 .test*
 **/logs
-.refereces
+.references
