@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Generic, Any, TypedDict, Optional
+from typing import Generic, Any, Sequence, TypedDict, Optional
 from typing_extensions import TypeVar
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -347,8 +347,8 @@ class BaseGetMultiServiceMixin(
             # Merge where conditions
             if where is None:
                 where = extra_filters
-            elif isinstance(where, list):
-                where = where + extra_filters
+            elif isinstance(where, Sequence):
+                where = list(where) + extra_filters
             elif extra_filters:
                 where = [where] + extra_filters
 

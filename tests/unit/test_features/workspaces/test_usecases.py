@@ -29,7 +29,7 @@ class TestGetWorkspaceUseCase:
         """Should return workspace when found."""
         use_case.service.get.return_value = mock_workspace
 
-        with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
+        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
             result = await use_case.execute(mock_workspace.id)
 
@@ -53,7 +53,7 @@ class TestGetMultiWorkspaceUseCase:
         )
         use_case.service.get_multi.return_value = paginated
 
-        with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
+        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
             result = await use_case.execute(offset=0, limit=10)
 
@@ -78,7 +78,7 @@ class TestCreateWorkspaceUseCase:
         use_case.workspace_service.create.return_value = mock_workspace
         workspace_data = WorkspaceCreate(name="Test Workspace")
         context: UserContextKwargs = {"user_id": mock_user.id}
-        with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
+        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
             result = await use_case.execute(workspace_data, context=context)
 
@@ -101,7 +101,7 @@ class TestUpdateWorkspaceUseCase:
         use_case.service.update.return_value = mock_workspace
         update_data = WorkspaceUpdate(name="Updated Workspace")
 
-        with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
+        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
             result = await use_case.execute(mock_workspace.id, update_data)
 
@@ -123,7 +123,7 @@ class TestDeleteWorkspaceUseCase:
         """Should delete workspace via service."""
         use_case.service.delete.return_value = True
 
-        with patch("app.base.usecases.crud.AsyncTransaction") as mock_tx:
+        with patch("app.features.workspaces.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
             result = await use_case.execute(mock_workspace.id)
 
