@@ -5,6 +5,7 @@ from fastapi import status
 
 class CustomException(Exception):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    title = "Internal Server Error"
     message = "Internal Server Error"
     log_message = None
     trace = True
@@ -14,6 +15,7 @@ class CustomException(Exception):
         message: Optional[str] = None,
         log_message: Optional[str] = None,
         status_code: Optional[int] = None,
+        title: Optional[str] = None,
         trace: Optional[bool] = None,
     ):
         if message is not None:
@@ -22,6 +24,8 @@ class CustomException(Exception):
             self.log_message = log_message
         if status_code is not None:
             self.status_code = status_code
+        if title is not None:
+            self.title = title
         if trace is not None:
             self.trace = trace
 
@@ -36,6 +40,7 @@ class CustomException(Exception):
 
     def to_dict(self):
         return {
+            "title": self.title,
             "message": self.message,
             "log_message": self.log_message,
             "status_code": self.status_code,

@@ -7,58 +7,109 @@ from app.base.exceptions.base import CustomException
 from app.core.logger import logger
 
 
+# Helper to get request_id, returns None if not available
+def _get_request_id(request: Request) -> str | None:
+    try:
+        return request.state.request_id
+    except AttributeError:
+        return None
+
+
 def set_exception_handler(app: FastAPI):
     @app.exception_handler(CustomException)
-    async def custom_exception_handler(_request: Request, exc: CustomException):
+    async def custom_exception_handler(request: Request, exc: CustomException):
         if exc.trace:
             logger.exception(f"Error: {exc.log_message}")
         else:
             logger.error(f"Error: {exc.log_message}")
+
+        # RFC 7807
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "message": exc.message,
+                "type": "about:blank",
+                "title": exc.title,
+                "status": exc.status_code,
+                "detail": exc.message,
+                "instance": str(request.url.path),
+                "request_id": _get_request_id(request),
             },
         )
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(_request: Request, exc: HTTPException):
+    async def http_exception_handler(request: Request, exc: HTTPException):
         logger.exception(f"Error: {exc.detail}")
+        try:
+            # Get the standard title for the HTTP status code
+            title = HTTPStatus(exc.status_code).phrase
+        except ValueError:
+            title = "HTTP Exception"
+
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "message": exc.detail,
+                "type": "about:blank",
+                "title": title,
+                "status": exc.status_code,
+                "detail": exc.detail,
+                "instance": str(request.url.path),
+                "request_id": _get_request_id(request),
             },
         )
 
     @app.exception_handler(NotImplementedError)
     async def not_implemented_exception_handler(
-        _request: Request, exc: NotImplementedError
+        request: Request, exc: NotImplementedError
     ):
+        status_code = HTTPStatus.NOT_IMPLEMENTED
+        title = status_code.phrase
+        detail = "The requested functionality is not implemented."
+        logger.error(f"{title}: {detail} at {request.url.path}")
         return JSONResponse(
-            status_code=HTTPStatus.NOT_IMPLEMENTED,
+            status_code=status_code,
             content={
-                "message": "The requested functionality is not implemented.",
+                "type": "about:blank",
+                "title": title,
+                "status": status_code,
+                "detail": detail,
+                "instance": str(request.url.path),
+                "request_id": _get_request_id(request),
             },
         )
 
     @app.exception_handler(ValueError)
-    async def value_error_handler(_request: Request, exc: ValueError):
+    async def value_error_handler(request: Request, exc: ValueError):
         logger.exception(f"ValueError: {exc}")
+        status_code = HTTPStatus.BAD_REQUEST
+        title = status_code.phrase
+        detail = "Invalid input provided."
         return JSONResponse(
-            status_code=HTTPStatus.BAD_REQUEST,
+            status_code=status_code,
             content={
-                "message": "Invalid input provided.",
+                "type": "about:blank",
+                "title": title,
+                "status": status_code,
+                "detail": detail,
+                "instance": str(request.url.path),
+                "request_id": _get_request_id(request),
             },
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(_request: Request, exc: Exception):
+    async def general_exception_handler(request: Request, exc: Exception):
         logger.exception(f"Unknown Error: {exc}")
+        status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        title = status_code.phrase
+        detail = "An unexpected internal server error occurred."
         return JSONResponse(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            status_code=status_code,
             content={
-                "message": "Internal Server Error",
+                "type": "about:blank",
+                "title": title,
+                "status": status_code,
+                "detail": detail,
+                "instance": str(request.url.path),
+                "request_id": _get_request_id(request),
             },
         )
 

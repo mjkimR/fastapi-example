@@ -1,10 +1,14 @@
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Response, status
 from app.features.auth.api import v1_admin_router, v1_users_router, v1_login_router
 from app.features.workspaces.api.v1 import router as v1_workspaces_router
 from app.features.memos.api.v1 import router as v1_memos_router
 from app.features.tags.api.v1 import router as v1_tags_router
+from app.core.database.deps import get_session
+
 
 router = APIRouter(prefix="/api")
 v1_router = APIRouter(prefix="/v1")
@@ -13,6 +17,18 @@ v1_router = APIRouter(prefix="/v1")
 @router.get("/health", status_code=204)
 async def health():
     return Response(status_code=204)
+
+
+@router.get("/health/deep", status_code=status.HTTP_200_OK)
+async def deep_health_check(session: AsyncSession = Depends(get_session)):
+    try:
+        await session.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return Response(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content="Database connection failed",
+        )
 
 
 # Feature routers
