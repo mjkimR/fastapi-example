@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
+
 from starlette.responses import RedirectResponse
 
 from app.features.outbox.scheduler import scheduler_lifespan
@@ -36,6 +38,7 @@ def create_app():
             "docExpansion": "none",
             "filter": True,
         },
+        default_response_class=ORJSONResponse,
     )
 
     @app.get("/")
