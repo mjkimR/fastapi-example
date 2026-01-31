@@ -92,7 +92,12 @@ class TestMemoEventHandlers:
         ],
     )
     async def test_handler_raises_event_processing_exception_on_failure(
-        self, handler, event_type, mock_create_notification_use_case, mock_memo, mock_user
+        self,
+        handler,
+        event_type,
+        mock_create_notification_use_case,
+        mock_memo,
+        mock_user,
     ):
         """Should raise EventProcessingException if notification creation fails."""
         payload = MemoNotificationPayload(

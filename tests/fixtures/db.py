@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 def get_base():
     """Lazy import of Base to avoid model registration conflicts."""
     from app.base.models.mixin import Base
+
     return Base
 
 
@@ -19,6 +20,7 @@ def get_base():
 def event_loop_policy():
     """Use default event loop policy for tests."""
     import asyncio
+
     return asyncio.DefaultEventLoopPolicy()
 
 
@@ -51,6 +53,7 @@ async def session_maker_fixture(async_engine, monkeypatch: pytest.MonkeyPatch):
     )
     # Patch get_session_maker to return this test session_maker
     from app.core.database import engine as db_engine_mod
+
     monkeypatch.setattr(db_engine_mod, "get_async_engine", lambda: async_engine)
     monkeypatch.setattr(db_engine_mod, "get_session_maker", lambda: session_maker)
     yield session_maker
@@ -69,6 +72,7 @@ async def inspect_session(session_maker):
     """Fixture to provide a session for inspection without committing changes."""
     async with session_maker() as session:
         yield session
+
 
 # Optional: PostgreSQL support with testcontainers
 # Uncomment and install testcontainers-postgres if needed

@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.services import OutboxService
-from app.features.outbox.models import Outbox, EventStatus
-from app.features.outbox.schemas import OutboxCreate, OutboxUpdate
+from app.features.outbox.models import EventStatus
+from app.features.outbox.schemas import OutboxCreate
 
 
 class TestOutboxServiceIntegration:
@@ -25,7 +25,7 @@ class TestOutboxServiceIntegration:
             aggregate_type="test",
             aggregate_id=str(uuid.uuid4()),
             event_type="TEST_ADDED",
-            payload={"test_key": "test_value"}
+            payload={"test_key": "test_value"},
         )
         created_event = await service.add_event(session, event_data)
         await session.commit()
@@ -39,17 +39,21 @@ class TestOutboxServiceIntegration:
         assert retrieved_event == created_event
 
     @pytest.mark.asyncio
-    async def test_update_event_status(self, session: AsyncSession, service: OutboxService):
+    async def test_update_event_status(
+        self, session: AsyncSession, service: OutboxService
+    ):
         event_data = OutboxCreate(
             aggregate_type="test",
             aggregate_id=str(uuid.uuid4()),
             event_type="TEST_STATUS_UPDATE",
-            payload={}
+            payload={},
         )
         created_event = await service.add_event(session, event_data)
         await session.commit()
 
-        updated_event = await service.update_event_status(session, created_event.id, EventStatus.COMPLETED)
+        updated_event = await service.update_event_status(
+            session, created_event.id, EventStatus.COMPLETED
+        )
         await session.commit()
 
         assert updated_event is not None
@@ -58,4 +62,5 @@ class TestOutboxServiceIntegration:
         assert updated_event.processed_at is not None
 
         retrieved_event = await service.repo.get_by_pk(session, created_event.id)
+        assert retrieved_event is not None
         assert retrieved_event.status == EventStatus.COMPLETED

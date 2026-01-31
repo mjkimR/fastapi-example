@@ -15,15 +15,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.base.models.mixin import Base, UUIDMixin, TimestampMixin, SoftDeleteMixin
 from app.base.repos.base import BaseRepository
-from app.base.services.base import BaseContextKwargs
 
 
 # =============================================================================
 # Mock Models
 # =============================================================================
 
+
 class MockModel(Base, UUIDMixin, TimestampMixin):
     """Mock model for testing repository operations."""
+
     __tablename__ = "mock_items"
 
     name: Mapped[str] = mapped_column(String(100))
@@ -32,6 +33,7 @@ class MockModel(Base, UUIDMixin, TimestampMixin):
 
 class MockSoftDeleteModel(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     """Mock model with soft delete for testing."""
+
     __tablename__ = "mock_soft_delete_items"
 
     name: Mapped[str] = mapped_column(String(100))
@@ -41,14 +43,17 @@ class MockSoftDeleteModel(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
 # Mock Schemas
 # =============================================================================
 
+
 class MockCreateSchema(BaseModel):
     """Schema for creating mock items."""
+
     name: str
     description: Optional[str] = None
 
 
 class MockUpdateSchema(BaseModel):
     """Schema for updating mock items."""
+
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -57,19 +62,25 @@ class MockUpdateSchema(BaseModel):
 # Mock Repository
 # =============================================================================
 
+
 class MockRepository(BaseRepository[MockModel, MockCreateSchema, MockUpdateSchema]):
     """Mock repository for testing."""
+
     model = MockModel
 
 
-class MockSoftDeleteRepository(BaseRepository[MockSoftDeleteModel, MockCreateSchema, MockUpdateSchema]):
+class MockSoftDeleteRepository(
+    BaseRepository[MockSoftDeleteModel, MockCreateSchema, MockUpdateSchema]
+):
     """Mock repository with soft delete model."""
+
     model = MockSoftDeleteModel
 
 
 # =============================================================================
 # Fixtures
 # =============================================================================
+
 
 @pytest.fixture
 def mock_model():

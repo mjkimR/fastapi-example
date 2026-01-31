@@ -1,5 +1,6 @@
+from typing import cast
 import uuid
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -18,21 +19,31 @@ class TestNotificationService:
         return AsyncMock(spec=NotificationRepository)
 
     @pytest.fixture
-    def notification_service(self, mock_notification_repo: NotificationRepository) -> NotificationService:
+    def notification_service(
+        self, mock_notification_repo: NotificationRepository
+    ) -> NotificationService:
         """Create a NotificationService instance with a mocked repository."""
         return NotificationService(repo=mock_notification_repo)
 
     @pytest.mark.asyncio
-    async def test_create_notification(self, notification_service: NotificationService, mock_notification_repo: NotificationRepository, mock_async_session, mock_user, mock_memo):
+    async def test_create_notification(
+        self,
+        notification_service: NotificationService,
+        mock_notification_repo: NotificationRepository,
+        mock_async_session,
+        mock_user,
+        mock_memo,
+    ):
         """Should call repo.create with the correct NotificationCreate data."""
         create_data = NotificationCreate(
             user_id=mock_user.id,
             message="Test message",
             resource_id=mock_memo.id,
             resource_type="notification",
-            event_type="TEST_EVENT"
+            event_type="TEST_EVENT",
         )
-        mock_notification_repo.create.return_value = Notification(
+        repo_method = cast(AsyncMock, mock_notification_repo.create)
+        repo_method.return_value = Notification(
             id=uuid.uuid4(),
             user_id=create_data.user_id,
             message=create_data.message,
@@ -43,7 +54,7 @@ class TestNotificationService:
 
         result = await notification_service.create(mock_async_session, create_data)
 
-        mock_notification_repo.create.assert_called_once_with(mock_async_session, obj_in=create_data)
+        repo_method.assert_called_once_with(mock_async_session, obj_in=create_data)
         assert result.user_id == create_data.user_id
         assert result.message == create_data.message
         assert result.resource_id == create_data.resource_id

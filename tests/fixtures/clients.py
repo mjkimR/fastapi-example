@@ -21,20 +21,25 @@ class AsyncClientWithJson(AsyncClient):
     def _json_serializer(obj):
         if isinstance(obj, Enum):
             return obj.value
-        raise TypeError(f"Object of type '{obj.__class__.__name__}' is not JSON serializable")
+        raise TypeError(
+            f"Object of type '{obj.__class__.__name__}' is not JSON serializable"
+        )
 
     async def request(self, *args, **kwargs):
-        if 'json' in kwargs:
-            kwargs['content'] = orjson.dumps(kwargs.pop('json'), default=self._json_serializer)
-            if kwargs.get('headers') is None:
-                kwargs['headers'] = {}
-            kwargs['headers']['Content-Type'] = 'application/json'
+        if "json" in kwargs:
+            kwargs["content"] = orjson.dumps(
+                kwargs.pop("json"), default=self._json_serializer
+            )
+            if kwargs.get("headers") is None:
+                kwargs["headers"] = {}
+            kwargs["headers"]["Content-Type"] = "application/json"
         return await super().request(*args, **kwargs)
 
 
 @pytest_asyncio.fixture(name="app")
 async def app_fixture(session: AsyncSession):
     """Create FastAPI app with session override."""
+
     def get_session_override():
         return session
 

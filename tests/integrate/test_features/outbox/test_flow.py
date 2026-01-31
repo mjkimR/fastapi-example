@@ -158,13 +158,14 @@ class TestOutboxToNotificationFlowIntegration:
 
         assert created_memo is not None
 
+        assert initial_notifications.total_count is not None
         await self._assert_outbox_and_notification_flow(
             session,
             inspect_session,
             outbox_repo,
             notification_repo,
             str(created_memo.id),
-            regular_user.id,
+            str(regular_user.id),
             MemoEventType.CREATE,
             initial_notifications.total_count,
         )
@@ -200,13 +201,14 @@ class TestOutboxToNotificationFlowIntegration:
 
         assert updated_memo is not None
 
+        assert initial_notifications.total_count is not None
         await self._assert_outbox_and_notification_flow(
             session,
             inspect_session,
             outbox_repo,
             notification_repo,
             str(updated_memo.id),
-            regular_user.id,
+            str(regular_user.id),
             MemoEventType.UPDATE,
             initial_notifications.total_count,
         )
@@ -240,13 +242,14 @@ class TestOutboxToNotificationFlowIntegration:
 
         assert result.success is True
 
+        assert initial_notifications.total_count is not None
         await self._assert_outbox_and_notification_flow(
             session,
             inspect_session,
             outbox_repo,
             notification_repo,
             str(memo_id),
-            regular_user.id,
+            str(regular_user.id),
             MemoEventType.DELETE,
             initial_notifications.total_count,
         )

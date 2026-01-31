@@ -1,13 +1,13 @@
+from typing import cast
 import uuid
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-from pydantic import ValidationError
 
 from app.features.outbox.services import OutboxService
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.models import Outbox, EventStatus
-from app.features.outbox.schemas import OutboxCreate, OutboxUpdate
+from app.features.outbox.schemas import OutboxCreate
 
 
 class TestOutboxService:
@@ -24,67 +24,91 @@ class TestOutboxService:
         return OutboxService(repo=mock_outbox_repo)
 
     @pytest.mark.asyncio
-    async def test_add_event(self, outbox_service: OutboxService, mock_outbox_repo: OutboxRepository, mock_async_session):
+    async def test_add_event(
+        self,
+        outbox_service: OutboxService,
+        mock_outbox_repo: OutboxRepository,
+        mock_async_session,
+    ):
         """Should call repo.create with the correct OutboxCreate data."""
         event_data = OutboxCreate(
             aggregate_type="test_type",
             aggregate_id=str(uuid.uuid4()),
             event_type="TEST_EVENT",
-            payload={"key": "value"}
+            payload={"key": "value"},
         )
-        mock_outbox_repo.create.return_value = Outbox(
+        repo_method = cast(AsyncMock, mock_outbox_repo.create)
+        repo_method.return_value = Outbox(
             id=uuid.uuid4(),
             **event_data.model_dump(),
             status=EventStatus.PENDING,
-            retry_count=0
+            retry_count=0,
         )
 
         result = await outbox_service.add_event(mock_async_session, event_data)
 
-        mock_outbox_repo.create.assert_called_once_with(mock_async_session, obj_in=event_data)
+        repo_method.assert_called_once_with(mock_async_session, obj_in=event_data)
         assert result.event_type == "TEST_EVENT"
 
     @pytest.mark.asyncio
-    async def test_update_event_status_completed(self, outbox_service: OutboxService, mock_outbox_repo: OutboxRepository, mock_async_session):
+    async def test_update_event_status_completed(
+        self,
+        outbox_service: OutboxService,
+        mock_outbox_repo: OutboxRepository,
+        mock_async_session,
+    ):
         """Should update event status to COMPLETED and set processed_at."""
         event_id = uuid.uuid4()
-        mock_outbox_repo.update_by_pk.return_value = Outbox(
+        repo_method = cast(AsyncMock, mock_outbox_repo.update_by_pk)
+        repo_method.return_value = Outbox(
             id=event_id,
             aggregate_type="test",
             aggregate_id=str(uuid.uuid4()),
             event_type="TEST_EVENT",
             payload={},
-            status=EventStatus.COMPLETED
+            status=EventStatus.COMPLETED,
         )
 
-        result = await outbox_service.update_event_status(mock_async_session, event_id, EventStatus.COMPLETED)
+        result = await outbox_service.update_event_status(
+            mock_async_session, event_id, EventStatus.COMPLETED
+        )
 
-        mock_outbox_repo.update_by_pk.assert_called_once()
-        call_kwargs = mock_outbox_repo.update_by_pk.call_args.kwargs
+        repo_method.assert_called_once()
+        call_kwargs = repo_method.call_args.kwargs
         assert call_kwargs["pk"] == event_id
         assert call_kwargs["obj_in"].status == EventStatus.COMPLETED
         assert call_kwargs["obj_in"].processed_at is not None
+        assert result is not None
         assert result.status == EventStatus.COMPLETED
 
     @pytest.mark.asyncio
-    async def test_update_event_status_failed(self, outbox_service: OutboxService, mock_outbox_repo: OutboxRepository, mock_async_session):
+    async def test_update_event_status_failed(
+        self,
+        outbox_service: OutboxService,
+        mock_outbox_repo: OutboxRepository,
+        mock_async_session,
+    ):
         """Should update event status to FAILED and increment retry_count."""
         event_id = uuid.uuid4()
-        mock_outbox_repo.update_by_pk.return_value = Outbox(
+        repo_method = cast(AsyncMock, mock_outbox_repo.update_by_pk)
+        repo_method.return_value = Outbox(
             id=event_id,
             aggregate_type="test",
             aggregate_id=str(uuid.uuid4()),
             event_type="TEST_EVENT",
             payload={},
             status=EventStatus.FAILED,
-            retry_count=1
+            retry_count=1,
         )
 
-        result = await outbox_service.update_event_status(mock_async_session, event_id, EventStatus.FAILED, retry_count=1)
+        result = await outbox_service.update_event_status(
+            mock_async_session, event_id, EventStatus.FAILED, retry_count=1
+        )
 
-        mock_outbox_repo.update_by_pk.assert_called_once()
-        call_kwargs = mock_outbox_repo.update_by_pk.call_args.kwargs
+        repo_method.assert_called_once()
+        call_kwargs = repo_method.call_args.kwargs
         assert call_kwargs["pk"] == event_id
         assert call_kwargs["obj_in"].status == EventStatus.FAILED
         assert call_kwargs["obj_in"].retry_count == 1
+        assert result is not None
         assert result.status == EventStatus.FAILED

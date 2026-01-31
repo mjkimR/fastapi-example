@@ -24,7 +24,9 @@ class TestTagRepositoryIntegration:
         return TagRepository()
 
     @pytest.mark.asyncio
-    async def test_create_tag(self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace):
+    async def test_create_tag(
+        self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace
+    ):
         """Should create a new tag in the database."""
         tag = Tag(name="python", workspace_id=single_workspace.id)
         session.add(tag)
@@ -36,7 +38,9 @@ class TestTagRepositoryIntegration:
         assert tag.workspace_id == single_workspace.id
 
     @pytest.mark.asyncio
-    async def test_get_tag_by_pk(self, session: AsyncSession, repo: TagRepository, single_tag: Tag):
+    async def test_get_tag_by_pk(
+        self, session: AsyncSession, repo: TagRepository, single_tag: Tag
+    ):
         """Should retrieve a tag by primary key."""
         result = await repo.get_by_pk(session, pk=single_tag.id)
 
@@ -45,7 +49,9 @@ class TestTagRepositoryIntegration:
         assert result.name == single_tag.name
 
     @pytest.mark.asyncio
-    async def test_get_tag_by_pk_not_found(self, session: AsyncSession, repo: TagRepository):
+    async def test_get_tag_by_pk_not_found(
+        self, session: AsyncSession, repo: TagRepository
+    ):
         """Should return None when tag not found."""
         non_existent_id = uuid.uuid4()
 
@@ -54,15 +60,20 @@ class TestTagRepositoryIntegration:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_multi_tags(self, session: AsyncSession, repo: TagRepository, sample_tags: list[Tag]):
+    async def test_get_multi_tags(
+        self, session: AsyncSession, repo: TagRepository, sample_tags: list[Tag]
+    ):
         """Should retrieve multiple tags with pagination."""
         result = await repo.get_multi(session, offset=0, limit=10)
 
+        assert result.total_count is not None
         assert result.total_count >= len(sample_tags)
         assert len(result.items) <= 10
 
     @pytest.mark.asyncio
-    async def test_get_or_create_tags_new_tags(self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace):
+    async def test_get_or_create_tags_new_tags(
+        self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace
+    ):
         """Should create new tags when they don't exist."""
         tag_names = ["new_tag_1", "new_tag_2", "new_tag_3"]
         workspace_id = single_workspace.id
@@ -76,7 +87,9 @@ class TestTagRepositoryIntegration:
             assert tag.workspace_id == workspace_id
 
     @pytest.mark.asyncio
-    async def test_get_or_create_tags_existing_tags(self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace):
+    async def test_get_or_create_tags_existing_tags(
+        self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace
+    ):
         """Should return existing tags without creating duplicates."""
         workspace_id = single_workspace.id
         existing_tag = Tag(name="existing_tag", workspace_id=workspace_id)
@@ -94,12 +107,14 @@ class TestTagRepositoryIntegration:
         assert "another_new_tag" in result_names
 
     @pytest.mark.asyncio
-    async def test_get_or_create_tags_mixed(self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace):
+    async def test_get_or_create_tags_mixed(
+        self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace
+    ):
         """Should handle mix of existing and new tags."""
         workspace_id = single_workspace.id
         existing_tags = [
             Tag(name="mix_existing_1", workspace_id=workspace_id),
-            Tag(name="mix_existing_2", workspace_id=workspace_id)
+            Tag(name="mix_existing_2", workspace_id=workspace_id),
         ]
         session.add_all(existing_tags)
         await session.flush()
@@ -113,13 +128,17 @@ class TestTagRepositoryIntegration:
         assert result_names == set(tag_names)
 
     @pytest.mark.asyncio
-    async def test_get_or_create_tags_empty_list(self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace):
+    async def test_get_or_create_tags_empty_list(
+        self, session: AsyncSession, repo: TagRepository, single_workspace: Workspace
+    ):
         """Should return empty list for empty input."""
         result = await repo.get_or_create_tags(session, [], single_workspace.id)
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_delete_tag_by_pk(self, session: AsyncSession, repo: TagRepository, single_tag: Tag):
+    async def test_delete_tag_by_pk(
+        self, session: AsyncSession, repo: TagRepository, single_tag: Tag
+    ):
         """Should delete a tag from the database."""
         tag_id = single_tag.id
         result = await repo.delete_by_pk(session, pk=tag_id)
@@ -128,29 +147,38 @@ class TestTagRepositoryIntegration:
         assert deleted_tag is None
 
     @pytest.mark.asyncio
-    async def test_delete_nonexistent_tag(self, session: AsyncSession, repo: TagRepository):
+    async def test_delete_nonexistent_tag(
+        self, session: AsyncSession, repo: TagRepository
+    ):
         """Should return False when deleting non-existent tag."""
         non_existent_id = uuid.uuid4()
         result = await repo.delete_by_pk(session, pk=non_existent_id)
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_exists_tag(self, session: AsyncSession, repo: TagRepository, single_tag: Tag):
+    async def test_exists_tag(
+        self, session: AsyncSession, repo: TagRepository, single_tag: Tag
+    ):
         """Should check if tag exists."""
         result = await repo.exists(session, where=Tag.id == single_tag.id)
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_exists_tag_by_name(self, session: AsyncSession, repo: TagRepository, single_tag: Tag):
+    async def test_exists_tag_by_name(
+        self, session: AsyncSession, repo: TagRepository, single_tag: Tag
+    ):
         """Should check if tag exists by name in the same workspace."""
         result = await repo.exists(
             session,
-            where=(Tag.name == single_tag.name) & (Tag.workspace_id == single_tag.workspace_id)
+            where=(Tag.name == single_tag.name)
+            & (Tag.workspace_id == single_tag.workspace_id),
         )
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_exists_tag_not_found(self, session: AsyncSession, repo: TagRepository):
+    async def test_exists_tag_not_found(
+        self, session: AsyncSession, repo: TagRepository
+    ):
         """Should return False when tag does not exist."""
         non_existent_id = uuid.uuid4()
         result = await repo.exists(session, where=Tag.id == non_existent_id)

@@ -13,6 +13,7 @@ from pydantic import SecretStr
 # Mock Session
 # =============================================================================
 
+
 @pytest.fixture
 def mock_async_session():
     """Create a fully mocked async session."""
@@ -29,6 +30,7 @@ def mock_async_session():
 # =============================================================================
 # Mock Settings
 # =============================================================================
+
 
 @pytest.fixture
 def mock_settings():

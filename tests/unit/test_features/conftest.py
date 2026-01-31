@@ -24,4 +24,3 @@ from tests.unit.fixtures.infra import (
     mock_async_session,
     mock_settings,
 )
-

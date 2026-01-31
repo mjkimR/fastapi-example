@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 import pytest
 
@@ -38,9 +39,9 @@ class TestWorkspaceServiceOutboxHooks:
         created_mock = MagicMock()
         created_mock.id = sample_workspace_id
         created_mock.name = "Test Workspace"
-        service.repo.create.return_value = created_mock
+        cast(AsyncMock, service.repo.create).return_value = created_mock
         # Mock for UniqueConstraintHooksMixin
-        service.repo.exists.return_value = False
+        cast(AsyncMock, service.repo.exists).return_value = False
         workspace_data = WorkspaceCreate(name="Test Workspace")
         context: UserContextKwargs = {"user_id": mock_user.id}
 
@@ -65,9 +66,9 @@ class TestWorkspaceServiceOutboxHooks:
         updated_mock = MagicMock()
         updated_mock.id = sample_workspace_id
         updated_mock.name = "Updated Name"
-        service.repo.update_by_pk.return_value = updated_mock
+        cast(AsyncMock, service.repo.update_by_pk).return_value = updated_mock
         # Mock for UniqueConstraintHooksMixin
-        service.repo.exists.return_value = False
+        cast(AsyncMock, service.repo.exists).return_value = False
         update_data = WorkspaceUpdate(name="Updated Name")
         context: UserContextKwargs = {"user_id": mock_user.id}
 
@@ -94,8 +95,8 @@ class TestWorkspaceServiceOutboxHooks:
         deleted_mock = MagicMock()
         deleted_mock.id = sample_workspace_id
         deleted_mock.name = "Deleted Workspace"
-        service.repo.get_by_pk.return_value = deleted_mock
-        service.repo.delete_by_pk.return_value = True
+        cast(AsyncMock, service.repo.get_by_pk).return_value = deleted_mock
+        cast(AsyncMock, service.repo.delete_by_pk).return_value = True
         context: UserContextKwargs = {"user_id": mock_user.id}
 
         await service.delete(mock_async_session, sample_workspace_id, context)

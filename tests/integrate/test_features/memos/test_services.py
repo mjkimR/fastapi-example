@@ -66,7 +66,10 @@ class TestMemoServiceIntegration:
             contents="Testing memo creation through service layer.",
             tags=[],
         )
-        context = {"parent_id": single_workspace.id, "user_id": regular_user.id}
+        context: MemoContextKwargs = {
+            "parent_id": single_workspace.id,
+            "user_id": regular_user.id,
+        }
 
         result = await service.create(session, obj_data=memo_data, context=context)
         await session.commit()  # Commit to make the outbox event visible
@@ -92,7 +95,10 @@ class TestMemoServiceIntegration:
         regular_user: User,
     ):
         """Should retrieve a memo through service."""
-        context = {"parent_id": single_memo.workspace_id, "user_id": regular_user.id}
+        context: MemoContextKwargs = {
+            "parent_id": single_memo.workspace_id,
+            "user_id": regular_user.id,
+        }
         result = await service.get(session, obj_id=single_memo.id, context=context)
 
         assert result is not None

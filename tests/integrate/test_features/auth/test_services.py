@@ -3,8 +3,6 @@ Integration tests for UserService.
 Tests service layer operations with real database connections.
 """
 
-import uuid
-
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import SecretStr

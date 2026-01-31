@@ -34,7 +34,9 @@ class TestGetMemoUseCase:
 
         assert result is mock_memo
         use_case.service.get.assert_called_once_with(
-            mock_tx.return_value.__aenter__.return_value, sample_memo_id, context=context
+            mock_tx.return_value.__aenter__.return_value,
+            sample_memo_id,
+            context=context,
         )
 
 
@@ -164,7 +166,7 @@ class TestDeleteMemoUseCase:
     async def test_execute_calls_service_delete(
         self, use_case, sample_memo_id, mock_user, mock_workspace
     ):
-        response = DeleteResponse(success=True, id=sample_memo_id)
+        response = DeleteResponse(success=True, identity=sample_memo_id)
         use_case.service.delete.return_value = response
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
 

@@ -1,6 +1,7 @@
 """
 Integration tests for WorkspaceRepository.
 """
+
 import uuid
 
 import pytest
@@ -20,7 +21,9 @@ class TestWorkspaceRepositoryIntegration:
         return WorkspaceRepository()
 
     @pytest.mark.asyncio
-    async def test_create_workspace(self, session: AsyncSession, repo: WorkspaceRepository, regular_user):
+    async def test_create_workspace(
+        self, session: AsyncSession, repo: WorkspaceRepository, regular_user
+    ):
         """Should create a new workspace in the database."""
         workspace_data = WorkspaceCreate(name="Test Workspace")
 
@@ -28,7 +31,7 @@ class TestWorkspaceRepositoryIntegration:
             session,
             obj_in=workspace_data,
             created_by=regular_user.id,
-            updated_by=regular_user.id
+            updated_by=regular_user.id,
         )
 
         assert result is not None
@@ -37,7 +40,12 @@ class TestWorkspaceRepositoryIntegration:
         assert result.created_by == regular_user.id
 
     @pytest.mark.asyncio
-    async def test_get_workspace_by_pk(self, session: AsyncSession, repo: WorkspaceRepository, single_workspace: Workspace):
+    async def test_get_workspace_by_pk(
+        self,
+        session: AsyncSession,
+        repo: WorkspaceRepository,
+        single_workspace: Workspace,
+    ):
         """Should retrieve a workspace by primary key."""
         result = await repo.get_by_pk(session, pk=single_workspace.id)
 
@@ -46,21 +54,36 @@ class TestWorkspaceRepositoryIntegration:
         assert result.name == single_workspace.name
 
     @pytest.mark.asyncio
-    async def test_get_workspace_by_pk_not_found(self, session: AsyncSession, repo: WorkspaceRepository):
+    async def test_get_workspace_by_pk_not_found(
+        self, session: AsyncSession, repo: WorkspaceRepository
+    ):
         """Should return None when workspace not found."""
         non_existent_id = uuid.uuid4()
         result = await repo.get_by_pk(session, pk=non_existent_id)
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_multi_workspaces(self, session: AsyncSession, repo: WorkspaceRepository, sample_workspaces: list[Workspace]):
+    async def test_get_multi_workspaces(
+        self,
+        session: AsyncSession,
+        repo: WorkspaceRepository,
+        sample_workspaces: list[Workspace],
+    ):
         """Should retrieve multiple workspaces with pagination."""
         result = await repo.get_multi(session, offset=0, limit=10)
+
+        assert result.total_count is not None
         assert result.total_count >= len(sample_workspaces)
         assert len(result.items) <= 10
 
     @pytest.mark.asyncio
-    async def test_update_workspace_by_pk(self, session: AsyncSession, repo: WorkspaceRepository, single_workspace: Workspace, admin_user):
+    async def test_update_workspace_by_pk(
+        self,
+        session: AsyncSession,
+        repo: WorkspaceRepository,
+        single_workspace: Workspace,
+        admin_user,
+    ):
         """Should update an existing workspace."""
         update_data = WorkspaceUpdate(name="Updated Workspace Name")
 
@@ -68,7 +91,7 @@ class TestWorkspaceRepositoryIntegration:
             session,
             pk=single_workspace.id,
             obj_in=update_data,
-            updated_by=admin_user.id
+            updated_by=admin_user.id,
         )
 
         assert result is not None
@@ -76,7 +99,12 @@ class TestWorkspaceRepositoryIntegration:
         assert result.updated_by == admin_user.id
 
     @pytest.mark.asyncio
-    async def test_delete_workspace_by_pk(self, session: AsyncSession, repo: WorkspaceRepository, single_workspace: Workspace):
+    async def test_delete_workspace_by_pk(
+        self,
+        session: AsyncSession,
+        repo: WorkspaceRepository,
+        single_workspace: Workspace,
+    ):
         """Should delete a workspace from the database."""
         workspace_id = single_workspace.id
         result = await repo.delete_by_pk(session, pk=workspace_id)

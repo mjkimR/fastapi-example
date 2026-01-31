@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
 
 from app.base.deps.ordering.base import OrderByCriteria, order_by_for
 
@@ -10,6 +9,7 @@ from app.base.deps.ordering.base import OrderByCriteria, order_by_for
 # =============================================================================
 # Tests for OrderByCriteria
 # =============================================================================
+
 
 class TestOrderByCriteria:
     """Tests for OrderByCriteria class."""
@@ -26,9 +26,7 @@ class TestOrderByCriteria:
         """Should accept optional description."""
         func = MagicMock()
         criteria = OrderByCriteria(
-            alias="created_at",
-            func=func,
-            description="Order by creation date"
+            alias="created_at", func=func, description="Order by creation date"
         )
 
         assert criteria.description == "Order by creation date"
@@ -41,7 +39,7 @@ class TestOrderByCriteria:
         result = criteria(desc=True)
 
         func.assert_called_once_with(True)
-        assert result == "desc_expression"
+        assert result == "desc_expression"  # type: ignore
 
     def test_call_invokes_func_with_desc_false(self):
         """Should invoke func with desc=False."""
@@ -51,7 +49,7 @@ class TestOrderByCriteria:
         result = criteria(desc=False)
 
         func.assert_called_once_with(False)
-        assert result == "asc_expression"
+        assert result == "asc_expression"  # type: ignore
 
     def test_repr(self):
         """Should return readable repr."""
@@ -67,6 +65,7 @@ class TestOrderByCriteria:
 # =============================================================================
 # Tests for order_by_for decorator
 # =============================================================================
+
 
 class TestOrderByForDecorator:
     """Tests for order_by_for decorator."""
@@ -113,14 +112,14 @@ class TestOrderByForDecorator:
     def test_decorated_function_is_callable(self):
         """Decorated function should be callable via OrderByCriteria."""
 
-        @order_by_for(alias="created_at")
+        @order_by_for(alias="created_at")  # type: ignore
         def order_by_created_at(desc: bool):
             if desc:
                 return "created_at_desc"
             return "created_at_asc"
 
-        assert order_by_created_at(desc=True) == "created_at_desc"
-        assert order_by_created_at(desc=False) == "created_at_asc"
+        assert order_by_created_at(desc=True) == "created_at_desc"  # type: ignore
+        assert order_by_created_at(desc=False) == "created_at_asc"  # type: ignore
 
     def test_decorator_with_none_alias(self):
         """Should handle None alias by using function name."""
@@ -138,15 +137,15 @@ class TestOrderByCriteriaIntegration:
     def test_multiple_order_by_criteria(self):
         """Should support multiple order criteria."""
 
-        @order_by_for(alias="created_at", description="Order by creation date")
+        @order_by_for(alias="created_at", description="Order by creation date")  # type: ignore
         def by_created(desc: bool):
             return f"created_at {'DESC' if desc else 'ASC'}"
 
-        @order_by_for(alias="updated_at", description="Order by update date")
+        @order_by_for(alias="updated_at", description="Order by update date")  # type: ignore
         def by_updated(desc: bool):
             return f"updated_at {'DESC' if desc else 'ASC'}"
 
-        @order_by_for(alias="name", description="Order by name")
+        @order_by_for(alias="name", description="Order by name")  # type: ignore
         def by_name(desc: bool):
             return f"name {'DESC' if desc else 'ASC'}"
 
@@ -156,6 +155,6 @@ class TestOrderByCriteriaIntegration:
         assert all(isinstance(c, OrderByCriteria) for c in criteria_list)
 
         # Test each can be called
-        assert by_created(desc=True) == "created_at DESC"
-        assert by_updated(desc=False) == "updated_at ASC"
-        assert by_name(desc=True) == "name DESC"
+        assert by_created(desc=True) == "created_at DESC"  # type: ignore
+        assert by_updated(desc=False) == "updated_at ASC"  # type: ignore
+        assert by_name(desc=True) == "name DESC"  # type: ignore

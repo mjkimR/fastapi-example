@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.services import NotificationService
 from app.features.notifications.schemas import NotificationCreate
-from app.features.notifications.models import Notification
 
 
 class TestNotificationServiceIntegration:
@@ -20,11 +19,17 @@ class TestNotificationServiceIntegration:
         return NotificationService(repo=repo)
 
     @pytest.mark.asyncio
-    async def test_create_notification(self, session: AsyncSession, service: NotificationService, regular_user, single_memo):
+    async def test_create_notification(
+        self,
+        session: AsyncSession,
+        service: NotificationService,
+        regular_user,
+        single_memo,
+    ):
         notification_data = NotificationCreate(
             user_id=regular_user.id,
             message="Your memo was created by service!",
-            related_memo_id=single_memo.id
+            resource_id=single_memo.id,
         )
         created_notification = await service.create(session, notification_data)
         await session.commit()
@@ -34,5 +39,7 @@ class TestNotificationServiceIntegration:
         assert created_notification.user_id == regular_user.id
         assert created_notification.message == notification_data.message
 
-        retrieved_notification = await service.repo.get_by_pk(session, created_notification.id)
+        retrieved_notification = await service.repo.get_by_pk(
+            session, created_notification.id
+        )
         assert retrieved_notification == created_notification

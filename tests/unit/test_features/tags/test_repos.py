@@ -28,15 +28,21 @@ class TestTagRepositoryGetOrCreateTags:
         return TagRepository()
 
     @pytest.mark.asyncio
-    async def test_returns_empty_list_for_empty_input(self, tag_repo, mock_async_session, sample_workspace_id):
+    async def test_returns_empty_list_for_empty_input(
+        self, tag_repo, mock_async_session, sample_workspace_id
+    ):
         """Should return empty list for empty tag names."""
-        result = await tag_repo.get_or_create_tags(mock_async_session, [], sample_workspace_id)
+        result = await tag_repo.get_or_create_tags(
+            mock_async_session, [], sample_workspace_id
+        )
 
         assert result == []
         mock_async_session.execute.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_returns_existing_tags(self, tag_repo, mock_async_session, mock_tags, sample_workspace_id):
+    async def test_returns_existing_tags(
+        self, tag_repo, mock_async_session, mock_tags, sample_workspace_id
+    ):
         """Should return existing tags without creating new ones."""
         mock_result = MagicMock()
         mock_scalars = MagicMock()
@@ -45,16 +51,16 @@ class TestTagRepositoryGetOrCreateTags:
         mock_async_session.execute.return_value = mock_result
 
         result = await tag_repo.get_or_create_tags(
-            mock_async_session,
-            ["python", "fastapi", "sqlalchemy"],
-            sample_workspace_id
+            mock_async_session, ["python", "fastapi", "sqlalchemy"], sample_workspace_id
         )
 
         assert len(result) == 3
         mock_async_session.add_all.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_creates_new_tags(self, tag_repo, mock_async_session, sample_workspace_id):
+    async def test_creates_new_tags(
+        self, tag_repo, mock_async_session, sample_workspace_id
+    ):
         """Should create new tags for names that don't exist."""
         # No existing tags
         mock_result = MagicMock()
@@ -64,9 +70,7 @@ class TestTagRepositoryGetOrCreateTags:
         mock_async_session.execute.return_value = mock_result
 
         result = await tag_repo.get_or_create_tags(
-            mock_async_session,
-            ["new-tag-1", "new-tag-2"],
-            sample_workspace_id
+            mock_async_session, ["new-tag-1", "new-tag-2"], sample_workspace_id
         )
 
         assert len(result) == 2
@@ -74,7 +78,9 @@ class TestTagRepositoryGetOrCreateTags:
         mock_async_session.flush.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_returns_mix_of_existing_and_new_tags(self, tag_repo, mock_async_session, mock_tag, sample_workspace_id):
+    async def test_returns_mix_of_existing_and_new_tags(
+        self, tag_repo, mock_async_session, mock_tag, sample_workspace_id
+    ):
         """Should return both existing and newly created tags."""
         # One existing tag
         mock_result = MagicMock()
@@ -84,9 +90,7 @@ class TestTagRepositoryGetOrCreateTags:
         mock_async_session.execute.return_value = mock_result
 
         result = await tag_repo.get_or_create_tags(
-            mock_async_session,
-            [mock_tag.name, "new-tag"],
-            sample_workspace_id
+            mock_async_session, [mock_tag.name, "new-tag"], sample_workspace_id
         )
 
         # Should have existing + new tag

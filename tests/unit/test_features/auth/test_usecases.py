@@ -13,7 +13,10 @@ from app.features.auth.usecases.admin import (
     CreateUserUseCase,
     CreateAdminUseCase,
 )
-from app.features.auth.exceptions import PermissionDeniedException, UserCantDeleteItselfException
+from app.features.auth.exceptions import (
+    PermissionDeniedException,
+    UserCantDeleteItselfException,
+)
 from app.base.schemas.paginated import PaginatedList
 
 
@@ -27,7 +30,9 @@ class TestGetUserUseCase:
         return GetUserUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_returns_current_user_when_same_id(self, use_case, mock_user, sample_user_id):
+    async def test_execute_returns_current_user_when_same_id(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should return current user when requesting own data."""
         mock_user.id = sample_user_id
 
@@ -37,7 +42,9 @@ class TestGetUserUseCase:
         use_case.service.get.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_execute_raises_when_non_admin_requests_other_user(self, use_case, mock_user, sample_user_id):
+    async def test_execute_raises_when_non_admin_requests_other_user(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should raise PermissionDeniedException when non-admin requests other user."""
         mock_user.id = uuid.uuid4()  # Different ID
         mock_user.role = User.Role.USER
@@ -46,7 +53,9 @@ class TestGetUserUseCase:
             await use_case.execute(sample_user_id, current_user=mock_user)
 
     @pytest.mark.asyncio
-    async def test_execute_returns_user_when_admin_requests(self, use_case, mock_admin_user, mock_user, sample_user_id):
+    async def test_execute_returns_user_when_admin_requests(
+        self, use_case, mock_admin_user, mock_user, sample_user_id
+    ):
         """Should return user when admin requests other user."""
         mock_admin_user.id = uuid.uuid4()  # Different ID
         mock_admin_user.role = User.Role.ADMIN
@@ -54,7 +63,9 @@ class TestGetUserUseCase:
 
         with patch("app.features.auth.usecases.crud.AsyncTransaction") as mock_tx:
             mock_tx.return_value.__aenter__.return_value = AsyncMock()
-            result = await use_case.execute(sample_user_id, current_user=mock_admin_user)
+            result = await use_case.execute(
+                sample_user_id, current_user=mock_admin_user
+            )
 
         assert result == mock_user
 
@@ -69,17 +80,23 @@ class TestUpdateUserUseCase:
         return UpdateUserUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_returns_current_user_when_same_id(self, use_case, mock_user, sample_user_id):
+    async def test_execute_returns_current_user_when_same_id(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should return current user when updating own data."""
         mock_user.id = sample_user_id
         update_data = UserUpdate(name="Updated Name")
 
-        result = await use_case.execute(update_data, sample_user_id, current_user=mock_user)
+        result = await use_case.execute(
+            update_data, sample_user_id, current_user=mock_user
+        )
 
         assert result == mock_user
 
     @pytest.mark.asyncio
-    async def test_execute_raises_when_non_admin_updates_other_user(self, use_case, mock_user, sample_user_id):
+    async def test_execute_raises_when_non_admin_updates_other_user(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should raise PermissionDeniedException when non-admin updates other user."""
         mock_user.id = uuid.uuid4()  # Different ID
         mock_user.role = User.Role.USER
@@ -99,7 +116,9 @@ class TestDeleteUserUseCase:
         return DeleteUserUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_raises_when_deleting_self(self, use_case, mock_user, sample_user_id):
+    async def test_execute_raises_when_deleting_self(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should raise UserCantDeleteItselfException when deleting self."""
         mock_user.id = sample_user_id
 
@@ -107,7 +126,9 @@ class TestDeleteUserUseCase:
             await use_case.execute(sample_user_id, current_user=mock_user)
 
     @pytest.mark.asyncio
-    async def test_execute_returns_true_when_deleted(self, use_case, mock_user, sample_user_id):
+    async def test_execute_returns_true_when_deleted(
+        self, use_case, mock_user, sample_user_id
+    ):
         """Should return True when user deleted."""
         mock_user.id = uuid.uuid4()  # Different ID
         use_case.service.delete.return_value = True
@@ -136,7 +157,7 @@ class TestCreateUserUseCase:
             name="Test",
             surname="User",
             email="test@example.com",
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
 
         with patch("app.features.auth.usecases.admin.AsyncTransaction") as mock_tx:
@@ -164,7 +185,7 @@ class TestCreateAdminUseCase:
             name="Admin",
             surname="User",
             email="admin@example.com",
-            password=SecretStr("password123")
+            password=SecretStr("password123"),
         )
 
         with patch("app.features.auth.usecases.admin.AsyncTransaction") as mock_tx:

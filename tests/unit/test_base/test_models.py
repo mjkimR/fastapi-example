@@ -1,11 +1,11 @@
 """Unit tests for app.base.models.mixin module."""
 
-
 from app.base.models.mixin import (
     UUIDMixin,
     TimestampMixin,
     SoftDeleteMixin,
-    AuditMixin, TaggableMixin,
+    AuditMixin,
+    TaggableMixin,
 )
 
 
@@ -46,6 +46,7 @@ class TestTaggableMixin:
         model = TestModel()
         model.add_tag("python")
 
+        assert model.tags is not None
         assert model.tags == ["python", "fastapi"]
         assert model.tags.count("python") == 1
 
@@ -130,29 +131,29 @@ class TestMixinDefaults:
     def test_uuid_mixin_default_value(self):
         """UUIDMixin should provide a default UUID."""
         # This tests the column definition, not runtime behavior
-        assert hasattr(UUIDMixin, 'id')
+        assert hasattr(UUIDMixin, "id")
 
     def test_timestamp_mixin_has_created_at(self):
         """TimestampMixin should have created_at field."""
-        assert hasattr(TimestampMixin, 'created_at')
+        assert hasattr(TimestampMixin, "created_at")
 
     def test_timestamp_mixin_has_updated_at(self):
         """TimestampMixin should have updated_at field."""
-        assert hasattr(TimestampMixin, 'updated_at')
+        assert hasattr(TimestampMixin, "updated_at")
 
     def test_soft_delete_mixin_default_is_deleted_false(self):
         """SoftDeleteMixin should default is_deleted to False."""
-        assert hasattr(SoftDeleteMixin, 'is_deleted')
-        assert hasattr(SoftDeleteMixin, 'deleted_at')
+        assert hasattr(SoftDeleteMixin, "is_deleted")
+        assert hasattr(SoftDeleteMixin, "deleted_at")
 
     def test_audit_mixin_has_created_by(self):
         """AuditMixin should have created_by field."""
-        assert hasattr(AuditMixin, 'created_by')
+        assert hasattr(AuditMixin, "created_by")
 
     def test_audit_mixin_has_updated_by(self):
         """AuditMixin should have updated_by field."""
-        assert hasattr(AuditMixin, 'updated_by')
+        assert hasattr(AuditMixin, "updated_by")
 
     def test_taggable_mixin_has_tags(self):
         """TaggableMixin should have tags field."""
-        assert hasattr(TaggableMixin, 'tags')
+        assert hasattr(TaggableMixin, "tags")

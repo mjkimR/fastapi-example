@@ -1,3 +1,4 @@
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 import pytest
 
@@ -46,10 +47,10 @@ class TestMemoServiceOutboxHooks:
         created_mock.id = sample_memo_id
         created_mock.title = "Test"
         created_mock.workspace_id = mock_memo.workspace_id
-        service.repo.create.return_value = created_mock
+        cast(AsyncMock, service.repo.create).return_value = created_mock
         # Mocks for hooks
-        service.repo.exists.return_value = False
-        service.parent_repo.exists.return_value = True
+        cast(AsyncMock, service.repo.exists).return_value = False
+        cast(AsyncMock, service.parent_repo.exists).return_value = True
 
         memo_data = MemoCreate(
             category="Test Category", title="Test", contents="Test", tags=[]
@@ -78,15 +79,15 @@ class TestMemoServiceOutboxHooks:
     ):
         """Should call outbox_repo.create after a successful memo update."""
         # Mocks for hooks
-        service.repo.exists.return_value = False
-        service.parent_repo.exists.return_value = True
-        service.repo.get_by_pk.return_value = mock_memo
+        cast(AsyncMock, service.repo.exists).return_value = False
+        cast(AsyncMock, service.parent_repo.exists).return_value = True
+        cast(AsyncMock, service.repo.get_by_pk).return_value = mock_memo
 
         updated_mock = MagicMock()
         updated_mock.id = sample_memo_id
         updated_mock.title = "Updated Title"
         updated_mock.workspace_id = mock_memo.workspace_id
-        service.repo.update_by_pk.return_value = updated_mock
+        cast(AsyncMock, service.repo.update_by_pk).return_value = updated_mock
 
         update_data = MemoUpdate(title="Updated Title")
         context: MemoContextKwargs = {
@@ -116,9 +117,11 @@ class TestMemoServiceOutboxHooks:
         deleted_mock.id = sample_memo_id
         deleted_mock.title = "Deleted Memo"
         deleted_mock.workspace_id = mock_memo.workspace_id
-        service.repo.get_by_pk.return_value = deleted_mock
-        service.parent_repo.exists.return_value = True
-        service.repo.delete_by_pk.return_value = MagicMock(success=True)
+        cast(AsyncMock, service.repo.get_by_pk).return_value = deleted_mock
+        cast(AsyncMock, service.parent_repo.exists).return_value = True
+        cast(AsyncMock, service.repo.delete_by_pk).return_value = MagicMock(
+            success=True
+        )
 
         context: MemoContextKwargs = {
             "parent_id": mock_memo.workspace_id,

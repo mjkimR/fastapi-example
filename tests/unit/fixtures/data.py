@@ -21,6 +21,7 @@ from app.features.workspaces.models import Workspace
 # Sample IDs
 # =============================================================================
 
+
 @pytest.fixture
 def sample_user_id():
     """Provide a consistent user UUID for testing."""
@@ -48,6 +49,7 @@ def sample_workspace_id():
 # =============================================================================
 # Mock User Models
 # =============================================================================
+
 
 @pytest.fixture
 def mock_user(sample_user_id):
@@ -83,6 +85,7 @@ def mock_admin_user(sample_user_id):
 # Mock Workspace Models
 # =============================================================================
 
+
 @pytest.fixture
 def mock_workspace(sample_workspace_id, sample_user_id):
     """Create a mock workspace instance."""
@@ -99,6 +102,7 @@ def mock_workspace(sample_workspace_id, sample_user_id):
 # =============================================================================
 # Mock Memo Models
 # =============================================================================
+
 
 @pytest.fixture
 def mock_memo(sample_memo_id, sample_workspace_id, sample_user_id):
@@ -120,6 +124,7 @@ def mock_memo(sample_memo_id, sample_workspace_id, sample_user_id):
 # =============================================================================
 # Mock Tag Models
 # =============================================================================
+
 
 @pytest.fixture
 def mock_tag(sample_tag_id, sample_workspace_id):

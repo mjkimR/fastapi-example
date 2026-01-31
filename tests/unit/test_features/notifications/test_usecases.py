@@ -17,12 +17,20 @@ class TestCreateNotificationUseCase:
         return AsyncMock()
 
     @pytest.fixture
-    def create_notification_use_case(self, mock_notification_service: AsyncMock) -> CreateNotificationUseCase:
+    def create_notification_use_case(
+        self, mock_notification_service: AsyncMock
+    ) -> CreateNotificationUseCase:
         """Create a CreateNotificationUseCase instance."""
         return CreateNotificationUseCase(service=mock_notification_service)
 
     @pytest.mark.asyncio
-    async def test_execute_creates_notification(self, create_notification_use_case: CreateNotificationUseCase, mock_notification_service: AsyncMock, mock_user, mock_memo):
+    async def test_execute_creates_notification(
+        self,
+        create_notification_use_case: CreateNotificationUseCase,
+        mock_notification_service: AsyncMock,
+        mock_user,
+        mock_memo,
+    ):
         """Should call service.create with the correct data within a transaction."""
         notification_data = NotificationCreate(
             user_id=mock_user.id,
@@ -38,12 +46,14 @@ class TestCreateNotificationUseCase:
             id=uuid.uuid4(),
             user_id=notification_data.user_id,
             message=notification_data.message,
-            resource_id=notification_data.resource_id
+            resource_id=notification_data.resource_id,
         )
         mock_notification_service.create.return_value = created_notification_instance
 
         # Patch AsyncTransaction to control the session inside the use case
-        with patch("app.core.database.transaction.AsyncTransaction") as mock_transaction:
+        with patch(
+            "app.core.database.transaction.AsyncTransaction"
+        ) as mock_transaction:
             # Configure the mock session returned by AsyncTransaction.__aenter__
             mock_session = AsyncMock()
             mock_transaction.return_value.__aenter__.return_value = mock_session
@@ -51,9 +61,13 @@ class TestCreateNotificationUseCase:
             # Ensure mock_session.flush and mock_session.refresh work correctly on the instance
             # For refresh, we'll make it modify the object in place, or simply return the object.
             mock_session.flush.return_value = None
-            mock_session.refresh.side_effect = lambda obj: None  # refresh typically modifies in place, or returns None if successful
+            mock_session.refresh.side_effect = (
+                lambda obj: None
+            )  # refresh typically modifies in place, or returns None if successful
 
             result = await create_notification_use_case.execute(notification_data)
 
         assert result.user_id == notification_data.user_id
-        assert result == created_notification_instance  # The use case returns the refreshed object
+        assert (
+            result == created_notification_instance
+        )  # The use case returns the refreshed object
