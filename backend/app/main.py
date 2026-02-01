@@ -9,10 +9,7 @@ from app.features.outbox.scheduler import scheduler_lifespan
 from app.router import router
 from app.base.exceptions.handler import set_exception_handler
 from app.core.logger import logger
-from app.core.middlewares import (
-    cors_middleware,
-)
-from app.core.middlewares import request_id_middleware
+from app.core import middlewares
 
 
 def get_lifespan():
@@ -45,8 +42,14 @@ def create_app():
     async def root():
         return RedirectResponse(url="/docs")
 
-    request_id_middleware.add_middleware(app)
-    cors_middleware.add_middleware(app)
+    # Request ID middleware
+    middlewares.request_id_middleware.add_middleware(app)
+    # Security middleware
+    middlewares.cors_middleware.add_middleware(app)
+    middlewares.security_header.add_middleware(app)
+    # Others
+    middlewares.timeout_middleware.add_middleware(app)
+    middlewares.query_counter.add_middleware(app)
 
     app.include_router(router)
 
