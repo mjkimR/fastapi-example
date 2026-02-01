@@ -1,7 +1,7 @@
 {
     "python-envs.pythonProjects": [],
     "python.analysis.extraPaths": [
-        "./backend"
+        "./src"
     ],
     "python.testing.pytestArgs": [
         "tests"
@@ -16,11 +16,11 @@
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
             "source.fixAll.ruff": "explicit",
-            "source.organizeImports.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
         }
     },
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features",
         "editor.formatOnSave": true
-    },
+    }
 }
