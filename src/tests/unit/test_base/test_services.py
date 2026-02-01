@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.services.base module."""
+"""Unit app_tests for app_kit.base.services.base module."""
 
 import uuid
 from typing import TypedDict

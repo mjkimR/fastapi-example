@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.schemas.paginated module."""
+"""Unit app_tests for app_kit.base.schemas.paginated module."""
 
 from app_kit.base.schemas.paginated import PaginatedList
 
@@ -62,7 +62,7 @@ class TestPaginatedListLast:
 
 
 class TestPaginatedListEdgeCases:
-    """Edge case tests for PaginatedList."""
+    """Edge case app_tests for PaginatedList."""
 
     def test_empty_items(self):
         """Should handle empty items list."""

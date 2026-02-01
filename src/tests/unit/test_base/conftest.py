@@ -1,5 +1,5 @@
 """
-Conftest for base module unit tests.
+Conftest for base module unit app_tests.
 Provides mock models, repositories, and services for testing.
 """
 

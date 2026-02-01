@@ -116,7 +116,7 @@ pytest
 To run a specific test file:
 
 ```shell
-pytest tests/e2e/test_features/memos/test_create_memo.py
+pytest app_tests/e2e/test_features/memos/test_create_memo.py
 ```
 
 To run tests with a specific marker:

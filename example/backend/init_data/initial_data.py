@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Optional
 
-from app.core.config import get_app_settings
+from app_kit.core.config import get_app_settings
 from app_kit.core.database.transaction import AsyncTransaction
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository

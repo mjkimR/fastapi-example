@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.deps.ordering module."""
+"""Unit app_tests for app_kit.base.deps.ordering module."""
 
 from unittest.mock import MagicMock
 
@@ -128,7 +128,7 @@ class TestOrderByForDecorator:
 
 
 class TestOrderByCriteriaIntegration:
-    """Integration tests for order_by functionality."""
+    """Integration app_tests for order_by functionality."""
 
     def test_multiple_order_by_criteria(self):
         """Should support multiple order criteria."""

@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.repos.base module."""
+"""Unit app_tests for app_kit.base.repos.base module."""
 
 import uuid
 from unittest.mock import MagicMock

@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.deps.filters module."""
+"""Unit app_tests for app_kit.base.deps.filters module."""
 
 from unittest.mock import MagicMock
 

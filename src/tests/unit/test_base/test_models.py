@@ -1,4 +1,4 @@
-"""Unit tests for app_kit.base.models.mixin module."""
+"""Unit app_tests for app_kit.base.models.mixin module."""
 
 from app_kit.base.models.mixin import (
     AuditMixin,
@@ -130,7 +130,7 @@ class TestMixinDefaults:
 
     def test_uuid_mixin_default_value(self):
         """UUIDMixin should provide a default UUID."""
-        # This tests the column definition, not runtime behavior
+        # This app_tests the column definition, not runtime behavior
         assert hasattr(UUIDMixin, "id")
 
     def test_timestamp_mixin_has_created_at(self):
