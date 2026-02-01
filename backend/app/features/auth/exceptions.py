@@ -1,8 +1,8 @@
 from app.base.exceptions.basic import (
     BadRequestException,
+    ConflictException,
     ForbiddenException,
     NotFoundException,
-    ConflictException,
 )
 
 

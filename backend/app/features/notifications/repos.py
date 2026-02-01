@@ -6,7 +6,5 @@ from app.features.notifications.schemas import (
 )
 
 
-class NotificationRepository(
-    BaseRepository[Notification, NotificationCreate, NotificationUpdate]
-):
+class NotificationRepository(BaseRepository[Notification, NotificationCreate, NotificationUpdate]):
     model = Notification

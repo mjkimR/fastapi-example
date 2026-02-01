@@ -33,9 +33,7 @@ async def update_user(
     user_in: UserUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
 ):
-    user = await use_case.execute(
-        obj_data=user_in, user_id=user_id, current_user=current_user
-    )
+    user = await use_case.execute(obj_data=user_in, user_id=user_id, current_user=current_user)
     if user is None:
         raise NotFoundException()
     return user

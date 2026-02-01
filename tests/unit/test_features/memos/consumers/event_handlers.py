@@ -1,25 +1,23 @@
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import patch
 
-from app.base.schemas.event import DomainEvent
+import pytest
 from app.base.exceptions.event import (
-    InvalidEventPayloadException,
     EventProcessingException,
+    InvalidEventPayloadException,
 )
+from app.base.schemas.event import DomainEvent
 from app.features.memos.consumers.event_handlers import (
     handle_memo_created_event,
-    handle_memo_updated_event,
     handle_memo_deleted_event,
+    handle_memo_updated_event,
 )
-from app.features.memos.schemas import MemoNotificationPayload
 from app.features.memos.enum import MemoEventType
+from app.features.memos.schemas import MemoNotificationPayload
 
 
 @pytest.fixture
 def mock_create_notification_use_case():
-    with patch(
-        "app.features.memos.consumers.event_handlers.CreateNotificationUseCase"
-    ) as mock_use_case:
+    with patch("app.features.memos.consumers.event_handlers.CreateNotificationUseCase") as mock_use_case:
         yield mock_use_case
 
 
@@ -51,9 +49,7 @@ class TestMemoEventHandlers:
             title=mock_memo.title,
             event_type=event_type,
         )
-        event = DomainEvent(
-            event_type=event_type, payload=payload.model_dump(mode="json")
-        )
+        event = DomainEvent(event_type=event_type, payload=payload.model_dump(mode="json"))
 
         await handler(event)
 
@@ -107,12 +103,8 @@ class TestMemoEventHandlers:
             title=mock_memo.title,
             event_type=event_type,
         )
-        event = DomainEvent(
-            event_type=event_type, payload=payload.model_dump(mode="json")
-        )
-        mock_create_notification_use_case.return_value.execute.side_effect = Exception(
-            "DB error"
-        )
+        event = DomainEvent(event_type=event_type, payload=payload.model_dump(mode="json"))
+        mock_create_notification_use_case.return_value.execute.side_effect = Exception("DB error")
 
         with pytest.raises(EventProcessingException):
             await handler(event)

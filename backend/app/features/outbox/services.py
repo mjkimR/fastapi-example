@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.outbox.models import Outbox, EventStatus
+from app.features.outbox.models import EventStatus, Outbox
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.schemas import OutboxCreate, OutboxUpdate
 

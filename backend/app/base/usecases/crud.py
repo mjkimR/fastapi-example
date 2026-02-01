@@ -1,35 +1,28 @@
-from uuid import UUID
-from typing import Any, Union, TypeVar, Generic, Optional
 from contextlib import asynccontextmanager
+from typing import Any, Generic, Optional, TypeVar, Union
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.base.repos.base import ModelType, CreateSchemaType, UpdateSchemaType
+from app.base.repos.base import CreateSchemaType, ModelType, UpdateSchemaType
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.schemas.paginated import PaginatedList
 from app.base.services.base import (
     BaseCreateServiceMixin,
-    BaseGetServiceMixin,
-    BaseGetMultiServiceMixin,
-    BaseUpdateServiceMixin,
     BaseDeleteServiceMixin,
+    BaseGetMultiServiceMixin,
+    BaseGetServiceMixin,
+    BaseUpdateServiceMixin,
     TContextKwargs,
 )
-from app.core.database.transaction import AsyncTransaction
 from app.base.usecases.base import BaseUseCase
+from app.core.database.transaction import AsyncTransaction
 
-TBaseCreateService = TypeVar(
-    "TBaseCreateService", bound=Union[BaseCreateServiceMixin, Any]
-)
-TBaseGetMultiService = TypeVar(
-    "TBaseGetMultiService", bound=Union[BaseGetMultiServiceMixin, Any]
-)
+TBaseCreateService = TypeVar("TBaseCreateService", bound=Union[BaseCreateServiceMixin, Any])
+TBaseGetMultiService = TypeVar("TBaseGetMultiService", bound=Union[BaseGetMultiServiceMixin, Any])
 TBaseGetService = TypeVar("TBaseGetService", bound=Union[BaseGetServiceMixin, Any])
-TBaseUpdateService = TypeVar(
-    "TBaseUpdateService", bound=Union[BaseUpdateServiceMixin, Any]
-)
-TBaseDeleteService = TypeVar(
-    "TBaseDeleteService", bound=Union[BaseDeleteServiceMixin, Any]
-)
+TBaseUpdateService = TypeVar("TBaseUpdateService", bound=Union[BaseUpdateServiceMixin, Any])
+TBaseDeleteService = TypeVar("TBaseDeleteService", bound=Union[BaseDeleteServiceMixin, Any])
 
 
 class BaseGetUseCase(BaseUseCase, Generic[TBaseGetService, ModelType, TContextKwargs]):
@@ -41,16 +34,12 @@ class BaseGetUseCase(BaseUseCase, Generic[TBaseGetService, ModelType, TContextKw
     ) -> Optional[ModelType]:
         return await self.service.get(session, obj_id, context=context)
 
-    async def execute(
-        self, obj_id: UUID, context: Optional[TContextKwargs] = None
-    ) -> Optional[ModelType]:
+    async def execute(self, obj_id: UUID, context: Optional[TContextKwargs] = None) -> Optional[ModelType]:
         async with AsyncTransaction() as session:
             return await self._execute(session, obj_id, context=context)
 
 
-class BaseGetMultiUseCase(
-    BaseUseCase, Generic[TBaseGetMultiService, ModelType, TContextKwargs]
-):
+class BaseGetMultiUseCase(BaseUseCase, Generic[TBaseGetMultiService, ModelType, TContextKwargs]):
     def __init__(self, service: TBaseGetMultiService):
         self.service = service
 
@@ -124,9 +113,7 @@ class BaseCreateUseCase(
     ) -> ModelType:
         return obj
 
-    async def execute(
-        self, obj_data: CreateSchemaType, context: Optional[TContextKwargs] = None
-    ) -> ModelType:
+    async def execute(self, obj_data: CreateSchemaType, context: Optional[TContextKwargs] = None) -> ModelType:
         async with AsyncTransaction() as session:
             async with self._context_execute(session, obj_data, context):
                 obj = await self._execute(session, obj_data, context=context)
@@ -181,9 +168,7 @@ class BaseUpdateUseCase(
                 return obj
 
 
-class BaseDeleteUseCase(
-    BaseUseCase, Generic[TBaseDeleteService, ModelType, TContextKwargs]
-):
+class BaseDeleteUseCase(BaseUseCase, Generic[TBaseDeleteService, ModelType, TContextKwargs]):
     def __init__(self, service: TBaseDeleteService):
         self.service = service
 

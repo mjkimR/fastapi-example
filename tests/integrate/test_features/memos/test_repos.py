@@ -6,11 +6,10 @@ Tests CRUD operations with real database connections.
 import uuid
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.memos.models import Memo
 from app.features.memos.repos import MemoRepository
 from app.features.memos.schemas import MemoCreate, MemoUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestMemoRepositoryIntegration:
@@ -54,9 +53,7 @@ class TestMemoRepositoryIntegration:
         assert result.created_by == regular_user.id
 
     @pytest.mark.asyncio
-    async def test_get_memo_by_pk(
-        self, session: AsyncSession, repo: MemoRepository, single_memo: Memo
-    ):
+    async def test_get_memo_by_pk(self, session: AsyncSession, repo: MemoRepository, single_memo: Memo):
         """Should retrieve a memo by primary key."""
         result = await repo.get_by_pk(session, pk=single_memo.id)
 
@@ -65,9 +62,7 @@ class TestMemoRepositoryIntegration:
         assert result.title == single_memo.title
 
     @pytest.mark.asyncio
-    async def test_get_memo_by_pk_not_found(
-        self, session: AsyncSession, repo: MemoRepository
-    ):
+    async def test_get_memo_by_pk_not_found(self, session: AsyncSession, repo: MemoRepository):
         """Should return None when memo not found."""
         non_existent_id = uuid.uuid4()
 
@@ -76,9 +71,7 @@ class TestMemoRepositoryIntegration:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_multi_memos(
-        self, session: AsyncSession, repo: MemoRepository, sample_memos: list[Memo]
-    ):
+    async def test_get_multi_memos(self, session: AsyncSession, repo: MemoRepository, sample_memos: list[Memo]):
         """Should retrieve multiple memos with pagination."""
         result = await repo.get_multi(session, offset=0, limit=10)
 
@@ -110,15 +103,11 @@ class TestMemoRepositoryIntegration:
         assert result.category == target_category
 
     @pytest.mark.asyncio
-    async def test_update_memo_by_pk(
-        self, session: AsyncSession, repo: MemoRepository, single_memo: Memo, admin_user
-    ):
+    async def test_update_memo_by_pk(self, session: AsyncSession, repo: MemoRepository, single_memo: Memo, admin_user):
         """Should update an existing memo."""
         update_data = MemoUpdate(title="Updated Title", contents="Updated contents")
 
-        result = await repo.update_by_pk(
-            session, pk=single_memo.id, obj_in=update_data, updated_by=admin_user.id
-        )
+        result = await repo.update_by_pk(session, pk=single_memo.id, obj_in=update_data, updated_by=admin_user.id)
 
         assert result is not None
         assert result.title == "Updated Title"
@@ -133,9 +122,7 @@ class TestMemoRepositoryIntegration:
         original_contents = single_memo.contents
         update_data = MemoUpdate(title="Partial Update Title")
 
-        result = await repo.update_by_pk(
-            session, pk=single_memo.id, obj_in=update_data, updated_by=admin_user.id
-        )
+        result = await repo.update_by_pk(session, pk=single_memo.id, obj_in=update_data, updated_by=admin_user.id)
 
         assert result is not None
         assert result.title == "Partial Update Title"
@@ -143,23 +130,17 @@ class TestMemoRepositoryIntegration:
         assert result.updated_by == admin_user.id
 
     @pytest.mark.asyncio
-    async def test_update_nonexistent_memo(
-        self, session: AsyncSession, repo: MemoRepository
-    ):
+    async def test_update_nonexistent_memo(self, session: AsyncSession, repo: MemoRepository):
         """Should return None when updating non-existent memo."""
         non_existent_id = uuid.uuid4()
         update_data = MemoUpdate(title="Updated Title")
 
-        result = await repo.update_by_pk(
-            session, pk=non_existent_id, obj_in=update_data
-        )
+        result = await repo.update_by_pk(session, pk=non_existent_id, obj_in=update_data)
 
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_delete_memo_by_pk(
-        self, session: AsyncSession, repo: MemoRepository, single_memo: Memo
-    ):
+    async def test_delete_memo_by_pk(self, session: AsyncSession, repo: MemoRepository, single_memo: Memo):
         """Should delete a memo from the database."""
         memo_id = single_memo.id
 
@@ -172,9 +153,7 @@ class TestMemoRepositoryIntegration:
         assert deleted_memo is None
 
     @pytest.mark.asyncio
-    async def test_delete_nonexistent_memo(
-        self, session: AsyncSession, repo: MemoRepository
-    ):
+    async def test_delete_nonexistent_memo(self, session: AsyncSession, repo: MemoRepository):
         """Should return False when deleting non-existent memo."""
         non_existent_id = uuid.uuid4()
 
@@ -183,18 +162,14 @@ class TestMemoRepositoryIntegration:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_exists_memo(
-        self, session: AsyncSession, repo: MemoRepository, single_memo: Memo
-    ):
+    async def test_exists_memo(self, session: AsyncSession, repo: MemoRepository, single_memo: Memo):
         """Should check if memo exists."""
         result = await repo.exists(session, where=Memo.id == single_memo.id)
 
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_exists_memo_not_found(
-        self, session: AsyncSession, repo: MemoRepository
-    ):
+    async def test_exists_memo_not_found(self, session: AsyncSession, repo: MemoRepository):
         """Should return False when memo does not exist."""
         non_existent_id = uuid.uuid4()
 

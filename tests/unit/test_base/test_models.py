@@ -1,11 +1,11 @@
 """Unit tests for app.base.models.mixin module."""
 
 from app.base.models.mixin import (
-    UUIDMixin,
-    TimestampMixin,
-    SoftDeleteMixin,
     AuditMixin,
+    SoftDeleteMixin,
     TaggableMixin,
+    TimestampMixin,
+    UUIDMixin,
 )
 
 

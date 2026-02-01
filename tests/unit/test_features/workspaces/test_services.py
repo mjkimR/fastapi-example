@@ -1,11 +1,11 @@
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock
-import pytest
 
+import pytest
 from app.base.services.user_aware_hook import UserContextKwargs
-from app.features.workspaces.services import WorkspaceService
-from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.enum import WorkspaceEventType
+from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
+from app.features.workspaces.services import WorkspaceService
 
 
 class TestWorkspaceServiceOutboxHooks:
@@ -72,9 +72,7 @@ class TestWorkspaceServiceOutboxHooks:
         update_data = WorkspaceUpdate(name="Updated Name")
         context: UserContextKwargs = {"user_id": mock_user.id}
 
-        await service.update(
-            mock_async_session, sample_workspace_id, update_data, context
-        )
+        await service.update(mock_async_session, sample_workspace_id, update_data, context)
 
         mock_outbox_repo.create.assert_called_once()
         call_args = mock_outbox_repo.create.call_args.kwargs

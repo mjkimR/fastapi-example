@@ -1,9 +1,9 @@
+from app.base.deps.ordering.base import OrderByCriteria
 from app.features.memos.api.order_by import (
-    order_by_title,
     order_by_created_at,
     order_by_id,
+    order_by_title,
 )
-from app.base.deps.ordering.base import OrderByCriteria
 
 
 class TestOrderByTitle:

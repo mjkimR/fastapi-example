@@ -1,7 +1,8 @@
-from typing import TypeVar
-from pydantic import BaseModel, Field, UUID4
-from datetime import datetime
 import uuid
+from datetime import datetime
+from typing import TypeVar
+
+from pydantic import UUID4, BaseModel, Field
 
 from app.utils.time_util import get_current_utc_time
 

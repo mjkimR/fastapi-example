@@ -1,20 +1,20 @@
 import abc
-from typing import Any, Optional
 import uuid
+from typing import Any, Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.services.base import (
     BaseCreateHooks,
-    BaseUpdateHooks,
     BaseDeleteHooks,
+    BaseUpdateHooks,
     ModelType,
     TContextKwargs,
 )
 
 
-class DomainEventHooksMixin(
-    BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta
-):
+class DomainEventHooksMixin(BaseCreateHooks, BaseUpdateHooks, BaseDeleteHooks, metaclass=abc.ABCMeta):
     """
     A base hook that publishes domain events after CUD (Create, Update, Delete) operations are completed.
     By default, it publishes the resource ID to topics such as 'ModelName.created'.
@@ -25,9 +25,7 @@ class DomainEventHooksMixin(
         # Example: await self.event_bus.publish(topic, payload)
         pass
 
-    def _get_event_payload(
-        self, event_type: str, obj_id: uuid.UUID, obj: Optional[ModelType] = None
-    ) -> dict[str, Any]:
+    def _get_event_payload(self, event_type: str, obj_id: uuid.UUID, obj: Optional[ModelType] = None) -> dict[str, Any]:
         """
         Get the event payload.
 
@@ -40,9 +38,7 @@ class DomainEventHooksMixin(
             "event_type": event_type,
         }
 
-    async def _post_create(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_create(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         """
         Publish a domain event after an object is created.
         """
@@ -53,9 +49,7 @@ class DomainEventHooksMixin(
 
         return obj
 
-    async def _post_update(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_update(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         """
         Publish a domain event after an object is updated.
         """

@@ -1,8 +1,8 @@
 import inspect
+from typing import Any, Callable
 
 from sqlalchemy import ColumnElement
 
-from typing import Callable, Any
 from app.base.deps.filters.base import SqlFilterCriteriaBase
 from app.base.deps.filters.exceptions import ConfigurationError, InvalidValueError
 
@@ -53,20 +53,12 @@ def create_combined_filter_dependency(
             unique_param_name = f"{filter_option.__class__.__name__.lower()}_{param_name}_{unique_param_id_counter}"
             unique_param_id_counter += 1
             if unique_param_name in param_definitions:
-                raise ConfigurationError(
-                    f"Duplicate parameter name '{param_name}' found."
-                )
+                raise ConfigurationError(f"Duplicate parameter name '{param_name}' found.")
 
             # Check for duplicate aliases.
-            alias = (
-                param_object.default.alias
-                if hasattr(param_object.default, "alias")
-                else param_object.name
-            )
+            alias = param_object.default.alias if hasattr(param_object.default, "alias") else param_object.name
             if alias in used_parameter_aliases:
-                raise InvalidValueError(
-                    f"Duplicate alias '{alias}' found in filter parameters."
-                )
+                raise InvalidValueError(f"Duplicate alias '{alias}' found in filter parameters.")
             used_parameter_aliases.add(alias)
 
             # Store the parameter definition for the signature.
@@ -114,9 +106,7 @@ def create_combined_filter_dependency(
     # to understand how to call the dependency, validate inputs, and generate
     # accurate OpenAPI (Swagger/Redoc) documentation.
     _combined_filter_dependency.__signature__ = new_signature
-    _combined_filter_dependency.__annotations__ = {
-        p.name: p.annotation for p in dependency_parameters
-    }
+    _combined_filter_dependency.__annotations__ = {p.name: p.annotation for p in dependency_parameters}
 
     return _combined_filter_dependency
 

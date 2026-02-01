@@ -1,11 +1,11 @@
 import uuid
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.outbox.repos import OutboxRepository
-from app.features.outbox.services import OutboxService
+import pytest
 from app.features.outbox.models import EventStatus
+from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.schemas import OutboxCreate
+from app.features.outbox.services import OutboxService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestOutboxServiceIntegration:
@@ -39,9 +39,7 @@ class TestOutboxServiceIntegration:
         assert retrieved_event == created_event
 
     @pytest.mark.asyncio
-    async def test_update_event_status(
-        self, session: AsyncSession, service: OutboxService
-    ):
+    async def test_update_event_status(self, session: AsyncSession, service: OutboxService):
         event_data = OutboxCreate(
             aggregate_type="test",
             aggregate_id=str(uuid.uuid4()),
@@ -51,9 +49,7 @@ class TestOutboxServiceIntegration:
         created_event = await service.add_event(session, event_data)
         await session.commit()
 
-        updated_event = await service.update_event_status(
-            session, created_event.id, EventStatus.COMPLETED
-        )
+        updated_event = await service.update_event_status(session, created_event.id, EventStatus.COMPLETED)
         await session.commit()
 
         assert updated_event is not None

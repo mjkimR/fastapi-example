@@ -18,9 +18,7 @@ class TestPaginatedListFirst:
 
     def test_first_true_with_items(self):
         """Should return True with items when offset is 0."""
-        paginated = PaginatedList(
-            items=["a", "b", "c"], offset=0, limit=10, total_count=3
-        )
+        paginated = PaginatedList(items=["a", "b", "c"], offset=0, limit=10, total_count=3)
         assert paginated.first is True
 
 
@@ -49,23 +47,17 @@ class TestPaginatedListLast:
 
     def test_last_none_when_limit_is_none(self):
         """Should return None when limit is None."""
-        paginated = PaginatedList(
-            items=["a", "b"], offset=0, limit=None, total_count=10
-        )
+        paginated = PaginatedList(items=["a", "b"], offset=0, limit=None, total_count=10)
         assert paginated.last is None
 
     def test_last_none_when_total_count_is_none(self):
         """Should return None when total_count is None."""
-        paginated = PaginatedList(
-            items=["a", "b"], offset=0, limit=10, total_count=None
-        )
+        paginated = PaginatedList(items=["a", "b"], offset=0, limit=10, total_count=None)
         assert paginated.last is None
 
     def test_last_none_when_both_none(self):
         """Should return None when both limit and total_count are None."""
-        paginated = PaginatedList(
-            items=["a", "b"], offset=0, limit=None, total_count=None
-        )
+        paginated = PaginatedList(items=["a", "b"], offset=0, limit=None, total_count=None)
         assert paginated.last is None
 
 

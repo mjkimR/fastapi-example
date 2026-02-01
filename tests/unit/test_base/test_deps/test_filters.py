@@ -3,12 +3,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from app.base.deps.filters.base import (
     SimpleFilterCriteriaBase,
 )
 from app.base.deps.filters.exceptions import ConfigurationError
-
 
 # =============================================================================
 # Concrete Implementations for Testing
@@ -34,9 +32,7 @@ class MockColumn:
 class EqualFilterCriteria(SimpleFilterCriteriaBase):
     """Test implementation of equal filter."""
 
-    def __init__(
-        self, column: MockColumn, alias: str, bound_type: type = str, **kwargs
-    ):
+    def __init__(self, column: MockColumn, alias: str, bound_type: type = str, **kwargs):
         super().__init__(alias=alias, bound_type=bound_type, **kwargs)
         self.column = column
 
@@ -70,28 +66,22 @@ class TestSimpleFilterCriteriaBase:
     def test_init_with_required_params(self):
         """Should initialize with alias and bound_type."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
 
         assert filter_criteria.alias == "name"
-        assert filter_criteria.bound_type == str
+        assert filter_criteria.bound_type is str
 
     def test_init_with_description(self):
         """Should accept optional description."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str, description="Filter by name"
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str, description="Filter by name")
 
         assert filter_criteria.description == "Filter by name"
 
     def test_init_with_query_params(self):
         """Should store additional query params."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str, min_length=1, max_length=100
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str, min_length=1, max_length=100)
 
         assert filter_criteria.query_params["min_length"] == 1
         assert filter_criteria.query_params["max_length"] == 100
@@ -125,9 +115,7 @@ class TestSimpleFilterCriteriaBase:
     def test_build_filter_raises_error_without_bound_type(self):
         """Should raise ConfigurationError when bound_type is None."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
         filter_criteria.bound_type = None  # type: ignore
 
         with pytest.raises(ConfigurationError, match="missing a 'bound_type'"):
@@ -136,9 +124,7 @@ class TestSimpleFilterCriteriaBase:
     def test_build_filter_returns_callable(self):
         """Should return a callable (FastAPI dependency)."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
 
         dependency = filter_criteria.build_filter()
 
@@ -147,9 +133,7 @@ class TestSimpleFilterCriteriaBase:
     def test_build_filter_dependency_returns_none_for_none_value(self):
         """Built dependency should return None when called with None."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
 
         dependency = filter_criteria.build_filter()
         result = dependency(value=None)
@@ -159,9 +143,7 @@ class TestSimpleFilterCriteriaBase:
     def test_build_filter_dependency_returns_expression_for_value(self):
         """Built dependency should return filter expression for value."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
 
         dependency = filter_criteria.build_filter()
         result = dependency(value="test")
@@ -198,11 +180,9 @@ class TestFilterCriteriaWithDifferentTypes:
     def test_integer_bound_type(self):
         """Should work with integer bound type."""
         column = MockColumn("age")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="age", bound_type=int
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="age", bound_type=int)
 
-        assert filter_criteria.bound_type == int
+        assert filter_criteria.bound_type is int
 
         dependency = filter_criteria.build_filter()
         result = dependency(value=25)
@@ -212,11 +192,9 @@ class TestFilterCriteriaWithDifferentTypes:
     def test_boolean_bound_type(self):
         """Should work with boolean bound type."""
         column = MockColumn("is_active")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="active", bound_type=bool
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="active", bound_type=bool)
 
-        assert filter_criteria.bound_type == bool
+        assert filter_criteria.bound_type is bool
 
         dependency = filter_criteria.build_filter()
         result = dependency(value=True)
@@ -230,9 +208,7 @@ class TestFilterCriteriaDescription:
     def test_default_description_when_not_provided(self):
         """Should use default description format when not provided."""
         column = MockColumn("name")
-        filter_criteria = EqualFilterCriteria(
-            column=column, alias="name", bound_type=str
-        )
+        filter_criteria = EqualFilterCriteria(column=column, alias="name", bound_type=str)
 
         # Description should be None initially (default is generated in build_filter)
         assert filter_criteria.description is None

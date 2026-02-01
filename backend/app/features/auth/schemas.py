@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
 
+from app.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.auth.models import User
-from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
 
 
 class UserCreate(BaseModel):
@@ -29,9 +29,7 @@ class UserDbUpdate(BaseModel):
     name: str | None = Field(default=None, description="The user's first name.")
     surname: str | None = Field(default=None, description="The user's last name.")
     password: SecretStr | None = Field(default=None, description="The user's password.")
-    hashed_password: str | None = Field(
-        default=None, description="The user's hashed password."
-    )
+    hashed_password: str | None = Field(default=None, description="The user's hashed password.")
 
 
 class UserRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):

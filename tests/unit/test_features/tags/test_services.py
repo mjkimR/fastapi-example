@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
 from app.features.tags.services import TagService
 
 
@@ -25,9 +24,7 @@ class TestTagService:
         tag_names = ["python", "fastapi"]
         context = {"parent_id": sample_workspace_id}
 
-        result = await tag_service.get_or_create_tags(
-            mock_async_session, tag_names, context
-        )
+        result = await tag_service.get_or_create_tags(mock_async_session, tag_names, context)
 
         assert result == mock_tags
         tag_service.repo.get_or_create_tags.assert_called_once_with(
@@ -35,9 +32,7 @@ class TestTagService:
         )
 
     @pytest.mark.asyncio
-    async def test_get_or_create_tags_with_empty_list(
-        self, tag_service, mock_async_session, sample_workspace_id
-    ):
+    async def test_get_or_create_tags_with_empty_list(self, tag_service, mock_async_session, sample_workspace_id):
         """Should handle empty tag list."""
         tag_service.repo.get_or_create_tags.return_value = []
         context = {"parent_id": sample_workspace_id}

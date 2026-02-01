@@ -3,13 +3,11 @@ Test data fixtures for memos.
 """
 
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.features.auth.models import User
 from app.features.memos.models import Memo
 from app.features.workspaces.models import Workspace
-from app.features.auth.models import User
-
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest_asyncio.fixture

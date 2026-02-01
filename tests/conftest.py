@@ -18,6 +18,7 @@ Test Structure:
 """
 
 import logging
+
 import pytest
 
 # Configure logging - reduce noise from SQLAlchemy and httpx
@@ -28,6 +29,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # =============================================================================
 # Pytest Hooks & Options
 # =============================================================================
+
 
 def pytest_addoption(parser):
     """Add custom command line options for pytest."""
@@ -50,30 +52,12 @@ def db_type(request):
 # =============================================================================
 
 # Database fixtures
-from tests.fixtures.db import (
-    event_loop_policy,
-    async_engine,
-    session_maker_fixture,
-    session_fixture,
-    inspect_session,
-)
-
 # Authentication fixtures
-from tests.fixtures.auth import (
-    user_service,
-    admin_user,
-    admin_token,
-    admin_headers,
-)
+from tests.fixtures.auth import *
 
 # HTTP Client fixtures
-from tests.fixtures.clients import (
-    AsyncClientWithJson,
-    app_fixture,
-    client_fixture,
-    unauthenticated_client_fixture,
-)
+from tests.fixtures.clients import *
 
 # Test data fixtures
-# Import data frequently changed, so import with *.
 from tests.fixtures.data import *
+from tests.fixtures.db import *

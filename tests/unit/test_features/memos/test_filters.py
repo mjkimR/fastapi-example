@@ -1,4 +1,4 @@
-from app.features.memos.api.filters import filter_title, filter_category
+from app.features.memos.api.filters import filter_category, filter_title
 
 
 class TestFilterTitle:

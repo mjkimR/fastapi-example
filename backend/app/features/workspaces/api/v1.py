@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Body, status
+from fastapi import APIRouter, Body, Depends, status
 
 from app.base.deps.params.page import PaginationParam
 from app.base.exceptions.basic import NotFoundException
@@ -10,28 +10,26 @@ from app.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.auth.models import User
 from app.features.workspaces.schemas import (
+    WorkspaceCreate,
     WorkspaceRead,
     WorkspaceUpdate,
-    WorkspaceCreate,
 )
 from app.features.workspaces.usecases.crud import (
     CreateWorkspaceUseCase,
+    DeleteWorkspaceUseCase,
     GetMultiWorkspaceUseCase,
     GetWorkspaceUseCase,
     UpdateWorkspaceUseCase,
-    DeleteWorkspaceUseCase,
 )
 
-router = APIRouter(
-    prefix="/workspaces", tags=["Workspaces"], dependencies=[Depends(get_current_user)]
-)
+router = APIRouter(prefix="/workspaces", tags=["Workspaces"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=WorkspaceRead)
 async def create_workspace(
     use_case: Annotated[CreateWorkspaceUseCase, Depends()],
     current_user: Annotated[User, Depends(get_current_user)],
-    workspace_in: WorkspaceCreate = Body(),
+    workspace_in: Annotated[WorkspaceCreate, Body()],
 ):
     return await use_case.execute(workspace_in, context={"user_id": current_user.id})
 
@@ -51,9 +49,7 @@ async def get_workspace(
     current_user: Annotated[User, Depends(get_current_user)],
     workspace_id: uuid.UUID,
 ):
-    workspace = await use_case.execute(
-        workspace_id, context={"user_id": current_user.id}
-    )
+    workspace = await use_case.execute(workspace_id, context={"user_id": current_user.id})
     if not workspace:
         raise NotFoundException()
     return workspace
@@ -66,9 +62,7 @@ async def update_workspace(
     workspace_id: uuid.UUID,
     workspace_in: WorkspaceUpdate,
 ):
-    workspace = await use_case.execute(
-        workspace_id, workspace_in, context={"user_id": current_user.id}
-    )
+    workspace = await use_case.execute(workspace_id, workspace_in, context={"user_id": current_user.id})
     if not workspace:
         raise NotFoundException()
     return workspace

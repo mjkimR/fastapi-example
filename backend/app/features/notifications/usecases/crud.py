@@ -1,5 +1,4 @@
 from typing import Annotated, Optional
-from uuid import UUID
 
 from fastapi import Depends
 
@@ -20,7 +19,5 @@ class CreateNotificationUseCase:
         context: Optional[BaseContextKwargs] = None,
     ) -> Notification:
         async with AsyncTransaction() as session:
-            notification = await self.service.create(
-                session, notification_data, context=context
-            )
+            notification = await self.service.create(session, notification_data, context=context)
             return notification

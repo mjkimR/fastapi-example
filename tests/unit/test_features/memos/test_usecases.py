@@ -1,17 +1,16 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
+from app.base.schemas.delete_resp import DeleteResponse
+from app.base.schemas.paginated import PaginatedList
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.usecases.crud import (
+    CreateMemoUseCase,
+    DeleteMemoUseCase,
     GetMemoUseCase,
     GetMultiMemoUseCase,
-    CreateMemoUseCase,
     UpdateMemoUseCase,
-    DeleteMemoUseCase,
 )
-from app.base.schemas.paginated import PaginatedList
-from app.base.schemas.delete_resp import DeleteResponse
 
 
 class TestGetMemoUseCase:
@@ -23,9 +22,7 @@ class TestGetMemoUseCase:
         return GetMemoUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_calls_service_get(
-        self, use_case, mock_memo, sample_memo_id, mock_user, mock_workspace
-    ):
+    async def test_execute_calls_service_get(self, use_case, mock_memo, sample_memo_id, mock_user, mock_workspace):
         use_case.service.get.return_value = mock_memo
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
 
@@ -49,9 +46,7 @@ class TestGetMultiMemoUseCase:
         return GetMultiMemoUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_returns_paginated_list(
-        self, use_case, mock_memo, mock_user, mock_workspace
-    ):
+    async def test_execute_returns_paginated_list(self, use_case, mock_memo, mock_user, mock_workspace):
         paginated = PaginatedList(items=[mock_memo], total_count=1, offset=0, limit=10)
         use_case.service.get_multi.return_value = paginated
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
@@ -73,9 +68,7 @@ class TestCreateMemoUseCase:
         return CreateMemoUseCase(service=memo_service, tag_service=tag_service)
 
     @pytest.mark.asyncio
-    async def test_execute_creates_memo_with_tags(
-        self, use_case, mock_memo, mock_tags, mock_user, mock_workspace
-    ):
+    async def test_execute_creates_memo_with_tags(self, use_case, mock_memo, mock_tags, mock_user, mock_workspace):
         use_case.tag_service.get_or_create_tags.return_value = mock_tags
         use_case.service.create.return_value = mock_memo
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
@@ -94,9 +87,7 @@ class TestCreateMemoUseCase:
         assert result.tags == mock_tags
 
     @pytest.mark.asyncio
-    async def test_execute_creates_memo_without_tags(
-        self, use_case, mock_memo, mock_user, mock_workspace
-    ):
+    async def test_execute_creates_memo_without_tags(self, use_case, mock_memo, mock_user, mock_workspace):
         use_case.service.create.return_value = mock_memo
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}
         memo_data = MemoCreate(
@@ -163,9 +154,7 @@ class TestDeleteMemoUseCase:
         return DeleteMemoUseCase(service=service)
 
     @pytest.mark.asyncio
-    async def test_execute_calls_service_delete(
-        self, use_case, sample_memo_id, mock_user, mock_workspace
-    ):
+    async def test_execute_calls_service_delete(self, use_case, sample_memo_id, mock_user, mock_workspace):
         response = DeleteResponse(success=True, identity=sample_memo_id)
         use_case.service.delete.return_value = response
         context = {"parent_id": mock_workspace.id, "user_id": mock_user.id}

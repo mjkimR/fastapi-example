@@ -1,9 +1,9 @@
 import functools
 import os
-
-from pydantic import SecretStr, EmailStr, Field
-from pydantic_settings import BaseSettings
 import pathlib
+
+from pydantic import EmailStr, Field, SecretStr
+from pydantic_settings import BaseSettings
 
 
 def get_repo_path():

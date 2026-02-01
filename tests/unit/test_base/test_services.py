@@ -5,18 +5,16 @@ from typing import TypedDict
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
+from app.base.schemas.paginated import PaginatedList
 from app.base.services.base import (
     BaseContextKwargs,
     BaseCreateServiceMixin,
-    BaseUpdateServiceMixin,
     BaseDeleteServiceMixin,
-    BaseGetServiceMixin,
     BaseGetMultiServiceMixin,
+    BaseGetServiceMixin,
     BaseServiceMixinInterface,
+    BaseUpdateServiceMixin,
 )
-from app.base.schemas.paginated import PaginatedList
-
 
 # =============================================================================
 # Custom Context Types for Testing
@@ -59,9 +57,7 @@ class TestEnsureContext:
     def test_ensure_context_with_optional_typed_dict(self):
         """Should pass through valid context for TypedDict with optional fields."""
         context: OptionalContextKwargs = {"tenant_id": "abc"}
-        result = BaseServiceMixinInterface._ensure_context(
-            context, OptionalContextKwargs
-        )
+        result = BaseServiceMixinInterface._ensure_context(context, OptionalContextKwargs)
         assert result["tenant_id"] == "abc"
 
     def test_ensure_context_with_empty_dict_returns_empty_dict(self):
@@ -88,9 +84,7 @@ class TestEnsureContext:
         assert result == {}
         context: OptionalContextKwargs = {"tenant_id": "abc"}
 
-        result_with_values = BaseServiceMixinInterface._ensure_context(
-            context, OptionalContextKwargs
-        )
+        result_with_values = BaseServiceMixinInterface._ensure_context(context, OptionalContextKwargs)
         assert result_with_values["tenant_id"] == "abc"
 
 
@@ -121,9 +115,7 @@ class TestBaseCreateServiceMixin:
         return TestCreateService()
 
     @pytest.mark.asyncio
-    async def test_create_calls_repo_create(
-        self, create_service, mock_async_session, mock_create_schema, mock_model
-    ):
+    async def test_create_calls_repo_create(self, create_service, mock_async_session, mock_create_schema, mock_model):
         """Should call repository create method."""
         create_service.repo.create.return_value = mock_model
 
@@ -133,22 +125,16 @@ class TestBaseCreateServiceMixin:
         create_service.repo.create.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_with_context(
-        self, create_service, mock_async_session, mock_create_schema, mock_model
-    ):
+    async def test_create_with_context(self, create_service, mock_async_session, mock_create_schema, mock_model):
         """Should pass context through create flow."""
         create_service.repo.create.return_value = mock_model
 
-        result = await create_service.create(
-            mock_async_session, mock_create_schema, context={}
-        )
+        result = await create_service.create(mock_async_session, mock_create_schema, context={})
 
         assert result == mock_model
 
     @pytest.mark.asyncio
-    async def test_create_with_prepare_fields_hook(
-        self, mock_async_session, mock_create_schema, mock_model
-    ):
+    async def test_create_with_prepare_fields_hook(self, mock_async_session, mock_create_schema, mock_model):
         """Should call _prepare_create_fields hook."""
 
         class TestService(BaseCreateServiceMixin):
@@ -213,9 +199,7 @@ class TestBaseUpdateServiceMixin:
         """Should call repository update_by_pk method."""
         update_service.repo.update_by_pk.return_value = mock_model
 
-        result = await update_service.update(
-            mock_async_session, sample_uuid, mock_update_schema
-        )
+        result = await update_service.update(mock_async_session, sample_uuid, mock_update_schema)
 
         assert result == mock_model
         update_service.repo.update_by_pk.assert_called_once()
@@ -276,23 +260,17 @@ class TestBaseDeleteServiceMixin:
         return TestDeleteService()
 
     @pytest.mark.asyncio
-    async def test_delete_calls_repo_delete(
-        self, delete_service, mock_async_session, sample_uuid
-    ):
+    async def test_delete_calls_repo_delete(self, delete_service, mock_async_session, sample_uuid):
         """Should call repository delete_by_pk method."""
         delete_service.repo.delete_by_pk.return_value = True
 
         result = await delete_service.delete(mock_async_session, sample_uuid)
 
         assert result.success is True
-        delete_service.repo.delete_by_pk.assert_called_once_with(
-            mock_async_session, pk=sample_uuid
-        )
+        delete_service.repo.delete_by_pk.assert_called_once_with(mock_async_session, pk=sample_uuid)
 
     @pytest.mark.asyncio
-    async def test_delete_returns_false_when_not_found(
-        self, delete_service, mock_async_session, sample_uuid
-    ):
+    async def test_delete_returns_false_when_not_found(self, delete_service, mock_async_session, sample_uuid):
         """Should return False when record not found."""
         delete_service.repo.delete_by_pk.return_value = False
 
@@ -328,23 +306,17 @@ class TestBaseGetServiceMixin:
         return TestGetService()
 
     @pytest.mark.asyncio
-    async def test_get_calls_repo_get_by_pk(
-        self, get_service, mock_async_session, mock_model, sample_uuid
-    ):
+    async def test_get_calls_repo_get_by_pk(self, get_service, mock_async_session, mock_model, sample_uuid):
         """Should call repository get_by_pk method."""
         get_service.repo.get_by_pk.return_value = mock_model
 
         result = await get_service.get(mock_async_session, sample_uuid)
 
         assert result == mock_model
-        get_service.repo.get_by_pk.assert_called_once_with(
-            mock_async_session, pk=sample_uuid
-        )
+        get_service.repo.get_by_pk.assert_called_once_with(mock_async_session, pk=sample_uuid)
 
     @pytest.mark.asyncio
-    async def test_get_returns_none_when_not_found(
-        self, get_service, mock_async_session, sample_uuid
-    ):
+    async def test_get_returns_none_when_not_found(self, get_service, mock_async_session, sample_uuid):
         """Should return None when record not found."""
         get_service.repo.get_by_pk.return_value = None
 
@@ -353,9 +325,7 @@ class TestBaseGetServiceMixin:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_with_post_get_hook(
-        self, mock_async_session, mock_model, sample_uuid
-    ):
+    async def test_get_with_post_get_hook(self, mock_async_session, mock_model, sample_uuid):
         """Should call _post_get hook."""
 
         class TestService(BaseGetServiceMixin):
@@ -409,24 +379,18 @@ class TestBaseGetMultiServiceMixin:
         return TestGetMultiService()
 
     @pytest.mark.asyncio
-    async def test_get_multi_calls_repo_get_multi(
-        self, get_multi_service, mock_async_session, mock_model
-    ):
+    async def test_get_multi_calls_repo_get_multi(self, get_multi_service, mock_async_session, mock_model):
         """Should call repository get_multi method."""
         paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
         get_multi_service.repo.get_multi.return_value = paginated
 
-        result = await get_multi_service.get_multi(
-            mock_async_session, offset=0, limit=10
-        )
+        result = await get_multi_service.get_multi(mock_async_session, offset=0, limit=10)
 
         assert result == paginated
         get_multi_service.repo.get_multi.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_multi_with_where_conditions(
-        self, get_multi_service, mock_async_session, mock_model
-    ):
+    async def test_get_multi_with_where_conditions(self, get_multi_service, mock_async_session, mock_model):
         """Should pass where conditions to repository."""
         paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
         get_multi_service.repo.get_multi.return_value = paginated
@@ -444,9 +408,7 @@ class TestBaseGetMultiServiceMixin:
         class TestService(BaseGetMultiServiceMixin):
             def __init__(self):
                 self._repo = AsyncMock()
-                paginated = PaginatedList(
-                    items=[mock_model], total_count=1, offset=0, limit=10
-                )
+                paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
                 self.repo.get_multi.return_value = paginated
 
             @property
@@ -467,17 +429,13 @@ class TestBaseGetMultiServiceMixin:
         assert len(call_kwargs["where"]) == 1
 
     @pytest.mark.asyncio
-    async def test_get_multi_merges_where_list_with_extra_filters(
-        self, mock_async_session, mock_model
-    ):
+    async def test_get_multi_merges_where_list_with_extra_filters(self, mock_async_session, mock_model):
         """Should merge where list with extra filters."""
 
         class TestService(BaseGetMultiServiceMixin):
             def __init__(self):
                 self._repo = AsyncMock()
-                paginated = PaginatedList(
-                    items=[mock_model], total_count=1, offset=0, limit=10
-                )
+                paginated = PaginatedList(items=[mock_model], total_count=1, offset=0, limit=10)
                 self.repo.get_multi.return_value = paginated
 
             @property

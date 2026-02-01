@@ -1,8 +1,9 @@
 import datetime
 from typing import Any, TypedDict
-from pydantic import BaseModel, Field, ConfigDict
 
-from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.outbox.models import EventStatus
 
 
@@ -13,15 +14,9 @@ class OutboxIdentityDict(TypedDict):
 
 
 class OutboxCreate(BaseModel):
-    aggregate_type: str = Field(
-        ..., description="The type of the aggregate root. e.g., 'memo'"
-    )
-    aggregate_id: str = Field(
-        ..., description="The ID of the aggregate root. e.g., memo.id"
-    )
-    event_type: str = Field(
-        ..., description="The type of the event. e.g., 'MEMO_CREATED'"
-    )
+    aggregate_type: str = Field(..., description="The type of the aggregate root. e.g., 'memo'")
+    aggregate_id: str = Field(..., description="The ID of the aggregate root. e.g., memo.id")
+    event_type: str = Field(..., description="The type of the event. e.g., 'MEMO_CREATED'")
     payload: dict[str, Any] = Field(..., description="The event payload.")
 
 

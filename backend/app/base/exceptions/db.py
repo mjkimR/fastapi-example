@@ -1,13 +1,13 @@
 from contextlib import asynccontextmanager
 
+from fastapi import status
 from sqlalchemy.exc import (
+    DataError,
+    DBAPIError,
     IntegrityError,
     NoResultFound,
-    DBAPIError,
     OperationalError,
-    DataError,
 )
-from fastapi import status
 
 from app.base.exceptions.base import CustomException
 

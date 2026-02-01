@@ -1,20 +1,19 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.base.usecases.crud import (
+    BaseCreateUseCase,
+    BaseDeleteUseCase,
+    BaseGetMultiUseCase,
+    BaseGetUseCase,
+    BaseUpdateUseCase,
+)
 from app.features.memos.models import Memo
 from app.features.memos.schemas import MemoCreate, MemoUpdate
-from app.features.memos.services import MemoService, MemoContextKwargs
+from app.features.memos.services import MemoContextKwargs, MemoService
 from app.features.tags.services import TagService
-from app.base.usecases.crud import (
-    BaseGetUseCase,
-    BaseGetMultiUseCase,
-    BaseCreateUseCase,
-    BaseUpdateUseCase,
-    BaseDeleteUseCase,
-)
 
 
 class GetMemoUseCase(BaseGetUseCase[MemoService, Memo, MemoContextKwargs]):
@@ -27,9 +26,7 @@ class GetMultiMemoUseCase(BaseGetMultiUseCase[MemoService, Memo, MemoContextKwar
         super().__init__(service)
 
 
-class CreateMemoUseCase(
-    BaseCreateUseCase[MemoService, Memo, MemoCreate, MemoContextKwargs]
-):
+class CreateMemoUseCase(BaseCreateUseCase[MemoService, Memo, MemoCreate, MemoContextKwargs]):
     def __init__(
         self,
         service: Annotated[MemoService, Depends()],
@@ -46,9 +43,7 @@ class CreateMemoUseCase(
         context: MemoContextKwargs | None,
     ) -> Memo:
         if obj_data.tags:
-            tags = await self.tag_service.get_or_create_tags(
-                session, obj_data.tags, context
-            )
+            tags = await self.tag_service.get_or_create_tags(session, obj_data.tags, context)
             obj.tags = tags
             session.add(obj)
             await session.flush()
@@ -56,9 +51,7 @@ class CreateMemoUseCase(
         return await super()._post_execute(session, obj, obj_data, context)
 
 
-class UpdateMemoUseCase(
-    BaseUpdateUseCase[MemoService, Memo, MemoUpdate, MemoContextKwargs]
-):
+class UpdateMemoUseCase(BaseUpdateUseCase[MemoService, Memo, MemoUpdate, MemoContextKwargs]):
     def __init__(
         self,
         service: Annotated[MemoService, Depends()],
@@ -75,9 +68,7 @@ class UpdateMemoUseCase(
         context: MemoContextKwargs | None,
     ) -> Memo | None:
         if obj and obj_data.tags is not None:
-            tags = await self.tag_service.get_or_create_tags(
-                session, obj_data.tags, context
-            )
+            tags = await self.tag_service.get_or_create_tags(session, obj_data.tags, context)
             obj.tags = tags
             session.add(obj)
             await session.flush()

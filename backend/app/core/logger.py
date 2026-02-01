@@ -1,8 +1,8 @@
 import os.path
-from pathlib import Path
-
 import sys
 from contextvars import ContextVar
+from pathlib import Path
+
 from loguru import logger
 
 from app.core.config import get_app_settings

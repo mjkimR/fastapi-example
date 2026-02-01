@@ -1,11 +1,20 @@
-from typing import Any, Union, AsyncIterator, Tuple, Annotated
+from typing import Annotated, Any, AsyncIterator, Tuple, Union
+
 from fastapi import Depends
 from sqlalchemy.sql.expression import ColumnElement
 
+from app.base.services.base import (
+    BaseCreateServiceMixin,
+    BaseDeleteServiceMixin,
+    BaseGetMultiServiceMixin,
+    BaseGetServiceMixin,
+    BaseUpdateServiceMixin,
+    TContextKwargs,
+)
+from app.base.services.detail_delete_response_hook import DetailDeleteResponseHookMixin
 from app.base.services.exists_check_hook import ExistsCheckHooksMixin
 from app.base.services.unique_constraints_hook import UniqueConstraintHooksMixin
 from app.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
-from app.base.services.detail_delete_response_hook import DetailDeleteResponseHookMixin
 from app.features.notifications.service_hooks import (
     NotificationOutboxHook,
 )
@@ -14,14 +23,6 @@ from app.features.outbox.schemas import OutboxIdentityDict
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
-from app.base.services.base import (
-    BaseCreateServiceMixin,
-    BaseUpdateServiceMixin,
-    BaseGetMultiServiceMixin,
-    BaseGetServiceMixin,
-    BaseDeleteServiceMixin,
-    TContextKwargs,
-)
 
 
 class WorkspaceService(
@@ -30,12 +31,8 @@ class WorkspaceService(
     DetailDeleteResponseHookMixin,  # Provide detailed response on delete (represent text)
     NotificationOutboxHook,  # Add notification outbox item on create, update, delete
     ExistsCheckHooksMixin,  # Ensure existence checks before operations
-    BaseCreateServiceMixin[
-        WorkspaceRepository, Workspace, WorkspaceCreate, UserContextKwargs
-    ],
-    BaseUpdateServiceMixin[
-        WorkspaceRepository, Workspace, WorkspaceUpdate, UserContextKwargs
-    ],
+    BaseCreateServiceMixin[WorkspaceRepository, Workspace, WorkspaceCreate, UserContextKwargs],
+    BaseUpdateServiceMixin[WorkspaceRepository, Workspace, WorkspaceUpdate, UserContextKwargs],
     BaseGetMultiServiceMixin[WorkspaceRepository, Workspace, UserContextKwargs],
     BaseGetServiceMixin[WorkspaceRepository, Workspace, UserContextKwargs],
     BaseDeleteServiceMixin[WorkspaceRepository, Workspace, UserContextKwargs],

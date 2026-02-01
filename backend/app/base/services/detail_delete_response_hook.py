@@ -1,8 +1,10 @@
-from typing import Any
 import uuid
 from abc import abstractmethod
 from contextlib import asynccontextmanager
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.services.base import BaseDeleteHooks, TContextKwargs
 
@@ -18,9 +20,7 @@ class DetailDeleteResponseHookMixin(BaseDeleteHooks):
         self._delete_represent_text = text
 
     @asynccontextmanager
-    async def _context_delete(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         async with super()._context_delete(session, obj_id, context):
             obj = await self.repo.get_by_pk(session, pk=obj_id)
             if obj:

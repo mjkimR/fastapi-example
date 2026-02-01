@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.features.tags.models import Tag
 from app.base.services.base import BaseContextKwargs
-from app.features.tags.services import TagService
 from app.base.usecases.crud import BaseGetMultiUseCase, BaseGetUseCase
+from app.features.tags.models import Tag
+from app.features.tags.services import TagService
 
 
 class GetTagUseCase(BaseGetUseCase[TagService, Tag, BaseContextKwargs]):

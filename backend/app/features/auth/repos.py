@@ -1,5 +1,5 @@
-from app.features.auth.models import User
 from app.base.repos.base import BaseRepository
+from app.features.auth.models import User
 from app.features.auth.schemas import UserDbCreate, UserDbUpdate
 
 

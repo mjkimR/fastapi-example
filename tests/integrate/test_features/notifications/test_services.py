@@ -1,10 +1,8 @@
-import uuid
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.notifications.repos import NotificationRepository
-from app.features.notifications.services import NotificationService
 from app.features.notifications.schemas import NotificationCreate
+from app.features.notifications.services import NotificationService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestNotificationServiceIntegration:
@@ -39,7 +37,5 @@ class TestNotificationServiceIntegration:
         assert created_notification.user_id == regular_user.id
         assert created_notification.message == notification_data.message
 
-        retrieved_notification = await service.repo.get_by_pk(
-            session, created_notification.id
-        )
+        retrieved_notification = await service.repo.get_by_pk(session, created_notification.id)
         assert retrieved_notification == created_notification

@@ -2,10 +2,9 @@ import uuid
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
-from app.features.notifications.usecases.crud import CreateNotificationUseCase
-from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.models import Notification
+from app.features.notifications.schemas import NotificationCreate
+from app.features.notifications.usecases.crud import CreateNotificationUseCase
 
 
 class TestCreateNotificationUseCase:
@@ -17,9 +16,7 @@ class TestCreateNotificationUseCase:
         return AsyncMock()
 
     @pytest.fixture
-    def create_notification_use_case(
-        self, mock_notification_service: AsyncMock
-    ) -> CreateNotificationUseCase:
+    def create_notification_use_case(self, mock_notification_service: AsyncMock) -> CreateNotificationUseCase:
         """Create a CreateNotificationUseCase instance."""
         return CreateNotificationUseCase(service=mock_notification_service)
 
@@ -51,9 +48,7 @@ class TestCreateNotificationUseCase:
         mock_notification_service.create.return_value = created_notification_instance
 
         # Patch AsyncTransaction to control the session inside the use case
-        with patch(
-            "app.core.database.transaction.AsyncTransaction"
-        ) as mock_transaction:
+        with patch("app.core.database.transaction.AsyncTransaction") as mock_transaction:
             # Configure the mock session returned by AsyncTransaction.__aenter__
             mock_session = AsyncMock()
             mock_transaction.return_value.__aenter__.return_value = mock_session
@@ -68,6 +63,4 @@ class TestCreateNotificationUseCase:
             result = await create_notification_use_case.execute(notification_data)
 
         assert result.user_id == notification_data.user_id
-        assert (
-            result == created_notification_instance
-        )  # The use case returns the refreshed object
+        assert result == created_notification_instance  # The use case returns the refreshed object

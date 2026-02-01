@@ -1,11 +1,9 @@
-import uuid
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.notifications.repos import NotificationRepository
-from app.features.notifications.services import NotificationService
 from app.features.notifications.schemas import NotificationCreate
+from app.features.notifications.services import NotificationService
 from app.features.notifications.usecases.crud import CreateNotificationUseCase
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestCreateNotificationUseCaseIntegration:
@@ -45,8 +43,6 @@ class TestCreateNotificationUseCaseIntegration:
         assert created_notification.message == notification_data.message
 
         # Verify it's in the DB by retrieving it through service
-        retrieved_notification = await use_case.service.repo.get_by_pk(
-            session, created_notification.id
-        )
+        retrieved_notification = await use_case.service.repo.get_by_pk(session, created_notification.id)
         assert retrieved_notification is not None
         assert retrieved_notification.id == created_notification.id

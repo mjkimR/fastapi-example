@@ -44,9 +44,7 @@ class QueryCounterMiddleware(BaseHTTPMiddleware):
 
         # (Optional) If there are too many queries, print a warning log (for detecting N+1 problems)
         if query_count > self.QUERY_COUNT_WARNING_THRESHOLD:
-            logger.warning(
-                f"Too many queries ({query_count}) in request: {request.method} {request.url.path}"
-            )
+            logger.warning(f"Too many queries ({query_count}) in request: {request.method} {request.url.path}")
 
         # 5. Clean up context
         query_count_ctx.reset(token)

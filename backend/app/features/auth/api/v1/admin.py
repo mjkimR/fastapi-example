@@ -3,21 +3,19 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from app.base.deps.params.page import PaginationParam
 from app.base.schemas.delete_resp import DeleteResponse
 from app.features.auth.deps import get_current_user, on_superuser
-from app.base.deps.params.page import PaginationParam
 from app.features.auth.models import User
-from app.features.auth.schemas import UserRead, UsersRead, UserCreate
+from app.features.auth.schemas import UserCreate, UserRead, UsersRead
 from app.features.auth.usecases.admin import (
-    GetMultiUserUseCase,
-    CreateUserUseCase,
     CreateAdminUseCase,
+    CreateUserUseCase,
     DeleteUserUseCase,
+    GetMultiUserUseCase,
 )
 
-router = APIRouter(
-    prefix="/admin", tags=["Admin"], dependencies=[Depends(on_superuser)]
-)
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(on_superuser)])
 
 
 @router.post("/user", status_code=status.HTTP_201_CREATED, response_model=UserRead)

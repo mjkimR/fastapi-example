@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pydantic import SecretStr
 
-
 # =============================================================================
 # Mock Session
 # =============================================================================

@@ -1,9 +1,8 @@
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.auth.models import User
 from app.features.workspaces.models import Workspace
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest_asyncio.fixture
@@ -23,9 +22,7 @@ async def single_workspace(
     """
     Fixture for a single workspace, created by the regular user.
     """
-    workspace = workspace_factory.build(
-        created_by=regular_user.id, updated_by=regular_user.id
-    )
+    workspace = workspace_factory.build(created_by=regular_user.id, updated_by=regular_user.id)
     session.add(workspace)
     await session.flush()
     await session.refresh(workspace)

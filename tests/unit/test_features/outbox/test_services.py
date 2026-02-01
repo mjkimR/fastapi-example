@@ -1,13 +1,12 @@
-from typing import cast
 import uuid
+from typing import cast
 from unittest.mock import AsyncMock
 
 import pytest
-
-from app.features.outbox.services import OutboxService
+from app.features.outbox.models import EventStatus, Outbox
 from app.features.outbox.repos import OutboxRepository
-from app.features.outbox.models import Outbox, EventStatus
 from app.features.outbox.schemas import OutboxCreate
+from app.features.outbox.services import OutboxService
 
 
 class TestOutboxService:
@@ -69,9 +68,7 @@ class TestOutboxService:
             status=EventStatus.COMPLETED,
         )
 
-        result = await outbox_service.update_event_status(
-            mock_async_session, event_id, EventStatus.COMPLETED
-        )
+        result = await outbox_service.update_event_status(mock_async_session, event_id, EventStatus.COMPLETED)
 
         repo_method.assert_called_once()
         call_kwargs = repo_method.call_args.kwargs

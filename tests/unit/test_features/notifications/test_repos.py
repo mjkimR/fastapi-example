@@ -1,9 +1,8 @@
 import uuid
 
 import pytest
-
-from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.models import Notification
+from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
 
 
@@ -21,9 +20,7 @@ class TestNotificationRepository:
         assert notification_repo.model == Notification
 
     @pytest.mark.asyncio
-    async def test_create_notification(
-        self, notification_repo, mock_async_session, mock_user, mock_memo
-    ):
+    async def test_create_notification(self, notification_repo, mock_async_session, mock_user, mock_memo):
         """Should create a new notification."""
         create_data = NotificationCreate(
             user_id=mock_user.id,
@@ -40,9 +37,7 @@ class TestNotificationRepository:
             message=create_data.message,
             resource_id=create_data.resource_id,
         )
-        mock_async_session.refresh.side_effect = lambda obj: setattr(
-            obj, "id", created_notification.id
-        )
+        mock_async_session.refresh.side_effect = lambda obj: setattr(obj, "id", created_notification.id)
         mock_async_session.add.return_value = None
 
         result = await notification_repo.create(mock_async_session, create_data)

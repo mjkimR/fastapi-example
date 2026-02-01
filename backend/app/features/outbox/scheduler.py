@@ -1,16 +1,16 @@
-import logging
 import datetime
+import logging
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
+import app.features.memos.consumers.event_handlers  # noqa: F401
 from app.base.schemas.event import DomainEvent
 from app.core.database.transaction import AsyncTransaction
-from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.models import EventStatus
 from app.features.outbox.registry import dispatch_event
-import app.features.memos.consumers.event_handlers  # noqa: F401
+from app.features.outbox.repos import OutboxRepository
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +29,7 @@ async def process_outbox_events_job():
         try:
             repo = OutboxRepository()
 
-            events_to_process = await repo.get_and_lock_pending_events(
-                session, limit=10
-            )
+            events_to_process = await repo.get_and_lock_pending_events(session, limit=10)
 
             if not events_to_process:
                 logger.info("No pending outbox events found.")

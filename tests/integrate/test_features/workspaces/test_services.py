@@ -3,16 +3,15 @@ Integration tests for WorkspaceService.
 """
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.base.services.user_aware_hook import UserContextKwargs
-from app.features.workspaces.repos import WorkspaceRepository
-from app.features.workspaces.services import WorkspaceService
-from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
-from app.features.workspaces.models import Workspace
-from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.models import Outbox
+from app.features.outbox.repos import OutboxRepository
 from app.features.workspaces.enum import WorkspaceEventType
+from app.features.workspaces.models import Workspace
+from app.features.workspaces.repos import WorkspaceRepository
+from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
+from app.features.workspaces.services import WorkspaceService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestWorkspaceServiceIntegration:
@@ -29,9 +28,7 @@ class TestWorkspaceServiceIntegration:
         return OutboxRepository()
 
     @pytest.fixture
-    def service(
-        self, repo: WorkspaceRepository, outbox_repo: OutboxRepository
-    ) -> WorkspaceService:
+    def service(self, repo: WorkspaceRepository, outbox_repo: OutboxRepository) -> WorkspaceService:
         """Create a WorkspaceService instance."""
         return WorkspaceService(repo=repo, outbox_repo=outbox_repo)
 
@@ -54,9 +51,7 @@ class TestWorkspaceServiceIntegration:
         assert result.name == workspace_data.name
 
         # Verify outbox event
-        outbox_event = await outbox_repo.get(
-            session, where=[Outbox.aggregate_id == str(result.id)]
-        )
+        outbox_event = await outbox_repo.get(session, where=[Outbox.aggregate_id == str(result.id)])
         assert outbox_event is not None
         assert outbox_event.event_type == WorkspaceEventType.CREATE
         assert outbox_event.payload["name"] == result.name
@@ -105,18 +100,14 @@ class TestWorkspaceServiceIntegration:
         update_data = WorkspaceUpdate(name="Service Updated Workspace")
         context: UserContextKwargs = {"user_id": admin_user.id}
 
-        result = await service.update(
-            session, obj_id=single_workspace.id, obj_data=update_data, context=context
-        )
+        result = await service.update(session, obj_id=single_workspace.id, obj_data=update_data, context=context)
         await session.commit()
 
         assert result is not None
         assert result.name == "Service Updated Workspace"
 
         # Verify outbox event
-        outbox_event = await outbox_repo.get(
-            session, where=[Outbox.aggregate_id == str(result.id)]
-        )
+        outbox_event = await outbox_repo.get(session, where=[Outbox.aggregate_id == str(result.id)])
         assert outbox_event is not None
         assert outbox_event.event_type == WorkspaceEventType.UPDATE
         assert outbox_event.payload["name"] == "Service Updated Workspace"
@@ -140,15 +131,11 @@ class TestWorkspaceServiceIntegration:
         assert result.success is True
 
         # Verify deletion
-        deleted_workspace = await service.get(
-            session, obj_id=workspace_id, context=context
-        )
+        deleted_workspace = await service.get(session, obj_id=workspace_id, context=context)
         assert deleted_workspace is None
 
         # Verify outbox event
-        outbox_event = await outbox_repo.get(
-            session, where=[Outbox.aggregate_id == str(workspace_id)]
-        )
+        outbox_event = await outbox_repo.get(session, where=[Outbox.aggregate_id == str(workspace_id)])
         assert outbox_event is not None
         assert outbox_event.event_type == WorkspaceEventType.DELETE
         assert outbox_event.payload["name"] == workspace_name

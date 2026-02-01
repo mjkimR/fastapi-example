@@ -6,12 +6,11 @@ from enum import Enum
 
 import orjson
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
 from app.core.database.deps import get_session
-from app.main import create_app
 from app.features.auth.token_schemas import Token
+from app.main import create_app
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AsyncClientWithJson(AsyncClient):
@@ -21,15 +20,11 @@ class AsyncClientWithJson(AsyncClient):
     def _json_serializer(obj):
         if isinstance(obj, Enum):
             return obj.value
-        raise TypeError(
-            f"Object of type '{obj.__class__.__name__}' is not JSON serializable"
-        )
+        raise TypeError(f"Object of type '{obj.__class__.__name__}' is not JSON serializable")
 
     async def request(self, *args, **kwargs):
         if "json" in kwargs:
-            kwargs["content"] = orjson.dumps(
-                kwargs.pop("json"), default=self._json_serializer
-            )
+            kwargs["content"] = orjson.dumps(kwargs.pop("json"), default=self._json_serializer)
             if kwargs.get("headers") is None:
                 kwargs["headers"] = {}
             kwargs["headers"]["Content-Type"] = "application/json"

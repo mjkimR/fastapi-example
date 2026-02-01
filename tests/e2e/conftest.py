@@ -9,6 +9,7 @@ available from the root tests/conftest.py through pytest's fixture discovery.
 import pytest
 import pytest_asyncio
 from sqlalchemy import text
+
 from tests.fixtures.db import get_base
 
 
@@ -50,8 +51,6 @@ async def memo_via_api(client, workspace_via_api):
         "title": "Test Memo",
         "contents": "This is a test memo.",
     }
-    response = await client.post(
-        f"/api/v1/workspaces/{workspace_id}/memos", json=memo_data
-    )
+    response = await client.post(f"/api/v1/workspaces/{workspace_id}/memos", json=memo_data)
     assert response.status_code == 201
     return response.json()

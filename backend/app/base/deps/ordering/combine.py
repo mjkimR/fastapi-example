@@ -1,4 +1,5 @@
 from typing import Callable, List, Optional
+
 from fastapi import Query
 from sqlalchemy.sql import ColumnElement
 
@@ -44,16 +45,12 @@ def create_order_by_dependency(
 
     desc_lines.append("\n**Usage:**")
     desc_lines.append("* Prefix with `-` for descending order (e.g., `-title`).")
-    desc_lines.append(
-        "* Multiple fields can be separated by commas (e.g., `-created_at,title`)."
-    )
+    desc_lines.append("* Multiple fields can be separated by commas (e.g., `-created_at,title`).")
     desc_lines.append(f"* **Default:** `{default_order}`")
 
     final_description = "\n".join(desc_lines)
 
-    def dependency(
-        order_by: Optional[str] = Query(default=None, description=final_description)
-    ) -> List[ColumnElement]:
+    def dependency(order_by: Optional[str] = Query(default=None, description=final_description)) -> List[ColumnElement]:
         if not order_by:
             order_by = default_order
 

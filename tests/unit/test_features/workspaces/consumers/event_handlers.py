@@ -1,25 +1,23 @@
 from unittest.mock import patch
-import pytest
 
-from app.base.schemas.event import DomainEvent
+import pytest
 from app.base.exceptions.event import (
-    InvalidEventPayloadException,
     EventProcessingException,
+    InvalidEventPayloadException,
 )
+from app.base.schemas.event import DomainEvent
 from app.features.workspaces.consumers.event_handlers import (
     handle_workspace_created_event,
-    handle_workspace_updated_event,
     handle_workspace_deleted_event,
+    handle_workspace_updated_event,
 )
-from app.features.workspaces.schemas import WorkspaceNotificationPayload
 from app.features.workspaces.enum import WorkspaceEventType
+from app.features.workspaces.schemas import WorkspaceNotificationPayload
 
 
 @pytest.fixture
 def mock_create_notification_use_case():
-    with patch(
-        "app.features.workspaces.consumers.event_handlers.CreateNotificationUseCase"
-    ) as mock_use_case:
+    with patch("app.features.workspaces.consumers.event_handlers.CreateNotificationUseCase") as mock_use_case:
         yield mock_use_case
 
 
@@ -50,9 +48,7 @@ class TestWorkspaceEventHandlers:
             user_id=mock_user.id,
             event_type=event_type,
         )
-        event = DomainEvent(
-            event_type=event_type, payload=payload.model_dump(mode="json")
-        )
+        event = DomainEvent(event_type=event_type, payload=payload.model_dump(mode="json"))
 
         await handler(event)
 
@@ -105,12 +101,8 @@ class TestWorkspaceEventHandlers:
             user_id=mock_user.id,
             event_type=event_type,
         )
-        event = DomainEvent(
-            event_type=event_type, payload=payload.model_dump(mode="json")
-        )
-        mock_create_notification_use_case.return_value.execute.side_effect = Exception(
-            "DB error"
-        )
+        event = DomainEvent(event_type=event_type, payload=payload.model_dump(mode="json"))
+        mock_create_notification_use_case.return_value.execute.side_effect = Exception("DB error")
 
         with pytest.raises(EventProcessingException):
             await handler(event)

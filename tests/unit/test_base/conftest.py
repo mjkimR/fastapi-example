@@ -3,19 +3,17 @@ Conftest for base module unit tests.
 Provides mock models, repositories, and services for testing.
 """
 
-import uuid
 import datetime
+import uuid
 from typing import Optional
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from app.base.models.mixin import Base, SoftDeleteMixin, TimestampMixin, UUIDMixin
+from app.base.repos.base import BaseRepository
 from pydantic import BaseModel
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
-
-from app.base.models.mixin import Base, UUIDMixin, TimestampMixin, SoftDeleteMixin
-from app.base.repos.base import BaseRepository
-
 
 # =============================================================================
 # Mock Models
@@ -69,9 +67,7 @@ class MockRepository(BaseRepository[MockModel, MockCreateSchema, MockUpdateSchem
     model = MockModel
 
 
-class MockSoftDeleteRepository(
-    BaseRepository[MockSoftDeleteModel, MockCreateSchema, MockUpdateSchema]
-):
+class MockSoftDeleteRepository(BaseRepository[MockSoftDeleteModel, MockCreateSchema, MockUpdateSchema]):
     """Mock repository with soft delete model."""
 
     model = MockSoftDeleteModel

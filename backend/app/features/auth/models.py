@@ -1,7 +1,8 @@
 from enum import StrEnum
-from sqlalchemy.orm import mapped_column, Mapped
 
-from app.base.models.mixin import Base, UUIDMixin, TimestampMixin
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.base.models.mixin import Base, TimestampMixin, UUIDMixin
 
 
 class User(Base, UUIDMixin, TimestampMixin):

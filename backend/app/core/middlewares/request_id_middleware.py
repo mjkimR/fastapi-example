@@ -1,8 +1,9 @@
 import uuid
+
 from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core.logger import set_request_id, logger
+from app.core.logger import logger, set_request_id
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):

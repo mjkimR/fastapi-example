@@ -1,19 +1,20 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, Union, Generic, Sequence, TypeVar, Any
+from typing import Any, Generic, Optional, Sequence, TypeVar, Union
 
+from pydantic import BaseModel
 from sqlalchemy import (
+    Column,
+    delete,
+    func,
+    literal,
     select,
     update,
-    delete,
-    literal,
-    func,
 )
-from sqlalchemy import Column, inspect as sa_inspect
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.sql.elements import ColumnElement, UnaryExpression
-from pydantic import BaseModel
+from sqlalchemy.sql.selectable import Select
 
 from app.base.schemas.paginated import PaginatedList
 
@@ -60,8 +61,7 @@ class BaseRepository(
                 f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}."
             )
         pk_str = ", ".join(
-            f"{pk_col.key}={str(value)}"
-            for pk_col, value in zip(self._primary_keys, pk_values)
+            f"{pk_col.key}={str(value)}" for pk_col, value in zip(self._primary_keys, pk_values, strict=False)
         )
         return f"{self.model_name()}({pk_str})"
 
@@ -87,11 +87,9 @@ class BaseRepository(
                 f"Incorrect number of primary key values provided. Expected {len(self._primary_keys)}, got {len(pk_values)}."
             )
 
-        return [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values)]
+        return [pk_col == value for pk_col, value in zip(self._primary_keys, pk_values, strict=False)]
 
-    def _select(
-        self, where: WhereClause = (), order_by: Sequence[UnaryExpression] = ()
-    ) -> Select:
+    def _select(self, where: WhereClause = (), order_by: Sequence[UnaryExpression] = ()) -> Select:
         stmt = select(self.model)
         if where is not None:
             if isinstance(where, Sequence):
@@ -143,7 +141,7 @@ class BaseRepository(
         if len(self._primary_keys) == 1:
             ident = pk_values[0]
         else:
-            ident = dict(zip([pk_col.key for pk_col in self._primary_keys], pk_values))
+            ident = dict(zip([pk_col.key for pk_col in self._primary_keys], pk_values, strict=False))
 
         return await session.get(self.model, ident)
 
@@ -249,9 +247,7 @@ class BaseRepository(
         model_columns = {col.key for col in sa_inspect(self.model).mapper.columns}
         extra_fields = set(update_data.keys()) - model_columns
         if extra_fields:
-            raise ValueError(
-                f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}"
-            )
+            raise ValueError(f"Extra fields provided that are not in the model {self.model.__name__}: {extra_fields}")
 
         stmt = update(self.model).filter(*filters).values(**update_data)
         result = await session.execute(stmt)
@@ -278,9 +274,7 @@ class BaseRepository(
                     f"Soft delete requires the column '{self.is_deleted_column}' in model {self.model.__name__}."
                 )
 
-            if self.deleted_at_column and not hasattr(
-                self.model, self.deleted_at_column
-            ):
+            if self.deleted_at_column and not hasattr(self.model, self.deleted_at_column):
                 raise ValueError(
                     f"Soft delete is configured to use '{self.deleted_at_column}', but it's missing in model {self.model.__name__}."
                 )

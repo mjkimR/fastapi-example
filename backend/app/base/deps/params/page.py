@@ -1,6 +1,6 @@
-from typing import Any, Annotated
+from typing import Annotated, Any
 
-from fastapi import Query, Depends
+from fastapi import Depends, Query
 
 
 def pagination_params(

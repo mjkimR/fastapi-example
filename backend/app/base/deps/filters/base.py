@@ -1,9 +1,9 @@
 import abc
 from abc import ABCMeta
-from typing import Optional, Any, Union, Callable
+from typing import Any, Callable, Optional, Union
 
-from sqlalchemy import ColumnElement
 from fastapi import Query
+from sqlalchemy import ColumnElement
 
 from app.base.deps.filters.exceptions import (
     ConfigurationError,
@@ -88,23 +88,22 @@ class SimpleFilterCriteriaBase(SqlFilterCriteriaBase):
         """
         if not self.alias:
             raise ConfigurationError(
-                f"Filter criteria is missing an 'alias'. "
-                "Please provide an alias (query parameter name)."
+                "Filter criteria is missing an 'alias'. Please provide an alias (query parameter name)."
             )
         if self.bound_type is None:
             raise ConfigurationError(
-                f"Filter criteria is missing a 'bound_type'. "
+                "Filter criteria is missing a 'bound_type'. "
                 "Please specify the type to bind the query parameter to (e.g., str, int)."
             )
         description = self.description or f"Filter query parameter ({self.alias})"
 
         def filter_dependency(
-            value: Optional[self.bound_type] = Query(  # type: ignore
+            value: Optional[self.bound_type] = Query(  # type: ignore  # noqa: B008
                 default=None,
                 alias=self.alias,
                 description=description,
                 **self.query_params,
-            )
+            ),
         ) -> Optional[ColumnElement]:
             """
             FastAPI dependency that returns the filter expression for this criterion.

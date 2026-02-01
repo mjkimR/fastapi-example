@@ -1,15 +1,15 @@
 from typing import Annotated
 
+import jwt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database.deps import get_session
 from app.features.auth.exceptions import (
     InvalidCredentialsException,
-    UserNotFoundException,
     PermissionDeniedException,
+    UserNotFoundException,
 )
 from app.features.auth.models import User
 from app.features.auth.services import UserService
@@ -27,7 +27,7 @@ def get_token_data(
         payload = jwt.decode(token, secret_key, algorithms=[user_service.ALGORITHM])
         token_data = TokenPayload(**payload)
     except Exception:
-        raise InvalidCredentialsException()
+        raise InvalidCredentialsException() from None
     return token_data
 
 

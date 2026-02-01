@@ -1,13 +1,12 @@
-from typing import cast
 import uuid
+from typing import cast
 from unittest.mock import AsyncMock
 
 import pytest
-
-from app.features.notifications.services import NotificationService
+from app.features.notifications.models import Notification
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
-from app.features.notifications.models import Notification
+from app.features.notifications.services import NotificationService
 
 
 class TestNotificationService:
@@ -19,9 +18,7 @@ class TestNotificationService:
         return AsyncMock(spec=NotificationRepository)
 
     @pytest.fixture
-    def notification_service(
-        self, mock_notification_repo: NotificationRepository
-    ) -> NotificationService:
+    def notification_service(self, mock_notification_repo: NotificationRepository) -> NotificationService:
         """Create a NotificationService instance with a mocked repository."""
         return NotificationService(repo=mock_notification_repo)
 

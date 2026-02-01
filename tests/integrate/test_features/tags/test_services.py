@@ -6,16 +6,13 @@ Tests service layer operations with real database connections.
 import uuid
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.base.services.nested_resource_hook import NestedResourceContextKwargs
 from app.features.tags.models import Tag
 from app.features.tags.repos import TagRepository
 from app.features.tags.services import TagService
-
-
-from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.models import Workspace
+from app.features.workspaces.repos import WorkspaceRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestTagServiceIntegration:
@@ -32,16 +29,12 @@ class TestTagServiceIntegration:
         return WorkspaceRepository()
 
     @pytest.fixture
-    def service(
-        self, repo: TagRepository, parent_repo: WorkspaceRepository
-    ) -> TagService:
+    def service(self, repo: TagRepository, parent_repo: WorkspaceRepository) -> TagService:
         """Create a TagService instance."""
         return TagService(repo=repo, parent_repo=parent_repo)
 
     @pytest.mark.asyncio
-    async def test_get_tag(
-        self, session: AsyncSession, service: TagService, single_tag: Tag
-    ):
+    async def test_get_tag(self, session: AsyncSession, service: TagService, single_tag: Tag):
         """Should retrieve a tag through service."""
         context: NestedResourceContextKwargs = {"parent_id": single_tag.workspace_id}
         result = await service.get(session, obj_id=single_tag.id, context=context)
@@ -111,9 +104,7 @@ class TestTagServiceIntegration:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_tag_not_found(
-        self, session: AsyncSession, service: TagService, single_workspace: Workspace
-    ):
+    async def test_get_tag_not_found(self, session: AsyncSession, service: TagService, single_workspace: Workspace):
         """Should return None when tag not found."""
         non_existent_id = uuid.uuid4()
         context: NestedResourceContextKwargs = {"parent_id": single_workspace.id}
@@ -153,12 +144,8 @@ class TestTagServiceIntegration:
         await session.flush()
 
         context: NestedResourceContextKwargs = {"parent_id": single_workspace.id}
-        result_page1 = await service.get_multi(
-            session, offset=0, limit=2, context=context
-        )
-        result_page2 = await service.get_multi(
-            session, offset=2, limit=2, context=context
-        )
+        result_page1 = await service.get_multi(session, offset=0, limit=2, context=context)
+        result_page2 = await service.get_multi(session, offset=2, limit=2, context=context)
 
         assert result_page1.offset == 0
         assert result_page1.limit == 2

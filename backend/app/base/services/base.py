@@ -1,20 +1,21 @@
-from abc import abstractmethod, ABC
+import uuid
+from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Generic, Any, Sequence, TypedDict, Optional
-from typing_extensions import TypeVar
-import uuid
+from typing import Any, Generic, Optional, Sequence, TypedDict
+
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypeVar
 
 from app.base.repos.base import (
     BaseRepository,
-    ModelType,
     CreateSchemaType,
+    ModelType,
     UpdateSchemaType,
 )
 from app.base.schemas.delete_resp import DeleteResponse
 from app.base.schemas.paginated import PaginatedList
-from pydantic import BaseModel, TypeAdapter, ValidationError
 
 
 class BaseContextKwargs(TypedDict):
@@ -24,9 +25,7 @@ class BaseContextKwargs(TypedDict):
 
 
 TRepo = TypeVar("TRepo", bound=BaseRepository)
-TContextKwargs = TypeVar(
-    "TContextKwargs", bound=BaseContextKwargs, default=BaseContextKwargs
-)
+TContextKwargs = TypeVar("TContextKwargs", bound=BaseContextKwargs, default=BaseContextKwargs)
 
 
 class BaseHooksInterface:
@@ -85,21 +84,15 @@ class BaseCreateHooks(BaseHooksInterface):
     """Hook methods for Create operations."""
 
     @asynccontextmanager
-    async def _context_create(
-        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
-    ):
+    async def _context_create(self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs):
         """Hook executed within a context before create (validation, cascade handling, etc.)."""
         yield
 
-    def _prepare_create_fields(
-        self, obj_data: BaseModel, context: TContextKwargs
-    ) -> dict[str, Any]:
+    def _prepare_create_fields(self, obj_data: BaseModel, context: TContextKwargs) -> dict[str, Any]:
         """Hook to prepare additional fields before create."""
         return {}
 
-    async def _post_create(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_create(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         """Hook executed after create."""
         return obj
 
@@ -149,15 +142,11 @@ class BaseUpdateHooks(BaseHooksInterface):
         """Hook executed within a context before update (validation, cascade handling, etc.)."""
         yield
 
-    def _prepare_update_fields(
-        self, obj_data: BaseModel, context: TContextKwargs
-    ) -> dict[str, Any]:
+    def _prepare_update_fields(self, obj_data: BaseModel, context: TContextKwargs) -> dict[str, Any]:
         """Hook to prepare additional fields before update."""
         return {}
 
-    async def _post_update(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_update(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         """Hook executed after update."""
         return obj
 
@@ -185,9 +174,7 @@ class BaseUpdateServiceMixin(
         ctx = self._ensure_context(context, self.context_model)
         async with self._context_update(session, obj_id, obj_data, context=ctx):
             extra_fields = self._prepare_update_fields(obj_data, context=ctx)
-            obj = await self.repo.update_by_pk(
-                session, pk=obj_id, obj_in=obj_data, **extra_fields
-            )
+            obj = await self.repo.update_by_pk(session, pk=obj_id, obj_in=obj_data, **extra_fields)
             return await self._post_update(session, obj, context=ctx)
 
 
@@ -200,9 +187,7 @@ class BaseDeleteHooks(BaseHooksInterface):
     """Hook methods for Delete operations."""
 
     @asynccontextmanager
-    async def _context_delete(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         """Hook executed within a context before delete (validation, cascade handling, etc.)."""
         yield
 
@@ -253,9 +238,7 @@ class BaseGetHooks(BaseHooksInterface):
     """Hook methods for Get (single item) operations."""
 
     @asynccontextmanager
-    async def _context_get(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_get(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         """Hook executed within a context before get (validation, cascade handling, etc.)."""
         yield
 
@@ -352,7 +335,5 @@ class BaseGetMultiServiceMixin(
             elif extra_filters:
                 where = [where] + extra_filters
 
-            result = await self.repo.get_multi(
-                session, offset=offset, limit=limit, where=where, order_by=order_by
-            )
+            result = await self.repo.get_multi(session, offset=offset, limit=limit, where=where, order_by=order_by)
             return await self._post_get_multi(session, result, context=ctx)

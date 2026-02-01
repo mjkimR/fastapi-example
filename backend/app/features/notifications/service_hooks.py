@@ -1,9 +1,10 @@
-from abc import abstractmethod
-from typing import Any, TypedDict
 import uuid
+from abc import abstractmethod
 from contextlib import asynccontextmanager
+from typing import Any, TypedDict
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.base.repos.base import ModelType
 from app.base.services.base import (
     BaseCreateHooks,
@@ -49,9 +50,7 @@ class NotificationOutboxHook(
     def notification_event_type_dict(self) -> NotificationEventTypeDict:
         pass
 
-    async def _post_create(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_create(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         outbox_identity: OutboxIdentityDict = {
             "aggregate_type": self.repo.model_name(),
             "aggregate_id": str(obj.id),
@@ -67,9 +66,7 @@ class NotificationOutboxHook(
 
         return await super()._post_create(session, obj, context)
 
-    async def _post_update(
-        self, session: AsyncSession, obj: ModelType, context: TContextKwargs
-    ) -> ModelType:
+    async def _post_update(self, session: AsyncSession, obj: ModelType, context: TContextKwargs) -> ModelType:
         outbox_identity: OutboxIdentityDict = {
             "aggregate_type": self.repo.model_name(),
             "aggregate_id": str(obj.id),
@@ -86,9 +83,7 @@ class NotificationOutboxHook(
         return await super()._post_update(session, obj, context)
 
     @asynccontextmanager
-    async def _context_delete(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         """Use context manager to ensure outbox event is created after deletion."""
         async with super()._context_delete(session, obj_id, context):
             obj = await self.repo.get_by_pk(session, obj_id)

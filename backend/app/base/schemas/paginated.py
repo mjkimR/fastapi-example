@@ -1,4 +1,5 @@
-from typing import Optional, Generic, TypeVar, Any, Sequence
+from typing import Any, Generic, Optional, Sequence, TypeVar
+
 from pydantic import BaseModel, computed_field
 
 PageItem = TypeVar("PageItem", bound=Any)

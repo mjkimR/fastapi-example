@@ -1,17 +1,18 @@
 import logging
+
 from app.base.exceptions.event import (
-    InvalidEventPayloadException,
     EventProcessingException,
+    InvalidEventPayloadException,
 )
 from app.base.schemas.event import DomainEvent
 from app.features.memos.enum import MemoEventType
 from app.features.memos.repos import MemoRepository
 from app.features.memos.schemas import MemoNotificationPayload
-from app.features.outbox.registry import register_event_handler
 from app.features.notifications.repos import NotificationRepository
-from app.features.notifications.services import NotificationService
 from app.features.notifications.schemas import NotificationCreate
+from app.features.notifications.services import NotificationService
 from app.features.notifications.usecases.crud import CreateNotificationUseCase
+from app.features.outbox.registry import register_event_handler
 
 logger = logging.getLogger(__name__)
 
@@ -25,17 +26,13 @@ async def handle_memo_created_event(event: DomainEvent):
     try:
         payload = event.parse_payload(MemoNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for memo created event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for memo created event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -45,13 +42,9 @@ async def handle_memo_created_event(event: DomainEvent):
             event_type=payload.event_type.value,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding memo {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding memo {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for memo {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for memo {payload.id}") from e
 
 
 @register_event_handler(MemoEventType.UPDATE)
@@ -63,17 +56,13 @@ async def handle_memo_updated_event(event: DomainEvent):
     try:
         payload = event.parse_payload(MemoNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for memo updated event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for memo updated event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -83,13 +72,9 @@ async def handle_memo_updated_event(event: DomainEvent):
             event_type=payload.event_type.value,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding memo {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding memo {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for memo {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for memo {payload.id}") from e
 
 
 @register_event_handler(MemoEventType.DELETE)
@@ -101,17 +86,13 @@ async def handle_memo_deleted_event(event: DomainEvent):
     try:
         payload = event.parse_payload(MemoNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for memo deleted event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for memo deleted event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -121,10 +102,6 @@ async def handle_memo_deleted_event(event: DomainEvent):
             event_type=payload.event_type.value,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding memo {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding memo {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for memo {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for memo {payload.id}") from e

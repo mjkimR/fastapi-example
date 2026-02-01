@@ -3,8 +3,9 @@ Custom assertion helpers for tests.
 """
 
 from typing import Any
-from httpx import Response
+
 from app.core.logger import logger
+from httpx import Response
 
 
 def assert_status_code(response: Response, expected: int):
@@ -13,8 +14,7 @@ def assert_status_code(response: Response, expected: int):
         # For error responses, log that this is expected for this test case
         logger.info(f"[Expected Error] Status {expected} is expected for this test case")
     assert response.status_code == expected, (
-        f"Expected status {expected}, got {response.status_code}. "
-        f"Response: {response.text[:500]}"
+        f"Expected status {expected}, got {response.status_code}. Response: {response.text[:500]}"
     )
 
 

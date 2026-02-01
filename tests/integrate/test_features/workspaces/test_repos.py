@@ -5,11 +5,10 @@ Integration tests for WorkspaceRepository.
 import uuid
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestWorkspaceRepositoryIntegration:
@@ -21,9 +20,7 @@ class TestWorkspaceRepositoryIntegration:
         return WorkspaceRepository()
 
     @pytest.mark.asyncio
-    async def test_create_workspace(
-        self, session: AsyncSession, repo: WorkspaceRepository, regular_user
-    ):
+    async def test_create_workspace(self, session: AsyncSession, repo: WorkspaceRepository, regular_user):
         """Should create a new workspace in the database."""
         workspace_data = WorkspaceCreate(name="Test Workspace")
 
@@ -54,9 +51,7 @@ class TestWorkspaceRepositoryIntegration:
         assert result.name == single_workspace.name
 
     @pytest.mark.asyncio
-    async def test_get_workspace_by_pk_not_found(
-        self, session: AsyncSession, repo: WorkspaceRepository
-    ):
+    async def test_get_workspace_by_pk_not_found(self, session: AsyncSession, repo: WorkspaceRepository):
         """Should return None when workspace not found."""
         non_existent_id = uuid.uuid4()
         result = await repo.get_by_pk(session, pk=non_existent_id)

@@ -2,9 +2,7 @@
 
 from unittest.mock import MagicMock
 
-
 from app.base.deps.ordering.base import OrderByCriteria, order_by_for
-
 
 # =============================================================================
 # Tests for OrderByCriteria
@@ -25,9 +23,7 @@ class TestOrderByCriteria:
     def test_init_with_description(self):
         """Should accept optional description."""
         func = MagicMock()
-        criteria = OrderByCriteria(
-            alias="created_at", func=func, description="Order by creation date"
-        )
+        criteria = OrderByCriteria(alias="created_at", func=func, description="Order by creation date")
 
         assert criteria.description == "Order by creation date"
 

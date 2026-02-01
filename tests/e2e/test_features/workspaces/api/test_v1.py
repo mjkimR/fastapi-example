@@ -1,7 +1,7 @@
 import uuid
 
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
 
 from tests.utils import assert_status_code
 
@@ -48,9 +48,7 @@ async def test_update_workspace(client: AsyncClient, workspace):
     assert response.json()["name"] == update_data["name"]
 
     non_existent_id = uuid.uuid4()
-    response = await client.put(
-        f"/api/v1/workspaces/{non_existent_id}", json=update_data
-    )
+    response = await client.put(f"/api/v1/workspaces/{non_existent_id}", json=update_data)
     assert_status_code(response, 404)
 
 

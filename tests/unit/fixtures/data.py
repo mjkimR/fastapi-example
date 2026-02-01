@@ -5,17 +5,15 @@ These are pure mock objects (MagicMock) - NOT real DB fixtures.
 For real DB fixtures, see tests/fixtures/data/
 """
 
-import uuid
 import datetime
+import uuid
 from unittest.mock import MagicMock
 
 import pytest
-
 from app.features.auth.models import User
 from app.features.memos.models import Memo
 from app.features.tags.models import Tag
 from app.features.workspaces.models import Workspace
-
 
 # =============================================================================
 # Sample IDs
@@ -142,7 +140,7 @@ def mock_tag(sample_tag_id, sample_workspace_id):
 def mock_tags(sample_workspace_id):
     """Create multiple mock tags."""
     tags = []
-    for i, name in enumerate(["python", "fastapi", "sqlalchemy"]):
+    for _, name in enumerate(["python", "fastapi", "sqlalchemy"]):
         tag = MagicMock(spec=Tag)
         tag.id = uuid.uuid4()
         tag.name = name

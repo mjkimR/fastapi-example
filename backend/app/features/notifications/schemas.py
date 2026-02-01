@@ -1,8 +1,8 @@
 import uuid
-import datetime
-from pydantic import BaseModel, Field, ConfigDict
 
-from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class NotificationCreate(BaseModel):
@@ -12,18 +12,12 @@ class NotificationCreate(BaseModel):
         default=None,
         description="Optional type of the event triggering the notification.",
     )
-    resource_type: str | None = Field(
-        default=None, description="Optional type of the related resource."
-    )
-    resource_id: uuid.UUID | None = Field(
-        default=None, description="Optional ID of the related resource."
-    )
+    resource_type: str | None = Field(default=None, description="Optional type of the related resource.")
+    resource_id: uuid.UUID | None = Field(default=None, description="Optional ID of the related resource.")
 
 
 class NotificationUpdate(BaseModel):
-    is_read: bool | None = Field(
-        None, description="Whether the notification has been read."
-    )
+    is_read: bool | None = Field(None, description="Whether the notification has been read.")
 
 
 class NotificationRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
@@ -35,11 +29,7 @@ class NotificationRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
         default=None,
         description="Optional type of the event triggering the notification.",
     )
-    resource_type: str | None = Field(
-        default=None, description="Optional type of the related resource."
-    )
-    resource_id: uuid.UUID | None = Field(
-        default=None, description="Optional ID of the related resource."
-    )
+    resource_type: str | None = Field(default=None, description="Optional type of the related resource.")
+    resource_id: uuid.UUID | None = Field(default=None, description="Optional ID of the related resource.")
 
     model_config = ConfigDict(from_attributes=True)

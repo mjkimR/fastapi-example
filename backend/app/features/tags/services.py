@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.base.services.base import BaseGetServiceMixin, BaseGetMultiServiceMixin
+from app.base.services.base import BaseGetMultiServiceMixin, BaseGetServiceMixin
 from app.base.services.nested_resource_hook import (
     NestedResourceContextKwargs,
     NestedResourceHooksMixin,
@@ -50,6 +50,4 @@ class TagService(
         tag_names: list[str],
         context: NestedResourceContextKwargs,
     ) -> list[Tag]:
-        return await self.repo.get_or_create_tags(
-            session, tag_names, workspace_id=context["parent_id"]
-        )
+        return await self.repo.get_or_create_tags(session, tag_names, workspace_id=context["parent_id"])

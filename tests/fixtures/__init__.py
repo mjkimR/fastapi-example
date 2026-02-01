@@ -2,12 +2,12 @@
 Centralized fixtures package.
 Import all fixtures from this package for easy access.
 """
-from tests.fixtures.db import (
-    event_loop_policy,
-    async_engine,
-    session_maker_fixture,
-    session_fixture,
-    inspect_session,
+
+from tests.fixtures.auth import (
+    admin_headers,
+    admin_token,
+    admin_user,
+    user_service,
 )
 from tests.fixtures.clients import (
     AsyncClientWithJson,
@@ -15,11 +15,12 @@ from tests.fixtures.clients import (
     client_fixture,
     unauthenticated_client_fixture,
 )
-from tests.fixtures.auth import (
-    user_service,
-    admin_user,
-    admin_token,
-    admin_headers,
+from tests.fixtures.db import (
+    async_engine,
+    event_loop_policy,
+    inspect_session,
+    session_fixture,
+    session_maker_fixture,
 )
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     "async_engine",
     "session_maker_fixture",
     "session_fixture",
+    "inspect_session",
     # Client fixtures
     "AsyncClientWithJson",
     "app_fixture",

@@ -1,8 +1,7 @@
 import uuid
 from abc import abstractmethod
-
 from contextlib import asynccontextmanager
-from typing import Required, Any
+from typing import Any, Required
 
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.base.exceptions.basic import NotFoundException
 from app.base.repos.base import BaseRepository
 from app.base.services.base import (
-    BaseCreateHooks,
     BaseContextKwargs,
-    TContextKwargs,
-    BaseUpdateHooks,
+    BaseCreateHooks,
+    BaseDeleteHooks,
     BaseGetHooks,
     BaseGetMultiHooks,
-    BaseDeleteHooks,
+    BaseUpdateHooks,
+    TContextKwargs,
 )
 
 
@@ -52,13 +51,9 @@ class NestedResourceHooksMixin(
         """Check if parent exists, raise NotFoundException if not."""
         #
         if not await self.parent_repo.get_by_pk(session, parent_id):
-            raise NotFoundException(
-                log_message=f"Parent {self.parent_repo.model_repr(parent_id)} not found."
-            )
+            raise NotFoundException(log_message=f"Parent {self.parent_repo.model_repr(parent_id)} not found.")
 
-    async def _ensure_ownership(
-        self, session: AsyncSession, obj_id: uuid.UUID, parent_id: Any
-    ):
+    async def _ensure_ownership(self, session: AsyncSession, obj_id: uuid.UUID, parent_id: Any):
         """
         Ensure the object belongs to the specific parent.
         This prevents accessing/modifying a child object through a wrong parent URL.
@@ -81,17 +76,13 @@ class NestedResourceHooksMixin(
     # ============================================================
 
     @asynccontextmanager
-    async def _context_create(
-        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
-    ):
+    async def _context_create(self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs):
         async with super()._context_create(session, obj_data, context):
             parent_id = context["parent_id"]
             await self._check_parent_exists(session, parent_id)
             yield
 
-    def _prepare_create_fields(
-        self, obj_data: BaseModel, context: TContextKwargs
-    ) -> dict[str, Any]:
+    def _prepare_create_fields(self, obj_data: BaseModel, context: TContextKwargs) -> dict[str, Any]:
         """Inject parent_id into the creation data."""
         data = super()._prepare_create_fields(obj_data, context)
         data[self.fk_name] = context["parent_id"]
@@ -123,9 +114,7 @@ class NestedResourceHooksMixin(
     # ============================================================
 
     @asynccontextmanager
-    async def _context_get(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_get(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         """Ensure the requested object belongs to the parent context."""
         async with super()._context_get(session, obj_id, context):
             await self._ensure_ownership(session, obj_id, context["parent_id"])
@@ -153,9 +142,7 @@ class NestedResourceHooksMixin(
     # ============================================================
 
     @asynccontextmanager
-    async def _context_delete(
-        self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs
-    ):
+    async def _context_delete(self, session: AsyncSession, obj_id: uuid.UUID, context: TContextKwargs):
         """Ensure the object being deleted belongs to the parent context."""
         async with super()._context_delete(session, obj_id, context):
             await self._ensure_ownership(session, obj_id, context["parent_id"])

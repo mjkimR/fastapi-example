@@ -4,24 +4,24 @@ from fastapi import Depends
 
 from app.base.services.base import (
     BaseCreateServiceMixin,
-    BaseGetMultiServiceMixin,
-    BaseUpdateServiceMixin,
     BaseDeleteServiceMixin,
+    BaseGetMultiServiceMixin,
     BaseGetServiceMixin,
+    BaseUpdateServiceMixin,
 )
 from app.base.services.detail_delete_response_hook import DetailDeleteResponseHookMixin
 from app.base.services.exists_check_hook import ExistsCheckHooksMixin
-from app.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
-from app.features.memos.repos import MemoRepository
-from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.base.services.nested_resource_hook import (
     NestedResourceContextKwargs,
     NestedResourceHooksMixin,
 )
+from app.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
+from app.features.memos.models import Memo
+from app.features.memos.repos import MemoRepository
+from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.notifications.service_hooks import NotificationOutboxHook
 from app.features.outbox.repos import OutboxRepository
 from app.features.workspaces.repos import WorkspaceRepository
-from app.features.memos.models import Memo
 
 
 class MemoContextKwargs(NestedResourceContextKwargs, UserContextKwargs):

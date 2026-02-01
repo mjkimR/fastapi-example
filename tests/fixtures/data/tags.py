@@ -3,11 +3,10 @@ Test data fixtures for tags.
 """
 
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.tags.models import Tag
 from app.features.workspaces.models import Workspace
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest_asyncio.fixture
@@ -25,9 +24,7 @@ async def sample_tags(
     single_workspace: Workspace,
 ) -> list[Tag]:
     """Create sample tags for testing within a workspace."""
-    tags = tag_factory.batch(
-        size=3, workspace_id=single_workspace.id, workspace=single_workspace
-    )
+    tags = tag_factory.batch(size=3, workspace_id=single_workspace.id, workspace=single_workspace)
     session.add_all(tags)
     await session.flush()
     for tag in tags:

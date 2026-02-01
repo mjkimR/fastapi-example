@@ -1,10 +1,10 @@
 from typing import cast
 from unittest.mock import AsyncMock, MagicMock
-import pytest
 
-from app.features.memos.services import MemoService, MemoContextKwargs
-from app.features.memos.schemas import MemoCreate, MemoUpdate
+import pytest
 from app.features.memos.enum import MemoEventType
+from app.features.memos.schemas import MemoCreate, MemoUpdate
+from app.features.memos.services import MemoContextKwargs, MemoService
 
 
 class TestMemoServiceOutboxHooks:
@@ -52,9 +52,7 @@ class TestMemoServiceOutboxHooks:
         cast(AsyncMock, service.repo.exists).return_value = False
         cast(AsyncMock, service.parent_repo.exists).return_value = True
 
-        memo_data = MemoCreate(
-            category="Test Category", title="Test", contents="Test", tags=[]
-        )
+        memo_data = MemoCreate(category="Test Category", title="Test", contents="Test", tags=[])
         context: MemoContextKwargs = {
             "parent_id": mock_memo.workspace_id,
             "user_id": mock_memo.created_by,
@@ -119,9 +117,7 @@ class TestMemoServiceOutboxHooks:
         deleted_mock.workspace_id = mock_memo.workspace_id
         cast(AsyncMock, service.repo.get_by_pk).return_value = deleted_mock
         cast(AsyncMock, service.parent_repo.exists).return_value = True
-        cast(AsyncMock, service.repo.delete_by_pk).return_value = MagicMock(
-            success=True
-        )
+        cast(AsyncMock, service.repo.delete_by_pk).return_value = MagicMock(success=True)
 
         context: MemoContextKwargs = {
             "parent_id": mock_memo.workspace_id,

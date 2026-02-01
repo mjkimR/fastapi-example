@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Body, status
+from fastapi import APIRouter, Body, Depends, status
 
 from app.base.deps.params.page import PaginationParam
 from app.base.exceptions.basic import NotFoundException
@@ -9,13 +9,13 @@ from app.base.schemas.delete_resp import DeleteResponse
 from app.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.auth.models import User
-from app.features.memos.schemas import MemoRead, MemoUpdate, MemoCreate
+from app.features.memos.schemas import MemoCreate, MemoRead, MemoUpdate
 from app.features.memos.usecases.crud import (
     CreateMemoUseCase,
-    GetMultiMemoUseCase,
-    GetMemoUseCase,
-    UpdateMemoUseCase,
     DeleteMemoUseCase,
+    GetMemoUseCase,
+    GetMultiMemoUseCase,
+    UpdateMemoUseCase,
 )
 
 router = APIRouter(
@@ -30,11 +30,9 @@ async def create_memo(
     use_case: Annotated[CreateMemoUseCase, Depends()],
     workspace_id: uuid.UUID,
     current_user: Annotated[User, Depends(get_current_user)],
-    memo_in: MemoCreate = Body(),
+    memo_in: Annotated[MemoCreate, Body()],
 ):
-    return await use_case.execute(
-        memo_in, context={"parent_id": workspace_id, "user_id": current_user.id}
-    )
+    return await use_case.execute(memo_in, context={"parent_id": workspace_id, "user_id": current_user.id})
 
 
 @router.get("", response_model=PaginatedList[MemoRead])
@@ -44,9 +42,7 @@ async def get_memos(
     current_user: Annotated[User, Depends(get_current_user)],
     pagination: PaginationParam,
 ):
-    return await use_case.execute(
-        **pagination, context={"parent_id": workspace_id, "user_id": current_user.id}
-    )
+    return await use_case.execute(**pagination, context={"parent_id": workspace_id, "user_id": current_user.id})
 
 
 @router.get("/{memo_id}", response_model=MemoRead)
@@ -56,9 +52,7 @@ async def get_memo(
     current_user: Annotated[User, Depends(get_current_user)],
     memo_id: uuid.UUID,
 ):
-    memo = await use_case.execute(
-        memo_id, context={"parent_id": workspace_id, "user_id": current_user.id}
-    )
+    memo = await use_case.execute(memo_id, context={"parent_id": workspace_id, "user_id": current_user.id})
     if not memo:
         raise NotFoundException()
     return memo
@@ -89,6 +83,4 @@ async def delete_memo(
     current_user: Annotated[User, Depends(get_current_user)],
     memo_id: uuid.UUID,
 ):
-    return await use_case.execute(
-        memo_id, context={"parent_id": workspace_id, "user_id": current_user.id}
-    )
+    return await use_case.execute(memo_id, context={"parent_id": workspace_id, "user_id": current_user.id})

@@ -1,5 +1,6 @@
+from typing import Any, Callable
+
 from app.base.deps.filters.base import SimpleFilterCriteriaBase
-from typing import Callable, Any
 
 
 def filter_for(

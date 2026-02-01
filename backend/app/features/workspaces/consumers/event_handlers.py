@@ -26,17 +26,13 @@ async def handle_workspace_created_event(event: DomainEvent):
     try:
         payload = event.parse_payload(WorkspaceNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for workspace created event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for workspace created event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -46,13 +42,9 @@ async def handle_workspace_created_event(event: DomainEvent):
             event_type=payload.event_type,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding workspace {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding workspace {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for workspace {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for workspace {payload.id}") from e
 
 
 @register_event_handler(WorkspaceEventType.UPDATE)
@@ -64,17 +56,13 @@ async def handle_workspace_updated_event(event: DomainEvent):
     try:
         payload = event.parse_payload(WorkspaceNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for workspace updated event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for workspace updated event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -84,13 +72,9 @@ async def handle_workspace_updated_event(event: DomainEvent):
             event_type=payload.event_type,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding workspace {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding workspace {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for workspace {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for workspace {payload.id}") from e
 
 
 @register_event_handler(WorkspaceEventType.DELETE)
@@ -102,17 +86,13 @@ async def handle_workspace_deleted_event(event: DomainEvent):
     try:
         payload = event.parse_payload(WorkspaceNotificationPayload)
     except Exception as e:
-        raise InvalidEventPayloadException(
-            f"Invalid payload for workspace deleted event"
-        ) from e
+        raise InvalidEventPayloadException("Invalid payload for workspace deleted event") from e
 
     try:
         # Since this is a background task, manually create dependencies (AsyncTransaction is handled within UseCase)
         notification_repo = NotificationRepository()
         notification_service = NotificationService(repo=notification_repo)
-        create_notification_use_case = CreateNotificationUseCase(
-            service=notification_service
-        )
+        create_notification_use_case = CreateNotificationUseCase(service=notification_service)
 
         notification_data = NotificationCreate(
             user_id=payload.user_id,
@@ -122,10 +102,6 @@ async def handle_workspace_deleted_event(event: DomainEvent):
             event_type=payload.event_type,
         )
         await create_notification_use_case.execute(notification_data)
-        logger.debug(
-            f"Notification created for user {payload.user_id} regarding workspace {payload.id}."
-        )
+        logger.debug(f"Notification created for user {payload.user_id} regarding workspace {payload.id}.")
     except Exception as e:
-        raise EventProcessingException(
-            f"Failed to create notification for workspace {payload.id}"
-        ) from e
+        raise EventProcessingException(f"Failed to create notification for workspace {payload.id}") from e

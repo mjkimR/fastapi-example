@@ -2,16 +2,16 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import Depends
-from app.base.schemas.delete_resp import DeleteResponse
-from app.core.database.transaction import AsyncTransaction
 
+from app.base.schemas.delete_resp import DeleteResponse
+from app.base.services.base import BaseContextKwargs, TContextKwargs
+from app.base.usecases.base import BaseUseCase
+from app.base.usecases.crud import BaseGetMultiUseCase
+from app.core.database.transaction import AsyncTransaction
 from app.features.auth.exceptions import UserCantDeleteItselfException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserCreate
-from app.base.services.base import BaseContextKwargs, TContextKwargs
 from app.features.auth.services import UserService
-from app.base.usecases.base import BaseUseCase
-from app.base.usecases.crud import BaseGetMultiUseCase
 
 
 class GetMultiUserUseCase(BaseGetMultiUseCase[UserService, User, BaseContextKwargs]):
@@ -39,9 +39,7 @@ class CreateUserUseCase(BaseUseCase):
     def __init__(self, service: Annotated[UserService, Depends()]):
         self.service = service
 
-    async def execute(
-        self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
-    ) -> User:
+    async def execute(self, obj_data: UserCreate, context: Optional[TContextKwargs] = None) -> User:
         async with AsyncTransaction() as session:
             return await self.service.create_user(session, obj_data)
 
@@ -50,8 +48,6 @@ class CreateAdminUseCase(BaseUseCase):
     def __init__(self, service: Annotated[UserService, Depends()]):
         self.service = service
 
-    async def execute(
-        self, obj_data: UserCreate, context: Optional[TContextKwargs] = None
-    ) -> User:
+    async def execute(self, obj_data: UserCreate, context: Optional[TContextKwargs] = None) -> User:
         async with AsyncTransaction() as session:
             return await self.service.create_admin(session, obj_data)

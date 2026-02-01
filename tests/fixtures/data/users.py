@@ -3,9 +3,9 @@ Test data fixtures for users.
 """
 
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.auth.models import User
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest_asyncio.fixture
@@ -23,9 +23,7 @@ async def sample_users(session: AsyncSession, regular_user, admin_user) -> list[
 
 
 @pytest_asyncio.fixture
-async def regular_user(
-    session: AsyncSession, user_factory: type[SQLAlchemyFactory]
-) -> User:
+async def regular_user(session: AsyncSession, user_factory: type[SQLAlchemyFactory]) -> User:
     """Create a regular user for testing."""
 
     user = user_factory.build(
@@ -42,9 +40,7 @@ async def regular_user(
 
 
 @pytest_asyncio.fixture
-async def admin_user(
-    session: AsyncSession, user_factory: type[SQLAlchemyFactory]
-) -> User:
+async def admin_user(session: AsyncSession, user_factory: type[SQLAlchemyFactory]) -> User:
     """Create an admin user for testing."""
     user = user_factory.build(
         name="Admin",

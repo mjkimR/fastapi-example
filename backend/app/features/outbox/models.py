@@ -1,9 +1,12 @@
-import enum
 import datetime
+import enum
 from typing import Any, Optional
-from sqlalchemy import String, JSON, Enum as EnumColumn, DateTime
+
+from sqlalchemy import JSON, DateTime, String
+from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.orm import Mapped, mapped_column
-from app.base.models.mixin import Base, UUIDMixin, TimestampMixin
+
+from app.base.models.mixin import Base, TimestampMixin, UUIDMixin
 
 
 class EventStatus(str, enum.Enum):
@@ -25,6 +28,4 @@ class Outbox(Base, UUIDMixin, TimestampMixin):
     )
 
     retry_count: Mapped[int] = mapped_column(default=0)
-    processed_at: Mapped[Optional[datetime.datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    processed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

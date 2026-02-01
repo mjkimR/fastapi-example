@@ -1,4 +1,5 @@
-from typing import Callable, Optional, Any
+from typing import Callable, Optional
+
 from sqlalchemy.sql import ColumnElement
 
 # Type alias for the ordering logic function: takes a boolean (desc) and returns a SQLAlchemy expression.
@@ -8,9 +9,7 @@ OrderByLogicFunc = Callable[[bool], ColumnElement]
 class OrderByCriteria:
     """Container for individual ordering logic."""
 
-    def __init__(
-        self, alias: str, func: OrderByLogicFunc, description: Optional[str] = None
-    ):
+    def __init__(self, alias: str, func: OrderByLogicFunc, description: Optional[str] = None):
         self.alias = alias
         self.func = func
         self.description = description

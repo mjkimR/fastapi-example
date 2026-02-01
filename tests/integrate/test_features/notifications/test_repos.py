@@ -1,10 +1,7 @@
-import uuid
-
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestNotificationRepositoryIntegration:

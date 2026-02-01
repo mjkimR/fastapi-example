@@ -18,9 +18,7 @@ from app.base.services.base import (
 )
 
 
-class UniqueConstraintHooksMixin(
-    BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta
-):
+class UniqueConstraintHooksMixin(BaseCreateHooks, BaseUpdateHooks, metaclass=abc.ABCMeta):
     """
     Async Generator-based Unique Constraint Check Hook.
 
@@ -98,9 +96,7 @@ class UniqueConstraintHooksMixin(
     # ============================================================
 
     @asynccontextmanager
-    async def _context_create(
-        self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs
-    ):
+    async def _context_create(self, session: AsyncSession, obj_data: BaseModel, context: TContextKwargs):
         """
         Extends the create context to run unique constraint checks.
         """

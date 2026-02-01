@@ -82,9 +82,7 @@ def set_exception_handler(app: FastAPI):
         )
 
     @app.exception_handler(NotImplementedError)
-    async def not_implemented_exception_handler(
-        request: Request, exc: NotImplementedError
-    ):
+    async def not_implemented_exception_handler(request: Request, exc: NotImplementedError):
         status_code = HTTPStatus.NOT_IMPLEMENTED
         title = status_code.phrase
         detail = "The requested functionality is not implemented."

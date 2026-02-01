@@ -2,14 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
-
 from starlette.responses import RedirectResponse
 
+from app.base.exceptions.handler import set_exception_handler
+from app.core import middlewares
+from app.core.logger import logger
 from app.features.outbox.scheduler import scheduler_lifespan
 from app.router import router
-from app.base.exceptions.handler import set_exception_handler
-from app.core.logger import logger
-from app.core import middlewares
 
 
 def get_lifespan():

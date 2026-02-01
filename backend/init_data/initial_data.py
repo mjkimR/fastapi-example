@@ -2,17 +2,15 @@ import asyncio
 import logging
 from typing import Optional
 
-from pydantic import SecretStr
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.core.config import get_app_settings
 from app.core.database.transaction import AsyncTransaction
-
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository
 from app.features.auth.schemas import UserCreate
 from app.features.auth.services import UserService
+from pydantic import SecretStr
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

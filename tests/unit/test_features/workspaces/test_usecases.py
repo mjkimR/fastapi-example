@@ -1,16 +1,15 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from app.base.schemas.paginated import PaginatedList
 from app.base.services.user_aware_hook import UserContextKwargs
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.usecases.crud import (
-    GetWorkspaceUseCase,
-    GetMultiWorkspaceUseCase,
     CreateWorkspaceUseCase,
-    UpdateWorkspaceUseCase,
     DeleteWorkspaceUseCase,
+    GetMultiWorkspaceUseCase,
+    GetWorkspaceUseCase,
+    UpdateWorkspaceUseCase,
 )
 
 
@@ -47,9 +46,7 @@ class TestGetMultiWorkspaceUseCase:
     @pytest.mark.asyncio
     async def test_execute_returns_paginated_workspaces(self, use_case, mock_workspace):
         """Should return paginated list of workspaces."""
-        paginated = PaginatedList(
-            items=[mock_workspace], total_count=1, offset=0, limit=10
-        )
+        paginated = PaginatedList(items=[mock_workspace], total_count=1, offset=0, limit=10)
         use_case.service.get_multi.return_value = paginated
 
         with patch("app.base.usecases.crud.AsyncTransaction"):

@@ -1,7 +1,8 @@
 import uuid
+
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
+from app.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class TagCreate(BaseModel):

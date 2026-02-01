@@ -1,26 +1,26 @@
 import uuid
-import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
+import pytest
 from app.features.auth.models import User
-from app.features.workspaces.models import Workspace
+from app.features.memos.enum import MemoEventType
 from app.features.memos.models import Memo
+from app.features.memos.repos import MemoRepository
 from app.features.memos.schemas import MemoCreate, MemoUpdate
+from app.features.memos.services import MemoContextKwargs, MemoService
 from app.features.memos.usecases.crud import (
     CreateMemoUseCase,
-    UpdateMemoUseCase,
     DeleteMemoUseCase,
+    UpdateMemoUseCase,
 )
-from app.features.memos.repos import MemoRepository
-from app.features.memos.services import MemoContextKwargs, MemoService
+from app.features.notifications.repos import NotificationRepository
+from app.features.outbox.models import EventStatus
+from app.features.outbox.repos import OutboxRepository
+from app.features.outbox.scheduler import process_outbox_events_job
 from app.features.tags.repos import TagRepository
 from app.features.tags.services import TagService
-from app.features.outbox.repos import OutboxRepository
-from app.features.outbox.models import EventStatus
-from app.features.outbox.scheduler import process_outbox_events_job
-from app.features.notifications.repos import NotificationRepository
+from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
-from app.features.memos.enum import MemoEventType
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestOutboxToNotificationFlowIntegration:
@@ -56,26 +56,18 @@ class TestOutboxToNotificationFlowIntegration:
         workspace_repo: WorkspaceRepository,
         outbox_repo: OutboxRepository,
     ) -> MemoService:
-        return MemoService(
-            repo=memo_repo, parent_repo=workspace_repo, outbox_repo=outbox_repo
-        )
+        return MemoService(repo=memo_repo, parent_repo=workspace_repo, outbox_repo=outbox_repo)
 
     @pytest.fixture
-    def tag_service(
-        self, tag_repo: TagRepository, workspace_repo: WorkspaceRepository
-    ) -> TagService:
+    def tag_service(self, tag_repo: TagRepository, workspace_repo: WorkspaceRepository) -> TagService:
         return TagService(repo=tag_repo, parent_repo=workspace_repo)
 
     @pytest.fixture
-    def create_memo_use_case(
-        self, memo_service: MemoService, tag_service: TagService
-    ) -> CreateMemoUseCase:
+    def create_memo_use_case(self, memo_service: MemoService, tag_service: TagService) -> CreateMemoUseCase:
         return CreateMemoUseCase(service=memo_service, tag_service=tag_service)
 
     @pytest.fixture
-    def update_memo_use_case(
-        self, memo_service: MemoService, tag_service: TagService
-    ) -> UpdateMemoUseCase:
+    def update_memo_use_case(self, memo_service: MemoService, tag_service: TagService) -> UpdateMemoUseCase:
         return UpdateMemoUseCase(service=memo_service, tag_service=tag_service)
 
     @pytest.fixture
@@ -109,9 +101,7 @@ class TestOutboxToNotificationFlowIntegration:
 
         # 3. Assert: Check the final state
         # Re-fetch the outbox event and check its status is COMPLETED
-        processed_outbox_event = await outbox_repo.get_by_pk(
-            inspect_session, outbox_event.id
-        )
+        processed_outbox_event = await outbox_repo.get_by_pk(inspect_session, outbox_event.id)
         assert processed_outbox_event is not None
         assert processed_outbox_event.status == EventStatus.COMPLETED
 
@@ -195,9 +185,7 @@ class TestOutboxToNotificationFlowIntegration:
             session, where=[NotificationRepository.model.user_id == regular_user.id]
         )
 
-        updated_memo = await update_memo_use_case.execute(
-            single_memo.id, update_data, context
-        )
+        updated_memo = await update_memo_use_case.execute(single_memo.id, update_data, context)
         await session.commit()
 
         assert updated_memo is not None
