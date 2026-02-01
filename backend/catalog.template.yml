@@ -1,0 +1,90 @@
+models:
+  # - LLM Models
+  - provider: openai-compatible
+    name: gpt-oss-20b
+    type: llm
+    args:
+      model: openai/gpt-oss-20b
+      api_key: llm-studio
+      base_url: http://127.0.0.1:1234/v1
+    help: "Open source GPT model with 20 billion parameters."
+
+  - provider: google
+    name: gemini-2.5-flash
+    type: llm
+    args:
+      model: gemini-2.5-flash
+      api_key: "${GOOGLE_API_KEY}"
+
+  - provider: openai
+    name: gpt-4
+    type: llm
+    args:
+      model: gpt-4
+      api_key: "${OPENAI_API_KEY}"
+ 
+  - provider: openai
+    name: gpt-5
+    type: llm
+    args:
+      model: gpt-5
+      api_key: "${OPENAI_API_KEY}"
+    # Additional parameter specifications
+    param_spec:
+      exclude:
+        - temperature # gpt-5 does not support temperature
+      map:
+        max_tokens: max_completion_tokens # gpt-5 does not support max_tokens: renamed to max_completion_tokens
+  
+
+  # - Embedding Models
+  - provider: openai-compatible
+    name: embedding-llama2-7b
+    type: text-embedding
+    args:
+      model: openai/embedding-llama2-7b
+      api_key: llm-studio
+      base_url: http://127.0.0.1:1234/v1
+
+aliases:
+  # - Default Models
+  - name: llm-default
+    type: llm
+    target: gpt-oss-20b
+    help: "Default LLM model for general purposes."
+
+  - name: embedding-default
+    type: text-embedding
+    target: embedding-llama2-7b
+    help: "Default embedding model for general purposes."
+
+  # - LLM Model aliases
+  - name: llm-high-performance
+    type: llm
+    target: gemini-2.5-flash
+    fallbacks:
+      - llm-default
+    help: "High performance LLM model for demanding tasks."
+
+  - name: llm-small
+    type: llm
+    target: gpt-oss-20b
+    fallbacks:
+      - llm-default
+    help: "Smaller LLM model for lightweight tasks."
+
+groups:
+  # - LLM Model group
+  - name: llm-models
+    type: llm
+    members:
+      - llm-default
+      - llm-high-performance
+      - llm-small
+    default: llm-default
+
+  # - Embedding Model group
+  - name: embedding-models
+    type: text-embedding
+    members:
+      - embedding-default

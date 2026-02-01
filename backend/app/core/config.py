@@ -3,12 +3,18 @@ import os
 import pathlib
 
 from pydantic import EmailStr, Field, SecretStr
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def get_repo_path():
     """Get the path to the repository."""
     path = str(pathlib.Path(__file__).parent.parent.parent.parent.resolve())
+    return path
+
+
+def get_app_path():
+    """Get the path to the app."""
+    path = str(pathlib.Path(__file__).parent.parent.parent.resolve())
     return path
 
 
@@ -41,3 +47,21 @@ class AppSettings(BaseSettings):
 @functools.lru_cache
 def get_app_settings():
     return AppSettings()  # type: ignore
+
+
+class VectorDBSettings(BaseSettings):
+    KIND: str = Field(default="qdrant")
+    URL: str = Field(default="http://localhost:6333")
+    API_KEY: SecretStr = Field()
+
+    model_config = SettingsConfigDict(
+        env_prefix="VECTOR_DB_",
+        env_ignore_empty=True,
+        validate_assignment=True,
+        extra="ignore",
+    )
+
+
+@functools.lru_cache
+def get_vector_db_settings():
+    return VectorDBSettings()  # type: ignore
