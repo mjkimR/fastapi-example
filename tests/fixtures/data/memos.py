@@ -9,38 +9,32 @@ from app.features.memos.models import Memo
 from app.features.workspaces.models import Workspace
 from app.features.auth.models import User
 
+from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
+
+
+@pytest_asyncio.fixture
+async def memo_factory() -> type[SQLAlchemyFactory]:
+    class MemoFactory(SQLAlchemyFactory[Memo]):
+        pass
+
+    return MemoFactory
+
 
 @pytest_asyncio.fixture
 async def sample_memos(
-    session: AsyncSession, single_workspace: Workspace, regular_user: User
+    session: AsyncSession,
+    memo_factory: type[SQLAlchemyFactory],
+    single_workspace: Workspace,
+    regular_user: User,
 ) -> list[Memo]:
     """Create sample memos for testing within a workspace."""
-    memos_data = [
-        {
-            "category": "General",
-            "title": "First Memo",
-            "contents": "This is the first test memo content.",
-        },
-        {
-            "category": "Work",
-            "title": "Work Todo",
-            "contents": "Important work items to complete.",
-        },
-        {
-            "category": "Personal",
-            "title": "Shopping List",
-            "contents": "Buy groceries: milk, eggs, bread.",
-        },
-    ]
-
-    memos = [
-        Memo(
-            **data,
-            workspace_id=single_workspace.id,
-            created_by=regular_user.id,
-        )
-        for data in memos_data
-    ]
+    memos = memo_factory.batch(
+        size=3,
+        workspace_id=single_workspace.id,
+        workspace=single_workspace,
+        created_by=regular_user.id,
+        updated_by=regular_user.id,
+    )
     session.add_all(memos)
     await session.flush()
     for memo in memos:
@@ -50,15 +44,17 @@ async def sample_memos(
 
 @pytest_asyncio.fixture
 async def single_memo(
-    session: AsyncSession, single_workspace: Workspace, regular_user: User
+    session: AsyncSession,
+    memo_factory: type[SQLAlchemyFactory],
+    single_workspace: Workspace,
+    regular_user: User,
 ) -> Memo:
     """Create a single memo for testing within a workspace."""
-    memo = Memo(
-        category="Test",
-        title="Test Memo",
-        contents="This is a test memo.",
+    memo = memo_factory.build(
         workspace_id=single_workspace.id,
+        workspace=single_workspace,
         created_by=regular_user.id,
+        updated_by=regular_user.id,
     )
     session.add(memo)
     await session.flush()
