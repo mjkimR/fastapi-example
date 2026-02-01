@@ -1,3 +1,4 @@
+import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -117,7 +118,7 @@ class TestOutboxToNotificationFlowIntegration:
         # Check that a new notification was created for the user
         notifications = await notification_repo.get_multi(
             inspect_session,
-            where=[NotificationRepository.model.user_id == user_id],
+            where=[NotificationRepository.model.user_id == uuid.UUID(user_id)],
         )
         assert notifications.total_count == initial_notification_count + 1
         notification = notifications.items[0]
