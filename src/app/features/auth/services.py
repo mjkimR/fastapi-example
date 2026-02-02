@@ -8,17 +8,17 @@ from passlib.context import CryptContext
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.features.auth.exceptions import UserAlreadyExistsException
+from app.features.auth.models import User
+from app.features.auth.repos import UserRepository
+from app.features.auth.schemas import UserCreate, UserDbCreate, UserDbUpdate, UserUpdate
 from app_base.base.services.base import (
     BaseContextKwargs,
     BaseDeleteServiceMixin,
     BaseGetMultiServiceMixin,
     BaseGetServiceMixin,
 )
-from app_config import AuthSettings, get_auth_settings
-from app.features.auth.exceptions import UserAlreadyExistsException
-from app.features.auth.models import User
-from app.features.auth.repos import UserRepository
-from app.features.auth.schemas import UserCreate, UserDbCreate, UserDbUpdate, UserUpdate
+from app_base.config import AuthSettings, get_auth_settings
 
 """
 * https://github.com/ViktorViskov/fastapi-mvc/blob/main/app/utils/bcrypt_hashing.py

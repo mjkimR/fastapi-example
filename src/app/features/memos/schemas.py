@@ -2,9 +2,9 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.memos.enum import MemoEventType
 from app.features.tags.schemas import TagRead
+from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class MemoCreate(BaseModel):

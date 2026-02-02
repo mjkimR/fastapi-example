@@ -3,10 +3,11 @@ Test data fixtures for tags.
 """
 
 import pytest_asyncio
-from app.features.tags.models import Tag
-from app.features.workspaces.models import Workspace
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.features.tags.models import Tag
+from app.features.workspaces.models import Workspace
 
 
 @pytest_asyncio.fixture

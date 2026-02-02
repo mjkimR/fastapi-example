@@ -1,19 +1,21 @@
 from typing import Any
 
-from app_base.ai.models import AIModelFactory
-from app_config import VectorDBSettings
+from config import VectorDBSettings
+from config.vector_db import QdrantSettings
+
 from app_base.adapter.vector_store.interface import VectorStoreProvider, import_error_handler
 from app_base.adapter.vector_store.registry import register_vector_store
+from app_base.ai.models import AIModelFactory
 
 
 @register_vector_store("qdrant")
 class QdrantProvider(VectorStoreProvider):
     @classmethod
-    def from_config(cls, settings: VectorDBSettings) -> VectorStoreProvider:
+    def from_config(cls, settings: VectorDBSettings[QdrantSettings]) -> VectorStoreProvider:
         with import_error_handler("qdrant"):
             from qdrant_client import QdrantClient
-
-        client = QdrantClient(url=settings.URL, api_key=settings.API_KEY.get_secret_value() if settings.API_KEY else None)
+        config: QdrantSettings = settings.config
+        client = QdrantClient(url=config.url, api_key=config.api_key.get_secret_value() if config.api_key else None)
         return QdrantProvider(client)
 
     def close(self) -> None:

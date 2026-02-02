@@ -1,6 +1,6 @@
+from app.features.memos.models import Memo
 from app_base.base.deps.ordering.base import order_by_for
 from app_base.base.deps.ordering.combine import create_order_by_dependency
-from app.features.memos.models import Memo
 
 
 @order_by_for(alias="title")

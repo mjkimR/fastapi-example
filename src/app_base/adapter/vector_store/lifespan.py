@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
+from config import get_vector_db_settings
 from fastapi import FastAPI
 
-from app_config import get_vector_db_settings
-from app_base.core.log import logger
 from app_base.adapter.vector_store.factory import vector_store_cache
 from app_base.adapter.vector_store.registry import get_provider_cls
+from app_base.core.log import logger
 
 
 @asynccontextmanager

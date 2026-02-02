@@ -6,13 +6,14 @@ Tests service layer operations with real database connections.
 import uuid
 
 import pytest
-from app_base.base.services.nested_resource_hook import NestedResourceContextKwargs
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.tags.models import Tag
 from app.features.tags.repos import TagRepository
 from app.features.tags.services import TagService
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
-from sqlalchemy.ext.asyncio import AsyncSession
+from app_base.base.services.nested_resource_hook import NestedResourceContextKwargs
 
 
 class TestTagServiceIntegration:

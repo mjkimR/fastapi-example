@@ -1,11 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-from app_base.base.exceptions.event import (
-    EventProcessingException,
-    InvalidEventPayloadException,
-)
-from app_base.base.schemas.event import DomainEvent
+
 from app.features.memos.consumers.event_handlers import (
     handle_memo_created_event,
     handle_memo_deleted_event,
@@ -13,6 +9,11 @@ from app.features.memos.consumers.event_handlers import (
 )
 from app.features.memos.enum import MemoEventType
 from app.features.memos.schemas import MemoNotificationPayload
+from app_base.base.exceptions.event import (
+    EventProcessingException,
+    InvalidEventPayloadException,
+)
+from app_base.base.schemas.event import DomainEvent
 
 
 @pytest.fixture

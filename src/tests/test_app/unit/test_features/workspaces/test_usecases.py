@@ -1,8 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app_base.base.schemas.paginated import PaginatedList
-from app_base.base.services.user_aware_hook import UserContextKwargs
+
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.usecases.crud import (
     CreateWorkspaceUseCase,
@@ -11,6 +10,8 @@ from app.features.workspaces.usecases.crud import (
     GetWorkspaceUseCase,
     UpdateWorkspaceUseCase,
 )
+from app_base.base.schemas.paginated import PaginatedList
+from app_base.base.services.user_aware_hook import UserContextKwargs
 
 
 class TestGetWorkspaceUseCase:

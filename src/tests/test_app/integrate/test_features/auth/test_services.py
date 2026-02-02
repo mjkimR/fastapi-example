@@ -4,14 +4,15 @@ Tests service layer operations with real database connections.
 """
 
 import pytest
-from app_config import get_auth_settings
+from pydantic import SecretStr
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.auth.exceptions import UserAlreadyExistsException
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository
 from app.features.auth.schemas import UserCreate, UserUpdate
 from app.features.auth.services import UserService
-from pydantic import SecretStr
-from sqlalchemy.ext.asyncio import AsyncSession
+from app_base.config import get_auth_settings
 
 
 class TestUserServiceIntegration:

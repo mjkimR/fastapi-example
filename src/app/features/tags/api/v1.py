@@ -3,15 +3,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app_base.base.deps.params.page import PaginationParam
-from app_base.base.exceptions.basic import NotFoundException
-from app_base.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.tags.schemas import TagRead
 from app.features.tags.usecases.crud import (
     GetMultiTagUseCase,
     GetTagUseCase,
 )
+from app_base.base.deps.params.page import PaginationParam
+from app_base.base.exceptions.basic import NotFoundException
+from app_base.base.schemas.paginated import PaginatedList
 
 router = APIRouter(
     prefix="/workspaces/{workspace_id}/tags",

@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from starlette.responses import RedirectResponse
 
+from app.features.outbox.scheduler import scheduler_lifespan
+from app.router import router
 from app_base.base.exceptions.handler import set_exception_handler
 from app_base.core import middlewares
 from app_base.core.log import logger
-from app.features.outbox.scheduler import scheduler_lifespan
-from app.router import router
 
 
 def get_lifespan():

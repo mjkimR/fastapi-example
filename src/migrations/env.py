@@ -33,7 +33,7 @@ from app.main import create_app
 
 
 def get_url() -> str:
-    from app_config import get_app_settings
+    from app_base.config import get_app_settings
     return get_app_settings().DATABASE_URL
 
 

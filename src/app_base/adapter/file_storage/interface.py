@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, AsyncIterator
 
-from app_config import FileStorageSettings
+from config import FileStorageSettings
 
 
 class FileStorageClient(ABC):
-
     @classmethod
     @abstractmethod
-    async def from_config(cls, config: FileStorageSettings) -> "FileStorageClient":
+    async def from_config(cls, settings: FileStorageSettings) -> "FileStorageClient":
         """Create a file storage client from configuration."""
         pass
 

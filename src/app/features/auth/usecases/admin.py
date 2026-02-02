@@ -3,15 +3,15 @@ from uuid import UUID
 
 from fastapi import Depends
 
+from app.features.auth.exceptions import UserCantDeleteItselfException
+from app.features.auth.models import User
+from app.features.auth.schemas import UserCreate
+from app.features.auth.services import UserService
 from app_base.base.schemas.delete_resp import DeleteResponse
 from app_base.base.services.base import BaseContextKwargs, TContextKwargs
 from app_base.base.usecases.base import BaseUseCase
 from app_base.base.usecases.crud import BaseGetMultiUseCase
 from app_base.core.database.transaction import AsyncTransaction
-from app.features.auth.exceptions import UserCantDeleteItselfException
-from app.features.auth.models import User
-from app.features.auth.schemas import UserCreate
-from app.features.auth.services import UserService
 
 
 class GetMultiUserUseCase(BaseGetMultiUseCase[UserService, User, BaseContextKwargs]):

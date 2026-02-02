@@ -1,10 +1,5 @@
 import logging
 
-from app_base.base.exceptions.event import (
-    EventProcessingException,
-    InvalidEventPayloadException,
-)
-from app_base.base.schemas.event import DomainEvent
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.services import NotificationService
@@ -13,6 +8,11 @@ from app.features.outbox.registry import register_event_handler
 from app.features.workspaces.enum import WorkspaceEventType
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.schemas import WorkspaceNotificationPayload
+from app_base.base.exceptions.event import (
+    EventProcessingException,
+    InvalidEventPayloadException,
+)
+from app_base.base.schemas.event import DomainEvent
 
 logger = logging.getLogger(__name__)
 

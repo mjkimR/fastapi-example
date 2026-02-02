@@ -5,6 +5,7 @@ from threading import Lock
 from typing import TYPE_CHECKING, Any
 
 import yaml
+
 from app_base.ai.models.factory_embedding import EmbeddingFactory
 from app_base.ai.models.factory_llm import LLMFactory
 from app_base.ai.models.schemas import (
@@ -14,7 +15,7 @@ from app_base.ai.models.schemas import (
     AIModelItem,
     AIModelType,
 )
-from app_config import get_app_path
+from app_base.config import get_app_path
 from app_base.core.log import logger
 
 if TYPE_CHECKING:

@@ -6,11 +6,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
 import app.features.memos.consumers.event_handlers  # noqa: F401
-from app_base.base.schemas.event import DomainEvent
-from app_base.core.database.transaction import AsyncTransaction
 from app.features.outbox.models import EventStatus
 from app.features.outbox.registry import dispatch_event
 from app.features.outbox.repos import OutboxRepository
+from app_base.base.schemas.event import DomainEvent
+from app_base.core.database.transaction import AsyncTransaction
 
 logger = logging.getLogger(__name__)
 

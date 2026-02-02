@@ -1,6 +1,6 @@
+from app.features.memos.models import Memo
 from app_base.base.deps.filters.combine import create_combined_filter_dependency
 from app_base.base.deps.filters.decorators import filter_for
-from app.features.memos.models import Memo
 
 
 @filter_for(bound_type=str)

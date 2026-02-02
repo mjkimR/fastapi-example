@@ -5,10 +5,11 @@ Integration app_tests for WorkspaceRepository.
 import uuid
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestWorkspaceRepositoryIntegration:

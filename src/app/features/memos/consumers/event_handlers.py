@@ -1,10 +1,5 @@
 import logging
 
-from app_base.base.exceptions.event import (
-    EventProcessingException,
-    InvalidEventPayloadException,
-)
-from app_base.base.schemas.event import DomainEvent
 from app.features.memos.enum import MemoEventType
 from app.features.memos.repos import MemoRepository
 from app.features.memos.schemas import MemoNotificationPayload
@@ -13,6 +8,11 @@ from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.services import NotificationService
 from app.features.notifications.usecases.crud import CreateNotificationUseCase
 from app.features.outbox.registry import register_event_handler
+from app_base.base.exceptions.event import (
+    EventProcessingException,
+    InvalidEventPayloadException,
+)
+from app_base.base.schemas.event import DomainEvent
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,8 @@ Integration app_tests for WorkspaceService.
 """
 
 import pytest
-from app_base.base.services.user_aware_hook import UserContextKwargs
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.outbox.models import Outbox
 from app.features.outbox.repos import OutboxRepository
 from app.features.workspaces.enum import WorkspaceEventType
@@ -11,7 +12,7 @@ from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.services import WorkspaceService
-from sqlalchemy.ext.asyncio import AsyncSession
+from app_base.base.services.user_aware_hook import UserContextKwargs
 
 
 class TestWorkspaceServiceIntegration:

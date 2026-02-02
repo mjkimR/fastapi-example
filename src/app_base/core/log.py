@@ -4,7 +4,7 @@ from contextvars import ContextVar
 
 from loguru import logger
 
-from app_config import get_app_settings
+from app_base.config import get_app_settings
 
 # Request ID context variable
 request_id_var = ContextVar[str]("request_id", default="N/A")

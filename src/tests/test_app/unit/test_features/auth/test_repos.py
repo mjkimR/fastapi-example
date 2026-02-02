@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository
 

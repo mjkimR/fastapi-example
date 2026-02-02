@@ -4,7 +4,7 @@ import os.path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from src.app_config.util import get_repo_path
+from app_base.config.util import get_repo_path
 
 
 class AppSettings(BaseSettings):

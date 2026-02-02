@@ -1,6 +1,8 @@
 import uuid
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.auth.models import User
 from app.features.memos.enum import MemoEventType
 from app.features.memos.models import Memo
@@ -20,7 +22,6 @@ from app.features.tags.repos import TagRepository
 from app.features.tags.services import TagService
 from app.features.workspaces.models import Workspace
 from app.features.workspaces.repos import WorkspaceRepository
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestOutboxToNotificationFlowIntegration:

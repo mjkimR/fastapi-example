@@ -3,6 +3,7 @@ from typing import cast
 from unittest.mock import AsyncMock
 
 import pytest
+
 from app.features.outbox.models import EventStatus, Outbox
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.schemas import OutboxCreate

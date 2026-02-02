@@ -3,10 +3,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
 
-from app_base.base.deps.params.page import PaginationParam
-from app_base.base.exceptions.basic import NotFoundException
-from app_base.base.schemas.delete_resp import DeleteResponse
-from app_base.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.auth.models import User
 from app.features.memos.schemas import MemoCreate, MemoRead, MemoUpdate
@@ -17,6 +13,10 @@ from app.features.memos.usecases.crud import (
     GetMultiMemoUseCase,
     UpdateMemoUseCase,
 )
+from app_base.base.deps.params.page import PaginationParam
+from app_base.base.exceptions.basic import NotFoundException
+from app_base.base.schemas.delete_resp import DeleteResponse
+from app_base.base.schemas.paginated import PaginatedList
 
 router = APIRouter(
     prefix="/workspaces/{workspace_id}/memos",

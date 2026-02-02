@@ -1,8 +1,9 @@
 import pytest_asyncio
-from app.features.auth.models import User
-from app.features.workspaces.models import Workspace
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.features.auth.models import User
+from app.features.workspaces.models import Workspace
 
 
 @pytest_asyncio.fixture

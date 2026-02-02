@@ -3,9 +3,9 @@ from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app_base.base.repos.base import BaseRepository
 from app.features.outbox.models import EventStatus, Outbox
 from app.features.outbox.schemas import OutboxCreate, OutboxUpdate
+from app_base.base.repos.base import BaseRepository
 
 
 class OutboxRepository(BaseRepository[Outbox, OutboxCreate, OutboxUpdate]):

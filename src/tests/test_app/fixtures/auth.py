@@ -3,12 +3,13 @@ Authentication fixtures for testing.
 """
 
 import pytest_asyncio
-from app_config import get_auth_settings
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.auth.repos import UserRepository
 from app.features.auth.services import UserService
 from app.features.auth.token_schemas import Token
+from app_base.config import get_auth_settings
 from init_data.initial_data import create_first_user
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest_asyncio.fixture
@@ -23,8 +24,9 @@ async def user_service() -> UserService:
 @pytest_asyncio.fixture
 async def admin_user(session: AsyncSession, user_service: UserService):
     """Create or get an admin user for testing."""
-    from app.features.auth.models import User
     from sqlalchemy import select
+
+    from app.features.auth.models import User
 
     user = await create_first_user(session, user_service)
     if user is None:

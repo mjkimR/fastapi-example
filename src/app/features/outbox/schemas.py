@@ -3,8 +3,8 @@ from typing import Any, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.outbox.models import EventStatus
+from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class OutboxIdentityDict(TypedDict):

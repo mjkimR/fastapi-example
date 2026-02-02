@@ -3,14 +3,14 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.features.tags.models import Tag
+from app.features.tags.repos import TagRepository
+from app.features.workspaces.repos import WorkspaceRepository
 from app_base.base.services.base import BaseGetMultiServiceMixin, BaseGetServiceMixin
 from app_base.base.services.nested_resource_hook import (
     NestedResourceContextKwargs,
     NestedResourceHooksMixin,
 )
-from app.features.tags.models import Tag
-from app.features.tags.repos import TagRepository
-from app.features.workspaces.repos import WorkspaceRepository
 
 
 class TagService(

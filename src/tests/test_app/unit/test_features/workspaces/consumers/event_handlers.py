@@ -1,11 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-from app_base.base.exceptions.event import (
-    EventProcessingException,
-    InvalidEventPayloadException,
-)
-from app_base.base.schemas.event import DomainEvent
+
 from app.features.workspaces.consumers.event_handlers import (
     handle_workspace_created_event,
     handle_workspace_deleted_event,
@@ -13,6 +9,11 @@ from app.features.workspaces.consumers.event_handlers import (
 )
 from app.features.workspaces.enum import WorkspaceEventType
 from app.features.workspaces.schemas import WorkspaceNotificationPayload
+from app_base.base.exceptions.event import (
+    EventProcessingException,
+    InvalidEventPayloadException,
+)
+from app_base.base.schemas.event import DomainEvent
 
 
 @pytest.fixture

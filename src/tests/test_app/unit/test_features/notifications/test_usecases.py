@@ -2,6 +2,7 @@ import uuid
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
 from app.features.notifications.models import Notification
 from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.usecases.crud import CreateNotificationUseCase

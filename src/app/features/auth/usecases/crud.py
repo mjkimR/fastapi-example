@@ -3,13 +3,13 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from app_base.base.services.base import TContextKwargs
-from app_base.base.usecases.base import BaseUseCase
-from app_base.core.database.transaction import AsyncTransaction
 from app.features.auth.exceptions import PermissionDeniedException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserUpdate
 from app.features.auth.services import UserService
+from app_base.base.services.base import TContextKwargs
+from app_base.base.usecases.base import BaseUseCase
+from app_base.core.database.transaction import AsyncTransaction
 
 
 class GetUserUseCase(BaseUseCase):

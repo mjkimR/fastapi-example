@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+
 from app.features.notifications.models import Notification
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate

@@ -2,8 +2,8 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.workspaces.enum import WorkspaceEventType
+from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class WorkspaceCreate(BaseModel):

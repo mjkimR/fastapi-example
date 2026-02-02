@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any
 
+from config import VectorDBSettings
 from langchain_core.vectorstores import VectorStore
-
-from app_config import VectorDBSettings
 
 
 class VectorStoreProvider(ABC):
@@ -13,7 +12,7 @@ class VectorStoreProvider(ABC):
 
     @classmethod
     @abstractmethod
-    def from_config(cls, config: VectorDBSettings) -> "VectorStoreProvider":
+    def from_config(cls, settings: VectorDBSettings) -> "VectorStoreProvider":
         pass
 
     @abstractmethod

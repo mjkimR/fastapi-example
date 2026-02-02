@@ -3,12 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from app_base.base.exceptions.basic import NotFoundException
 from app.features.auth.deps import get_current_user, on_superuser
 from app.features.auth.exceptions import UserNotFoundException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserRead, UsersRead, UserUpdate
 from app.features.auth.usecases.crud import GetUserUseCase, UpdateUserUseCase
+from app_base.base.exceptions.basic import NotFoundException
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

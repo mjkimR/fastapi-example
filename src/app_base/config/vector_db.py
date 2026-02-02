@@ -37,7 +37,7 @@ class VectorDBSettings(BaseSettings, Generic[TVectorDBProviderConfigs]):
         extra="ignore",
     )
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def check_provider_requirements(cls, data: dict) -> dict:
         provider = data.get("provider", "none") or os.getenv("VECTOR_DB_PROVIDER", "none")

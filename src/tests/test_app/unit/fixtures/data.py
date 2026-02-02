@@ -10,6 +10,7 @@ import uuid
 from unittest.mock import MagicMock
 
 import pytest
+
 from app.features.auth.models import User
 from app.features.memos.models import Memo
 from app.features.tags.models import Tag

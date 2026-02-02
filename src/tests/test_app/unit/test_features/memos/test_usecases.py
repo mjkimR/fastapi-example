@@ -1,8 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app_base.base.schemas.delete_resp import DeleteResponse
-from app_base.base.schemas.paginated import PaginatedList
+
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.usecases.crud import (
     CreateMemoUseCase,
@@ -11,6 +10,8 @@ from app.features.memos.usecases.crud import (
     GetMultiMemoUseCase,
     UpdateMemoUseCase,
 )
+from app_base.base.schemas.delete_resp import DeleteResponse
+from app_base.base.schemas.paginated import PaginatedList
 
 
 class TestGetMemoUseCase:

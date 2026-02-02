@@ -1,11 +1,12 @@
 import uuid
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.outbox.models import EventStatus
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.schemas import OutboxCreate
 from app.features.outbox.services import OutboxService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestOutboxServiceIntegration:

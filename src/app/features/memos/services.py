@@ -2,6 +2,12 @@ from typing import Annotated, Any
 
 from fastapi import Depends
 
+from app.features.memos.models import Memo
+from app.features.memos.repos import MemoRepository
+from app.features.memos.schemas import MemoCreate, MemoUpdate
+from app.features.notifications.service_hooks import NotificationOutboxHook
+from app.features.outbox.repos import OutboxRepository
+from app.features.workspaces.repos import WorkspaceRepository
 from app_base.base.services.base import (
     BaseCreateServiceMixin,
     BaseDeleteServiceMixin,
@@ -16,12 +22,6 @@ from app_base.base.services.nested_resource_hook import (
     NestedResourceHooksMixin,
 )
 from app_base.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
-from app.features.memos.models import Memo
-from app.features.memos.repos import MemoRepository
-from app.features.memos.schemas import MemoCreate, MemoUpdate
-from app.features.notifications.service_hooks import NotificationOutboxHook
-from app.features.outbox.repos import OutboxRepository
-from app.features.workspaces.repos import WorkspaceRepository
 
 
 class MemoContextKwargs(NestedResourceContextKwargs, UserContextKwargs):

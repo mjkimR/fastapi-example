@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from app.features.tags.models import Tag
 from app.features.tags.repos import TagRepository
 

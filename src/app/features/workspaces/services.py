@@ -3,6 +3,14 @@ from typing import Annotated, Any, AsyncIterator, Tuple, Union
 from fastapi import Depends
 from sqlalchemy.sql.expression import ColumnElement
 
+from app.features.notifications.service_hooks import (
+    NotificationOutboxHook,
+)
+from app.features.outbox.repos import OutboxRepository
+from app.features.outbox.schemas import OutboxIdentityDict
+from app.features.workspaces.models import Workspace
+from app.features.workspaces.repos import WorkspaceRepository
+from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app_base.base.services.base import (
     BaseCreateServiceMixin,
     BaseDeleteServiceMixin,
@@ -15,14 +23,6 @@ from app_base.base.services.detail_delete_response_hook import DetailDeleteRespo
 from app_base.base.services.exists_check_hook import ExistsCheckHooksMixin
 from app_base.base.services.unique_constraints_hook import UniqueConstraintHooksMixin
 from app_base.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
-from app.features.notifications.service_hooks import (
-    NotificationOutboxHook,
-)
-from app.features.outbox.repos import OutboxRepository
-from app.features.outbox.schemas import OutboxIdentityDict
-from app.features.workspaces.models import Workspace
-from app.features.workspaces.repos import WorkspaceRepository
-from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 
 
 class WorkspaceService(

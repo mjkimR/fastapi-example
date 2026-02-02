@@ -1,9 +1,9 @@
 from contextlib import asynccontextmanager
 
+from config import get_file_storage_settings
 from fastapi import FastAPI
 
 from app_base.adapter.file_storage.factory import FileStorageFactory
-from app_config import get_file_storage_settings
 from app_base.core.log import logger
 
 

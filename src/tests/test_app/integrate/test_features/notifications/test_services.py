@@ -1,8 +1,9 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.services import NotificationService
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestNotificationServiceIntegration:

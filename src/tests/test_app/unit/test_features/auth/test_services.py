@@ -1,11 +1,12 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from pydantic import SecretStr
+
 from app.features.auth.exceptions import UserAlreadyExistsException
 from app.features.auth.models import User
 from app.features.auth.schemas import UserCreate
 from app.features.auth.services import UserService
-from pydantic import SecretStr
 
 
 class TestUserServicePasswordHashing:

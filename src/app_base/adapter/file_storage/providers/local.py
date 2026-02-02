@@ -4,8 +4,9 @@ from typing import Any, AsyncIterator
 
 import aiofiles
 import aiofiles.os
+from config import FileStorageSettings
+from config.file_storage import LocalFileStorageSettings
 
-from app_config import FileStorageSettings
 from app_base.adapter.file_storage.interface import FileStorageClient
 
 
@@ -18,11 +19,11 @@ class LocalStorageProvider(FileStorageClient):
             self.root_path.mkdir(parents=True, exist_ok=True)
 
     @classmethod
-    async def from_config(cls, config: FileStorageSettings) -> FileStorageClient:
-        if not config.local:
+    async def from_config(cls, settings: FileStorageSettings[LocalFileStorageSettings]) -> FileStorageClient:
+        if not settings.config:
             raise ValueError("Local storage settings are not configured.")
-
-        root_path = Path(config.local.bucket_name)
+        config: LocalFileStorageSettings = settings.config
+        root_path = Path(config.bucket_name)
         root_path.mkdir(parents=True, exist_ok=True)
         return cls(root_path)
 
@@ -74,11 +75,7 @@ class LocalStorageProvider(FileStorageClient):
         search_path = self._get_full_path(prefix)
 
         def _glob_sync():
-            return [
-                str(p.relative_to(self.root_path))
-                for p in search_path.rglob("*")
-                if p.is_file()
-            ]
+            return [str(p.relative_to(self.root_path)) for p in search_path.rglob("*") if p.is_file()]
 
         return await asyncio.to_thread(_glob_sync)
 

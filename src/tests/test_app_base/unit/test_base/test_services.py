@@ -5,6 +5,7 @@ from typing import TypedDict
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from app_base.base.schemas.paginated import PaginatedList
 from app_base.base.services.base import (
     BaseContextKwargs,

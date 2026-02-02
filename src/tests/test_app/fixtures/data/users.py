@@ -3,9 +3,10 @@ Test data fixtures for users.
 """
 
 import pytest_asyncio
-from app.features.auth.models import User
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.features.auth.models import User
 
 
 @pytest_asyncio.fixture

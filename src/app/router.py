@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app_base.core.database.deps import get_session
 from app.features.auth.api import v1_admin_router, v1_login_router, v1_users_router
 from app.features.memos.api.v1 import router as v1_memos_router
 from app.features.tags.api.v1 import router as v1_tags_router
 from app.features.workspaces.api.v1 import router as v1_workspaces_router
+from app_base.core.database.deps import get_session
 
 router = APIRouter(prefix="/api")
 v1_router = APIRouter(prefix="/v1")

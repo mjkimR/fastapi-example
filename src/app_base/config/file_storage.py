@@ -17,12 +17,14 @@ FileProviderType = Literal["none", "local", "s3"]
 
 class LocalFileStorageSettings(FileProviderConfigs):
     """Settings for when the file storage provider is 'local'."""
+
     bucket_name: str = "local_storage"  # This will be the root directory name
     model_config = SettingsConfigDict(env_prefix="FS_LOCAL_")
 
 
 class S3FileStorageSettings(FileProviderConfigs):
     """Settings for when the file storage provider is 's3'."""
+
     endpoint_url: str = "http://localhost:9000"
     access_key: SecretStr = Field(default="minioadmin")
     secret_key: SecretStr = Field(default="minioadmin")
@@ -37,6 +39,7 @@ class FileStorageSettings(BaseSettings, Generic[TFileProviderConfigs]):
     Main settings for file storage.
     Reads from environment variables.
     """
+
     provider: str = Field(default="none", alias="FS_PROVIDER")
 
     # Nested settings for provider
@@ -47,7 +50,7 @@ class FileStorageSettings(BaseSettings, Generic[TFileProviderConfigs]):
         extra="ignore",
     )
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def check_provider_requirements(cls, data: dict) -> dict:
         provider = data.get("provider", "none") or os.getenv("FS_PROVIDER", "none")

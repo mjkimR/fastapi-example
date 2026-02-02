@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app_base.base.services.base import BaseContextKwargs, BaseCreateServiceMixin
 from app.features.notifications.models import Notification
 from app.features.notifications.repos import NotificationRepository
 from app.features.notifications.schemas import NotificationCreate
+from app_base.base.services.base import BaseContextKwargs, BaseCreateServiceMixin
 
 
 class NotificationService(

@@ -3,10 +3,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
 
-from app_base.base.deps.params.page import PaginationParam
-from app_base.base.exceptions.basic import NotFoundException
-from app_base.base.schemas.delete_resp import DeleteResponse
-from app_base.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.auth.models import User
 from app.features.workspaces.schemas import (
@@ -21,6 +17,10 @@ from app.features.workspaces.usecases.crud import (
     GetWorkspaceUseCase,
     UpdateWorkspaceUseCase,
 )
+from app_base.base.deps.params.page import PaginationParam
+from app_base.base.exceptions.basic import NotFoundException
+from app_base.base.schemas.delete_resp import DeleteResponse
+from app_base.base.schemas.paginated import PaginatedList
 
 router = APIRouter(prefix="/workspaces", tags=["Workspaces"], dependencies=[Depends(get_current_user)])
 

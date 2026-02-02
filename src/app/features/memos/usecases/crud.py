@@ -3,6 +3,10 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.features.memos.models import Memo
+from app.features.memos.schemas import MemoCreate, MemoUpdate
+from app.features.memos.services import MemoContextKwargs, MemoService
+from app.features.tags.services import TagService
 from app_base.base.usecases.crud import (
     BaseCreateUseCase,
     BaseDeleteUseCase,
@@ -10,10 +14,6 @@ from app_base.base.usecases.crud import (
     BaseGetUseCase,
     BaseUpdateUseCase,
 )
-from app.features.memos.models import Memo
-from app.features.memos.schemas import MemoCreate, MemoUpdate
-from app.features.memos.services import MemoContextKwargs, MemoService
-from app.features.tags.services import TagService
 
 
 class GetMemoUseCase(BaseGetUseCase[MemoService, Memo, MemoContextKwargs]):

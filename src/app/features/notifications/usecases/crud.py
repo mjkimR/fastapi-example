@@ -2,11 +2,11 @@ from typing import Annotated, Optional
 
 from fastapi import Depends
 
-from app_base.base.services.base import BaseContextKwargs
-from app_base.core.database.transaction import AsyncTransaction
 from app.features.notifications.models import Notification
 from app.features.notifications.schemas import NotificationCreate
 from app.features.notifications.services import NotificationService
+from app_base.base.services.base import BaseContextKwargs
+from app_base.core.database.transaction import AsyncTransaction
 
 
 class CreateNotificationUseCase:

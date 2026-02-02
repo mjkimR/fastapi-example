@@ -3,9 +3,9 @@ import uuid
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app_base.base.repos.base import BaseRepository
 from app.features.tags.models import Tag
 from app.features.tags.schemas import TagCreate, TagUpdate
+from app_base.base.repos.base import BaseRepository
 
 
 class TagRepository(BaseRepository[Tag, TagCreate, TagUpdate]):

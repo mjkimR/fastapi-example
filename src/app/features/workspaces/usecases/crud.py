@@ -2,6 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.features.workspaces.models import Workspace
+from app.features.workspaces.schemas import (
+    WorkspaceCreate,
+    WorkspaceUpdate,
+)
+from app.features.workspaces.services import WorkspaceService
 from app_base.base.services.user_aware_hook import UserContextKwargs
 from app_base.base.usecases.crud import (
     BaseCreateUseCase,
@@ -10,12 +16,6 @@ from app_base.base.usecases.crud import (
     BaseGetUseCase,
     BaseUpdateUseCase,
 )
-from app.features.workspaces.models import Workspace
-from app.features.workspaces.schemas import (
-    WorkspaceCreate,
-    WorkspaceUpdate,
-)
-from app.features.workspaces.services import WorkspaceService
 
 
 class GetWorkspaceUseCase(BaseGetUseCase[WorkspaceService, Workspace, UserContextKwargs]):

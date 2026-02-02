@@ -3,9 +3,10 @@ from typing import Any, AsyncIterator
 import aiobotocore.session
 from aiobotocore.client import AioBaseClient
 from botocore.exceptions import ClientError
+from config import FileStorageSettings
+from config.file_storage import S3FileStorageSettings
 
 from app_base.adapter.file_storage.interface import FileStorageClient
-from app_config import FileStorageSettings
 
 
 class S3StorageProvider(FileStorageClient):
@@ -16,23 +17,22 @@ class S3StorageProvider(FileStorageClient):
         self.bucket_name = bucket_name
 
     @classmethod
-    async def from_config(cls, config: FileStorageSettings) -> "S3StorageProvider":
+    async def from_config(cls, settings: FileStorageSettings[S3FileStorageSettings]) -> "S3StorageProvider":
         """
         Creates the S3 client from configuration and returns it with the bucket name.
         """
-        if not config.s3:
+        if not settings.config:
             raise ValueError("S3 storage settings are not configured.")
-
-        s3_config = config.s3
+        config: S3FileStorageSettings = settings.config
         session = aiobotocore.session.get_session()
         client = await session.create_client(
             "s3",
-            aws_access_key_id=s3_config.access_key.get_secret_value(),
-            aws_secret_access_key=s3_config.secret_key.get_secret_value(),
-            region_name=s3_config.region_name,
-            endpoint_url=s3_config.endpoint_url,
+            aws_access_key_id=config.access_key.get_secret_value(),
+            aws_secret_access_key=config.secret_key.get_secret_value(),
+            region_name=config.region_name,
+            endpoint_url=config.endpoint_url,
         )
-        return cls(client, s3_config.bucket_name)
+        return cls(client, config.bucket_name)
 
     async def close(self) -> None:
         """
@@ -44,35 +44,29 @@ class S3StorageProvider(FileStorageClient):
         """Downloads a file from S3 and returns its content as bytes."""
 
         try:
-            response = await self.client.get_object(
-                Bucket=self.bucket_name, Key=file_path
-            )
+            response = await self.client.get_object(Bucket=self.bucket_name, Key=file_path)
             async with response["Body"] as stream:
                 return await stream.read()
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                raise FileNotFoundError(f"File not found at {file_path}")
+                raise FileNotFoundError(f"File not found at {file_path}") from e
             raise
 
     async def download_file_stream(self, file_path: str) -> AsyncIterator[bytes]:
         """Downloads a file from S3 as a stream of bytes."""
 
         try:
-            response = await self.client.get_object(
-                Bucket=self.bucket_name, Key=file_path
-            )
+            response = await self.client.get_object(Bucket=self.bucket_name, Key=file_path)
             async for chunk in response["Body"].iter_chunks(chunk_size=8192):
                 yield chunk
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                raise FileNotFoundError(f"File not found at {file_path}")
+                raise FileNotFoundError(f"File not found at {file_path}") from e
             raise
 
     async def upload_file(self, file_path: str, data: bytes) -> None:
         """Uploads data to a file in S3."""
-        await self.client.put_object(
-            Bucket=self.bucket_name, Key=file_path, Body=data
-        )
+        await self.client.put_object(Bucket=self.bucket_name, Key=file_path, Body=data)
 
     async def delete_file(self, file_path: str) -> None:
         """Deletes a file from S3."""
@@ -101,9 +95,7 @@ class S3StorageProvider(FileStorageClient):
         """Gets metadata for a file from S3."""
 
         try:
-            metadata = await self.client.head_object(
-                Bucket=self.bucket_name, Key=file_path
-            )
+            metadata = await self.client.head_object(Bucket=self.bucket_name, Key=file_path)
             return {
                 "size": metadata.get("ContentLength"),
                 "last_modified": metadata.get("LastModified"),
@@ -113,5 +105,5 @@ class S3StorageProvider(FileStorageClient):
             }
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                raise FileNotFoundError(f"File not found at {file_path}")
+                raise FileNotFoundError(f"File not found at {file_path}") from e
             raise

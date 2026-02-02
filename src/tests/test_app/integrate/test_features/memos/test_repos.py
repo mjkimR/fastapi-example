@@ -6,10 +6,11 @@ Tests CRUD operations with real database connections.
 import uuid
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.memos.models import Memo
 from app.features.memos.repos import MemoRepository
 from app.features.memos.schemas import MemoCreate, MemoUpdate
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestMemoRepositoryIntegration:

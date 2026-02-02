@@ -6,10 +6,11 @@ Tests CRUD operations with real database connections.
 import uuid
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.features.auth.models import User
 from app.features.auth.repos import UserRepository
 from app.features.auth.schemas import UserDbCreate, UserDbUpdate
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestUserRepositoryIntegration:

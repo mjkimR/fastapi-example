@@ -3,8 +3,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
-from app_base.base.deps.params.page import PaginationParam
-from app_base.base.schemas.delete_resp import DeleteResponse
 from app.features.auth.deps import get_current_user, on_superuser
 from app.features.auth.models import User
 from app.features.auth.schemas import UserCreate, UserRead, UsersRead
@@ -14,6 +12,8 @@ from app.features.auth.usecases.admin import (
     DeleteUserUseCase,
     GetMultiUserUseCase,
 )
+from app_base.base.deps.params.page import PaginationParam
+from app_base.base.schemas.delete_resp import DeleteResponse
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(on_superuser)])
 

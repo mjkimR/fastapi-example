@@ -2,6 +2,7 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from app.features.outbox.models import EventStatus, Outbox
 from app.features.outbox.repos import OutboxRepository
 from app.features.outbox.schemas import OutboxCreate, OutboxUpdate

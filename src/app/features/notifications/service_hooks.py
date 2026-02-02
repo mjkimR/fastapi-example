@@ -5,6 +5,8 @@ from typing import Any, TypedDict
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.features.outbox.repos import OutboxRepository
+from app.features.outbox.schemas import OutboxCreate, OutboxIdentityDict
 from app_base.base.repos.base import ModelType
 from app_base.base.services.base import (
     BaseCreateHooks,
@@ -12,8 +14,6 @@ from app_base.base.services.base import (
     BaseUpdateHooks,
     TContextKwargs,
 )
-from app.features.outbox.repos import OutboxRepository
-from app.features.outbox.schemas import OutboxCreate, OutboxIdentityDict
 
 
 class NotificationEventTypeDict(TypedDict):

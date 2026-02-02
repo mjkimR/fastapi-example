@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr
 
-from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from app.features.auth.models import User
+from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 
 
 class UserCreate(BaseModel):

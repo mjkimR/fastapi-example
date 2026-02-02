@@ -2,10 +2,11 @@ from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from app_base.base.services.user_aware_hook import UserContextKwargs
+
 from app.features.workspaces.enum import WorkspaceEventType
 from app.features.workspaces.schemas import WorkspaceCreate, WorkspaceUpdate
 from app.features.workspaces.services import WorkspaceService
+from app_base.base.services.user_aware_hook import UserContextKwargs
 
 
 class TestWorkspaceServiceOutboxHooks:

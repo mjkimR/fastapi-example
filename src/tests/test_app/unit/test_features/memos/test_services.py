@@ -2,6 +2,7 @@ from typing import cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from app.features.memos.enum import MemoEventType
 from app.features.memos.schemas import MemoCreate, MemoUpdate
 from app.features.memos.services import MemoContextKwargs, MemoService

@@ -1,6 +1,6 @@
-from app_base.base.repos.base import BaseRepository
 from app.features.auth.models import User
 from app.features.auth.schemas import UserDbCreate, UserDbUpdate
+from app_base.base.repos.base import BaseRepository
 
 
 class UserRepository(BaseRepository[User, UserDbCreate, UserDbUpdate]):

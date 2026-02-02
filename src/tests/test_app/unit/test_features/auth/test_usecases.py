@@ -2,7 +2,8 @@ import uuid
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app_base.base.schemas.paginated import PaginatedList
+from pydantic import SecretStr
+
 from app.features.auth.exceptions import (
     PermissionDeniedException,
     UserCantDeleteItselfException,
@@ -16,7 +17,7 @@ from app.features.auth.usecases.admin import (
     GetMultiUserUseCase,
 )
 from app.features.auth.usecases.crud import GetUserUseCase, UpdateUserUseCase
-from pydantic import SecretStr
+from app_base.base.schemas.paginated import PaginatedList
 
 
 class TestGetUserUseCase:
