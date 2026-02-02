@@ -1,3 +1,5 @@
+from app_base.base.repos.base import BaseRepository
+
 # FastAPI Project Structure Guide for LLMs
 
 This document outlines the architecture of the project and provides a step-by-step guide for adding new features. The goal is to enable an LLM to understand the patterns and conventions, and then autonomously create new, similar features.
@@ -6,19 +8,19 @@ This document outlines the architecture of the project and provides a step-by-st
 
 The project follows a layered, modular, and feature-driven architecture.
 
-- **`backend/app/core`**: Contains application-wide components.
+- **`src/app_base/core`**: Contains application-wide components.
   - **`config.py`**: Manages environment variables and application settings.
   - **`database/`**: Handles database engine creation, session management (`get_session`), and transaction handling (`AsyncTransaction`).
   - **`logger.py`**: Configures application-wide logging.
   - **`middlewares/`**: Contains global middleware like CORS and request ID handling.
-- **`backend/app/base`**: Provides a set of reusable, generic building blocks for features. This is the "framework" of the application.
+- **`src/app_base/base`**: Provides a set of reusable, generic building blocks for features. This is the "framework" of the application.
   - **`models`**: SQLAlchemy model mixins (`UUIDMixin`, `TimestampMixin`, `AuditMixin`) for common fields.
   - **`repos`**: A generic `BaseRepository` that provides a standard interface for database operations (CRUD).
   - **`schemas`**: Pydantic schema mixins for consistent API data shapes.
   - **`services`**: A powerful, hook-based service layer. Services orchestrate repositories and implement business logic through inheritable mixins.
   - **`usecases`**: The use case layer, which is injected into API endpoints. It wraps service calls within a database transaction (`AsyncTransaction`) and prepares the final response.
   - **`deps`**: Reusable FastAPI dependencies for common tasks like pagination, filtering, and ordering.
-- **`backend/app/features`**: Each subdirectory here represents a distinct feature or domain of the application (e.g., `workspaces`, `memos`, `tags`).
+- **`src/app/features`**: Each subdirectory here represents a distinct feature or domain of the application (e.g., `workspaces`, `memos`, `tags`).
 
 ### Architectural Flow
 
@@ -49,10 +51,10 @@ Follow these steps to add a new feature. We will use the example of adding "Comm
 
 ### Step 1: Create the Feature Directory
 
-Create a new directory for your feature inside `backend/app/features/`.
+Create a new directory for your feature inside `src/app/features/`.
 
 ```
-backend/app/features/comments/
+src/app/features/comments/
 ```
 
 Inside this directory, create the standard file structure:
@@ -79,14 +81,14 @@ Create the `Comment` model. It must inherit from the base mixins and define its 
 -   **Parent Resource**: `Memo`
 -   **Child Resource**: `Comment`
 
-**File: `backend/app/features/comments/models.py`**
+**File: `src/app/features/comments/models.py`**
 ```python
 import uuid
 from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.base.models.mixin import Base, UUIDMixin, TimestampMixin, AuditMixin
+from app_base.base.models.mixin import Base, UUIDMixin, TimestampMixin, AuditMixin
 
 if TYPE_CHECKING:
     from app.features.memos.models import Memo
@@ -100,7 +102,7 @@ class Comment(Base, UUIDMixin, TimestampMixin, AuditMixin):
     memo_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("memos.id"), nullable=False)
     memo: Mapped["Memo"] = relationship(back_populates="comments")
 ```
-> **Note:** You also need to update the parent `Memo` model in `backend/app/features/memos/models.py` to add the `comments` relationship.
+> **Note:** You also need to update the parent `Memo` model in `src/app/features/memos/models.py` to add the `comments` relationship.
 > ```python
 > # In memos/models.py, inside the Memo class
 > comments: Mapped[List["Comment"]] = relationship(back_populates="memo", cascade="all, delete-orphan")
@@ -110,11 +112,11 @@ class Comment(Base, UUIDMixin, TimestampMixin, AuditMixin):
 
 Create the Pydantic schemas for API validation and serialization.
 
-**File: `backend/app/features/comments/schemas.py`**
+**File: `src/app/features/comments/schemas.py`**
 ```python
 import uuid
 from pydantic import BaseModel, ConfigDict, Field
-from app.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
+from app_base.base.schemas.mixin import UUIDSchemaMixin, TimestampSchemaMixin
 
 class CommentCreate(BaseModel):
     contents: str = Field(..., description="The contents of the comment.")
@@ -133,10 +135,10 @@ class CommentRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
 
 Create a repository for the `Comment` model. It's usually a simple class that inherits from `BaseRepository` and specifies the model.
 
-**File: `backend/app/features/comments/repos.py`**
+**File: `src/app/features/comments/repos.py`**
 ```python
+from app_base.base.repos.base import BaseRepository
 from app.features.comments.models import Comment
-from app.base.repos.base import BaseRepository
 from app.features.comments.schemas import CommentCreate, CommentUpdate
 
 class CommentRepository(BaseRepository[Comment, CommentCreate, CommentUpdate]):
@@ -147,18 +149,18 @@ class CommentRepository(BaseRepository[Comment, CommentCreate, CommentUpdate]):
 
 The service class is the core of the feature's logic. It inherits from various mixins to gain functionality.
 
-**File: `backend/app/features/comments/services.py`**
+**File: `src/app/features/comments/services.py`**
 ```python
 from typing import Annotated
 from fastapi import Depends
 
-from app.base.services.base import (
+from app_base.base.services.base import (
     BaseCreateServiceMixin, BaseGetServiceMixin, BaseGetMultiServiceMixin,
     BaseUpdateServiceMixin, BaseDeleteServiceMixin
 )
-from app.base.services.exists_check_hook import ExistsCheckHooksMixin
-from app.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
-from app.base.services.nested_resource_hook import NestedResourceHooksMixin, NestedResourceContextKwargs
+from app_base.base.services.exists_check_hook import ExistsCheckHooksMixin
+from app_base.base.services.user_aware_hook import UserAwareHooksMixin, UserContextKwargs
+from app_base.base.services.nested_resource_hook import NestedResourceHooksMixin, NestedResourceContextKwargs
 from app.features.comments.models import Comment
 from app.features.comments.repos import CommentRepository
 from app.features.comments.schemas import CommentCreate, CommentUpdate
@@ -184,19 +186,31 @@ class CommentService(
             repo: Annotated[CommentRepository, Depends()],
             parent_repo: Annotated[MemoRepository, Depends()] # The parent's repository
     ):
-        self.repo = repo
-        self.context_model = CommentContextKwargs
-
-        # Configure the nested resource behavior
-        self.parent_repo = parent_repo
-        self.fk_name = "memo_id" # The foreign key column in the Comment model
+        self._repo = repo
+        self._parent_repo = parent_repo
+    
+    @property
+    def repo(self) -> CommentRepository:
+        return self._repo
+        
+    @property
+    def parent_repo(self) -> MemoRepository:
+        return self._parent_repo
+        
+    @property
+    def context_model(self):
+        return CommentContextKwargs
+        
+    @property
+    def fk_name(self) -> str:
+        return "memo_id"
 ```
 
 ### Step 6: `usecases/crud.py` - Create Use Cases
 
 Use cases wrap service calls in a transaction. For simple CRUD, you can inherit from the base use cases.
 
-**File: `backend/app/features/comments/usecases/crud.py`**
+**File: `src/app/features/comments/usecases/crud.py`**
 ```python
 from typing import Annotated
 from fastapi import Depends
@@ -237,16 +251,16 @@ class DeleteCommentUseCase(BaseDeleteUseCase[CommentService, Comment, CommentCon
 
 Define the FastAPI router and its endpoints. This is the entry point for your feature.
 
-**File: `backend/app/features/comments/api/v1.py`**
+**File: `src/app/features/comments/api/v1.py`**
 ```python
 import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Body, status
 
-from app.base.deps.params.page import PaginationParam
-from app.base.exceptions.basic import NotFoundException
-from app.base.schemas.paginated import PaginatedList
+from app_base.base.deps.params.page import PaginationParam
+from app_base.base.exceptions.basic import NotFoundException
+from app_base.base.schemas.paginated import PaginatedList
 from app.features.auth.deps import get_current_user
 from app.features.auth.models import User
 from app.features.comments.schemas import CommentRead, CommentUpdate, CommentCreate
@@ -301,14 +315,14 @@ async def delete_comment(
 
 Export the router from the `api` directory and include it in the main application router.
 
-**File: `backend/app/features/comments/api/__init__.py`**
+**File: `src/app/features/comments/api/__init__.py`**
 ```python
 from .v1 import router as v1_comments_router
 
 __all__ = ["v1_comments_router"]
 ```
 
-**File: `backend/app/router.py`**
+**File: `src/app/router.py`**
 ```python
 # ... other imports
 from app.features.comments.api import v1_comments_router
