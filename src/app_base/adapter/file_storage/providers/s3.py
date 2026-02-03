@@ -3,8 +3,8 @@ from typing import Any, AsyncIterator
 import aiobotocore.session
 from aiobotocore.client import AioBaseClient
 from botocore.exceptions import ClientError
-from config import FileStorageSettings
-from config.file_storage import S3FileStorageSettings
+from app_base.config import FileStorageSettings
+from app_base.config.file_storage import S3FileStorageSettings
 
 from app_base.adapter.file_storage.interface import FileStorageClient
 
@@ -25,20 +25,22 @@ class S3StorageProvider(FileStorageClient):
             raise ValueError("S3 storage settings are not configured.")
         config: S3FileStorageSettings = settings.config
         session = aiobotocore.session.get_session()
-        client = await session.create_client(
+        context = await session.create_client(
             "s3",
             aws_access_key_id=config.access_key.get_secret_value(),
             aws_secret_access_key=config.secret_key.get_secret_value(),
             region_name=config.region_name,
             endpoint_url=config.endpoint_url,
         )
+        client = await context.__aenter__()
         return cls(client, config.bucket_name)
 
     async def close(self) -> None:
         """
         Closes the S3 client.
         """
-        await self.client.close()
+        if self.client:
+            await self.client.close()
 
     async def download_file(self, file_path: str) -> bytes:
         """Downloads a file from S3 and returns its content as bytes."""
